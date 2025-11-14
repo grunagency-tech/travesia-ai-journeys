@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LogOut, ChevronDown, User } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ProfileMenu } from '@/components/ProfileMenu';
 import logoFull from '@/assets/logo-full.svg';
 
 export const Navbar = () => {
@@ -17,11 +18,6 @@ export const Navbar = () => {
   const { currency, setCurrency, currencySymbol } = useCurrency();
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -41,13 +37,57 @@ export const Navbar = () => {
           {user ? (
             <>
               <Link to="/mis-viajes">
-                <Button variant="ghost" className="text-foreground/80 hover:text-foreground">
+                <Button variant="ghost" className="text-foreground/80 hover:text-foreground text-sm font-medium">
                   Mis viajes
                 </Button>
               </Link>
-              <Button variant="ghost" size="icon" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4" />
-              </Button>
+              
+              <div className="flex items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
+                      <span className="text-sm font-medium">{currencySymbol}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                    <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
+                      $ USD
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
+                      € EUR
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
+                      $ MXN
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
+                      $ ARS
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
+                      R$ BRL
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
+                      <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                    <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
+                      🇪🇸 Español
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
+                      🇬🇧 English
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <ProfileMenu />
+              </div>
             </>
           ) : (
             <>
@@ -70,25 +110,25 @@ export const Navbar = () => {
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors">
+                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
                       <span className="text-sm font-medium">{currencySymbol}</span>
                       <ChevronDown className="w-4 h-4" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background z-50">
-                    <DropdownMenuItem onClick={() => setCurrency('USD')}>
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                    <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
                       $ USD
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('EUR')}>
+                    <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
                       € EUR
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('MXN')}>
+                    <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
                       $ MXN
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('ARS')}>
+                    <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
                       $ ARS
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('BRL')}>
+                    <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
                       R$ BRL
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -96,24 +136,21 @@ export const Navbar = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors">
+                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
                       <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
                       <ChevronDown className="w-4 h-4" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background z-50">
-                    <DropdownMenuItem onClick={() => setLanguage('ES')}>
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                    <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
                       🇪🇸 Español
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLanguage('EN')}>
+                    <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
                       🇬🇧 English
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <button className="w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors">
-                <User className="w-5 h-5 text-foreground/60" />
-              </button>
             </>
           )}
         </div>
