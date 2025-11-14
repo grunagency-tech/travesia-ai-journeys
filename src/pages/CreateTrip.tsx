@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
 import { Loader2, Calendar, MapPin, Users, DollarSign, Plane } from 'lucide-react';
@@ -16,6 +17,7 @@ const CreateTrip = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { currency, currencySymbol } = useCurrency();
   const { toast } = useToast();
 
   const [description, setDescription] = useState(location.state?.description || '');
@@ -298,15 +300,21 @@ const CreateTrip = () => {
                   <div>
                     <Label htmlFor="budget">
                       <DollarSign className="w-4 h-4 inline mr-1" />
-                      Presupuesto (USD)
+                      Presupuesto ({currency})
                     </Label>
-                    <Input
-                      id="budget"
-                      type="number"
-                      placeholder="Opcional"
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        {currencySymbol}
+                      </span>
+                      <Input
+                        id="budget"
+                        type="number"
+                        placeholder="Opcional"
+                        value={budget}
+                        onChange={(e) => setBudget(e.target.value)}
+                        className="pl-8"
+                      />
+                    </div>
                   </div>
                 </div>
 
