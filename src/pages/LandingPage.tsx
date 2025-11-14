@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
-import { Paperclip, Send, Pencil, Plane, Building2, Briefcase } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Paperclip, Send, Pencil, Plane, Building2, Briefcase, Linkedin, Instagram, Facebook } from 'lucide-react';
 import heroBackground from '@/assets/hero-background.jpg';
+import logoFull from '@/assets/logo-full.svg';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -376,6 +378,102 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* FAQs */}
+      <section className="py-20 bg-orange-50/20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <Accordion type="single" collapsible className="space-y-4">
+              <AccordionItem value="item-1" className="bg-white rounded-lg border-0 shadow-sm px-6">
+                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+                  ¿Cómo puede TravesIA planificar tu viaje completo en solo segundos?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  TravesIA utiliza inteligencia artificial para analizar tus preferencias, presupuesto y destino, y generar en segundos un itinerario personalizado con vuelos, hospedajes, actividades, transporte y clima. Solo escribe tu idea —por ejemplo: "Quiero viajar a México con $800 durante 5 días"— y la IA hará el resto, entregándote una guía completa y organizada para tu viaje.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-2" className="bg-white rounded-lg border-0 shadow-sm px-6">
+                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+                  ¿Qué tipo de información incluye el itinerario que crea TravesIA?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Cada itinerario generado por TravesIA incluye información práctica y actualizada sobre vuelos, opciones de alojamiento, actividades recomendadas, presupuesto estimado, clima, transporte local y consejos culturales. Todo se adapta a tus fechas, estilo de viaje y tipo de experiencia que buscas (romántica, aventura, descanso o cultural).
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3" className="bg-white rounded-lg border-0 shadow-sm px-6">
+                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+                  ¿TravesIA realiza reservas o solo muestra las mejores opciones de viaje?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  TravesIA no realiza reservas directas. Nuestra inteligencia artificial analiza y selecciona las mejores opciones disponibles en plataformas asociadas como Booking.com, Viator, TripAdvisor y Expedia. Te mostramos los resultados más relevantes y confiables para que puedas reservar fácilmente desde las páginas oficiales de nuestros partners.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-4" className="bg-white rounded-lg border-0 shadow-sm px-6">
+                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+                  ¿Qué tan confiables son los precios y recomendaciones que muestra TravesIA?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Los precios y recomendaciones de TravesIA se actualizan constantemente a través de integraciones con fuentes oficiales y plataformas globales de viajes. Aunque las tarifas son estimadas y pueden variar según la disponibilidad o la fecha, los valores mostrados reflejan información real y actualizada del mercado.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-5" className="bg-white rounded-lg border-0 shadow-sm px-6">
+                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+                  ¿Cómo protege TravesIA mi información y mis datos personales?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  TravesIA cumple con los estándares internacionales de protección de datos (GDPR e INDECOPI). Tu información solo se usa para mejorar tus recomendaciones personalizadas y nunca se comparte con terceros sin tu consentimiento. Toda la comunicación y almacenamiento de datos se realiza mediante conexiones seguras y cifradas.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-orange-50/20 py-12 border-t border-border/40">
+        <div className="container mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+              <div className="flex flex-col gap-4">
+                <img src={logoFull} alt="travesIA" className="h-8" />
+                <div className="flex items-center gap-3">
+                  <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                  <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                  <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                </div>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  © 2025 TravesIA — Itinerarios únicos, presupuestos de viajes personalizados, recomendaciones a tu medida y mucho más. Planifica todo tu viaje en un solo lugar.
+                </p>
+              </div>
+
+              <div className="flex gap-12">
+                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Privacidad
+                </a>
+                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Términos
+                </a>
+                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Ayuda
+                </a>
+                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Contacto
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
