@@ -10,16 +10,16 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Brand colors based on Figma design */
-    --primary: 250 84% 60%;
+    /* Brand colors - Blue #0000FF */
+    --primary: 240 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 250 84% 70%;
+    --primary-glow: 240 100% 65%;
     
     --secondary: 210 40% 98%;
     --secondary-foreground: 222 47% 11%;
     
-    --accent: 250 84% 95%;
-    --accent-foreground: 250 84% 30%;
+    --accent: 240 100% 97%;
+    --accent-foreground: 240 100% 35%;
     
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
@@ -32,7 +32,7 @@ All colors MUST be HSL.
     
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 250 84% 60%;
+    --ring: 240 100% 50%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
@@ -42,15 +42,15 @@ All colors MUST be HSL.
     
     --radius: 0.75rem;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(250 84% 60%), hsl(280 84% 70%));
-    --gradient-hero: linear-gradient(180deg, hsl(250 84% 98%), hsl(0 0% 100%));
+    /* Gradients - Blue based */
+    --gradient-primary: linear-gradient(135deg, hsl(240 100% 50%), hsl(220 100% 65%));
+    --gradient-hero: linear-gradient(180deg, hsl(240 100% 98%), hsl(0 0% 100%));
     
-    /* Shadows - Elegant and soft */
-    --shadow-elegant: 0 20px 60px -15px hsl(250 84% 60% / 0.15);
-    --shadow-card: 0 4px 20px hsl(250 30% 30% / 0.06);
-    --shadow-hover: 0 8px 30px hsl(250 84% 60% / 0.12);
-    --shadow-premium: 0 25px 50px -12px hsl(250 84% 60% / 0.25);
+    /* Shadows - Elegant and soft with blue tint */
+    --shadow-elegant: 0 20px 60px -15px hsl(240 100% 50% / 0.15);
+    --shadow-card: 0 4px 20px hsl(240 50% 30% / 0.06);
+    --shadow-hover: 0 8px 30px hsl(240 100% 50% / 0.12);
+    --shadow-premium: 0 25px 50px -12px hsl(240 100% 50% / 0.25);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -66,14 +66,14 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --primary: 250 84% 60%;
+    --primary: 240 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 250 84% 70%;
+    --primary-glow: 240 100% 65%;
     
     --secondary: 217 33% 17%;
     --secondary-foreground: 0 0% 98%;
     
-    --accent: 250 84% 20%;
+    --accent: 240 100% 20%;
     --accent-foreground: 0 0% 98%;
     
     --background: 222 47% 11%;
@@ -87,7 +87,7 @@ All colors MUST be HSL.
     
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 250 84% 60%;
+    --ring: 240 100% 50%;
     
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
