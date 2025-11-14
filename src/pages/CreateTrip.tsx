@@ -205,23 +205,37 @@ const CreateTrip = () => {
       
       <div className="container mx-auto px-4 pt-24 pb-12">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Crear nuevo viaje</h1>
+          {/* Header Section */}
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+              Crear nuevo viaje
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Diseña tu experiencia perfecta. Completa los detalles y deja que la IA cree tu itinerario ideal.
+            </p>
+          </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Form */}
-            <Card className="shadow-elegant">
-              <CardHeader>
-                <CardTitle>Detalles del viaje</CardTitle>
+            <Card className="shadow-premium border-0 rounded-3xl transition-smooth">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl">Detalles del viaje</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Completa la información para personalizar tu experiencia
+                </p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="description">Descripción</Label>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-base font-medium">
+                    Descripción
+                  </Label>
                   <Textarea
                     id="description"
-                    placeholder="Describe tu viaje ideal..."
+                    placeholder="Ej: Quiero un viaje relajante con playas y buena gastronomía..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
+                    rows={4}
+                    className="resize-none border-border/50 focus:border-primary transition-smooth rounded-xl"
                   />
                 </div>
 
@@ -319,20 +333,20 @@ const CreateTrip = () => {
                 </div>
 
                 <Button 
-                  className="w-full" 
+                  className="w-full mt-8 h-14 text-base font-semibold rounded-xl shadow-hover hover:shadow-elegant transition-all" 
                   size="lg"
                   onClick={handleGenerate}
                   disabled={loading}
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generando...
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Generando tu itinerario...
                     </>
                   ) : (
                     <>
-                      <Plane className="w-4 h-4 mr-2" />
-                      Generar itinerario
+                      <Plane className="w-5 h-5 mr-2" />
+                      Generar itinerario con IA
                     </>
                   )}
                 </Button>
@@ -342,26 +356,29 @@ const CreateTrip = () => {
             {/* Results */}
             <div className="space-y-6">
               {loading && (
-                <Card className="shadow-elegant">
-                  <CardContent className="py-12 text-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground">Creando tu itinerario personalizado...</p>
+                <Card className="shadow-premium border-0 rounded-3xl">
+                  <CardContent className="py-16 text-center">
+                    <div className="relative inline-block mb-6">
+                      <Loader2 className="w-16 h-16 animate-spin text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Creando tu itinerario</h3>
+                    <p className="text-muted-foreground">La IA está diseñando tu experiencia perfecta...</p>
                   </CardContent>
                 </Card>
               )}
 
               {itinerary && (
-                <Card className="shadow-elegant">
-                  <CardHeader>
-                    <CardTitle>{itinerary.trip.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{itinerary.trip.summary}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+                <Card className="shadow-premium border-0 rounded-3xl overflow-hidden">
+                  <div className="bg-gradient-to-br from-primary/5 to-primary-glow/5 p-6 border-b">
+                    <CardTitle className="text-2xl mb-2">{itinerary.trip.title}</CardTitle>
+                    <p className="text-muted-foreground">{itinerary.trip.summary}</p>
+                  </div>
+                  <CardContent className="space-y-6 p-6">
                     {/* Budget */}
                     {itinerary.trip.estimatedBudget && (
-                      <div className="p-4 bg-accent rounded-lg">
-                        <p className="text-sm font-medium">Presupuesto estimado</p>
-                        <p className="text-2xl font-bold text-primary">
+                      <div className="p-6 bg-gradient-to-br from-primary/10 to-primary-glow/10 rounded-2xl border border-primary/20">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Presupuesto estimado</p>
+                        <p className="text-3xl font-bold text-primary">
                           ${itinerary.trip.estimatedBudget}
                         </p>
                       </div>
@@ -369,38 +386,45 @@ const CreateTrip = () => {
 
                     {/* Days */}
                     <div>
-                      <h3 className="font-semibold mb-3">Itinerario por días</h3>
+                      <h3 className="font-semibold text-lg mb-4">Itinerario por días</h3>
                       <div className="space-y-3">
                         {itinerary.days.slice(0, 2).map((day: any) => (
-                          <div key={day.dayNumber} className="p-3 border rounded-lg">
-                            <p className="font-medium">Día {day.dayNumber}</p>
-                            <p className="text-sm text-muted-foreground">{day.summary}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {day.activities.length} actividades
+                          <div key={day.dayNumber} className="p-5 bg-card border border-border/50 rounded-xl hover:border-primary/30 transition-smooth">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span className="text-sm font-bold text-primary">{day.dayNumber}</span>
+                              </div>
+                              <p className="font-semibold">Día {day.dayNumber}</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{day.summary}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {day.activities.length} actividades planificadas
                             </p>
                           </div>
                         ))}
                         {itinerary.days.length > 2 && (
-                          <p className="text-sm text-muted-foreground text-center">
-                            +{itinerary.days.length - 2} días más
-                          </p>
+                          <div className="text-center py-2">
+                            <p className="text-sm text-muted-foreground">
+                              + {itinerary.days.length - 2} días más incluidos
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
 
                     {/* Actions */}
                     <Button 
-                      className="w-full" 
+                      className="w-full h-14 text-base font-semibold rounded-xl shadow-hover hover:shadow-elegant transition-all mt-2" 
                       onClick={handleSaveTrip}
                       disabled={savingTrip}
                     >
                       {savingTrip ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Guardando...
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Guardando tu viaje...
                         </>
                       ) : (
-                        'Guardar plan'
+                        'Guardar este itinerario'
                       )}
                     </Button>
                   </CardContent>
