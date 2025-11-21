@@ -438,7 +438,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between gap-8">
-              <div className="flex flex-col gap-3 max-w-sm">
+              <div className="flex flex-col gap-3 max-w-sm items-start">
                 <img src={logoFull} alt="travesIA" className="h-8" />
                 <div className="flex items-center gap-4">
                   <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
@@ -451,7 +451,7 @@ const LandingPage = () => {
                     <Facebook className="w-6 h-6" />
                   </a>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed text-left">
                   © 2025 TravesIA — Itinerarios únicos, presupuestos de viajes personalizados, recomendaciones a tu medida y mucho más. Planifica todo tu viaje en un solo lugar.
                 </p>
               </div>
