@@ -21,6 +21,8 @@ import whyCalendarIcon from '@/assets/why-calendar.svg';
 import whySearchIcon from '@/assets/why-search.svg';
 import whyTravelersIcon from '@/assets/why-travelers.svg';
 import logoText from '@/assets/logo-text.svg';
+import colosseumImage from '@/assets/colosseum.png';
+import dubaiImage from '@/assets/dubai.png';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -118,9 +120,9 @@ const LandingPage = () => {
                 </p>
                 
                 <div className="space-y-6">
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center p-2">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center p-2">
                         <img src={luggageIcon} alt="Equipaje" className="w-full h-full object-contain" />
                       </div>
                     </div>
@@ -132,9 +134,9 @@ const LandingPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center p-2">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center p-2">
                         <img src={activitiesIcon} alt="Actividades" className="w-full h-full object-contain" />
                       </div>
                     </div>
@@ -146,9 +148,9 @@ const LandingPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center p-2">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center p-2">
                         <img src={customizeIcon} alt="Personalizar" className="w-full h-full object-contain" />
                       </div>
                     </div>
@@ -160,9 +162,9 @@ const LandingPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center p-2">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center p-2">
                         <img src={hotelIcon} alt="Hotel" className="w-full h-full object-contain" />
                       </div>
                     </div>
@@ -180,14 +182,14 @@ const LandingPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-2xl overflow-hidden h-64">
                     <img 
-                      src="https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=600&q=80" 
+                      src={colosseumImage} 
                       alt="Colosseum" 
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="rounded-2xl overflow-hidden h-64 mt-8">
                     <img 
-                      src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=600&q=80" 
+                      src={dubaiImage} 
                       alt="Dubai" 
                       className="w-full h-full object-cover"
                     />
