@@ -20,6 +20,7 @@ import whyObjectsIcon from '@/assets/why-objects.svg';
 import whyCalendarIcon from '@/assets/why-calendar.svg';
 import whySearchIcon from '@/assets/why-search.svg';
 import whyTravelersIcon from '@/assets/why-travelers.svg';
+import logoText from '@/assets/logo-text.svg';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -109,8 +110,8 @@ const LandingPage = () => {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center mb-12">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                  ¿Cómo funciona <span className="text-primary">travesIA</span> ?
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 flex items-center gap-2 flex-wrap">
+                  ¿Cómo funciona <img src={logoText} alt="travesIA" className="h-10 inline-block" /> ?
                 </h2>
                 <p className="text-muted-foreground text-lg mb-8">
                   Tu planificador de viajes con inteligencia artificial crea itinerarios personalizados con vuelos, hoteles, actividades y mucho más, en segundos.
@@ -211,8 +212,8 @@ const LandingPage = () => {
       {/* Why use travesIA */}
       <section className="py-12 bg-purple-50/30">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
-            ¿Por qué usar <span className="text-primary">travesIA</span>?
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap">
+            ¿Por qué usar <img src={logoText} alt="travesIA" className="h-10 inline-block" />?
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
             Tu asistente de viajes con inteligencia artificial crea itinerarios con vuelos, hoteles, actividades y lo que necesites, en segundos
@@ -281,8 +282,8 @@ const LandingPage = () => {
       {/* Testimonials */}
       <section className="py-20 bg-gradient-to-b from-purple-50/30 to-white">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            Viajeros como tú que ya probaron <span className="text-primary">travesIA</span>
+          <h2 className="text-4xl font-bold text-center mb-12 flex items-center justify-center gap-2 flex-wrap">
+            Viajeros como tú que ya probaron <img src={logoText} alt="travesIA" className="h-10 inline-block" />
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
