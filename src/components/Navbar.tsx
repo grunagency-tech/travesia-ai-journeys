@@ -27,8 +27,8 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-white shadow-sm z-50 flex justify-center">
-      <div className="mx-auto px-6 flex items-center justify-between" style={{ width: '1228px', height: '79px' }}>
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-lg z-50 mx-4">
+      <div className="px-6 flex items-center justify-between" style={{ width: '1228px', height: '79px' }}>
         <Link to="/" className="flex items-center">
           <img src={logoFull} alt="travesIA" className="h-8" />
         </Link>
