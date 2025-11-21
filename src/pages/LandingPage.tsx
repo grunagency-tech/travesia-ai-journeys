@@ -434,29 +434,29 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-orange-50/20 py-12 border-t border-border/40">
+      <footer className="bg-white py-12 border-t border-border/40">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-              <div className="flex flex-col gap-4">
-                <img src={logoFull} alt="travesIA" className="h-8" />
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col md:flex-row justify-between gap-8">
+              <div className="flex flex-col gap-4 max-w-xl">
+                <img src={logoFull} alt="travesIA" className="h-8 mb-2" />
+                <div className="flex items-center gap-4">
                   <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
-                    <Linkedin className="w-5 h-5" />
+                    <Linkedin className="w-6 h-6" />
                   </a>
                   <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
-                    <Instagram className="w-5 h-5" />
+                    <Instagram className="w-6 h-6" />
                   </a>
                   <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
-                    <Facebook className="w-5 h-5" />
+                    <Facebook className="w-6 h-6" />
                   </a>
                 </div>
-                <p className="text-sm text-muted-foreground max-w-sm">
+                <p className="text-sm text-muted-foreground leading-relaxed border-t border-primary pt-4 mt-2">
                   © 2025 TravesIA — Itinerarios únicos, presupuestos de viajes personalizados, recomendaciones a tu medida y mucho más. Planifica todo tu viaje en un solo lugar.
                 </p>
               </div>
 
-              <div className="flex gap-12">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-12 md:items-start">
                 <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Privacidad
                 </a>
