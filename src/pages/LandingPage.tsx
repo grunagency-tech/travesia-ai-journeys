@@ -205,18 +205,8 @@ const LandingPage = () => {
       </section>
 
       {/* Why use travesIA */}
-      <section className="py-20 bg-purple-50/30">
+      <section className="py-12 bg-purple-50/30">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-6">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold mb-8"
-              onClick={scrollToTop}
-            >
-              ¡Pruébalo YA!
-            </Button>
-          </div>
-
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
             ¿Por qué usar <span className="text-primary">travesIA</span>?
           </h2>
