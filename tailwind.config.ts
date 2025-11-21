@@ -61,6 +61,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
+        urbanist: ['Urbanist', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",

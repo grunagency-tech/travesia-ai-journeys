@@ -32,7 +32,7 @@ const LandingPage = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative h-screen flex items-end overflow-hidden pt-20 pb-12">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -43,25 +43,25 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-black/50" />
         
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-6 py-24">
+        <div className="relative z-10 container mx-auto px-6 pb-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Hero Title */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-urbanist font-extrabold text-white mb-4 leading-tight">
               Planea tu viaje completo
               <br />
               en segundos
             </h1>
             
             {/* Subtitle */}
-            <p className="text-lg md:text-xl text-white/90 mb-10 max-w-3xl mx-auto font-light">
+            <p className="text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto font-light">
               Hoteles, vuelos, actividades, itinerarios personalizados, en un solo lugar
             </p>
             
             {/* Input Box */}
-            <div className="bg-white rounded-3xl shadow-2xl p-5 mb-4 max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
               <Textarea
                 placeholder='Se preciso. Ej. "Quiero viajar a Buenos Aires con mi pareja por 7 días con un presupuesto de $900, hospedarnos cerca al Obelisco y realizar actividades extremas fuera de la ciudad"'
-                className="min-h-[100px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
+                className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
                 value={tripDescription}
                 onChange={(e) => setTripDescription(e.target.value)}
               />
