@@ -16,6 +16,10 @@ import luggageIcon from '@/assets/icons/luggage.svg';
 import hotelIcon from '@/assets/icons/hotel.svg';
 import customizeIcon from '@/assets/icons/customize.svg';
 import activitiesIcon from '@/assets/icons/activities.svg';
+import whyObjectsIcon from '@/assets/why-objects.svg';
+import whyCalendarIcon from '@/assets/why-calendar.svg';
+import whySearchIcon from '@/assets/why-search.svg';
+import whyTravelersIcon from '@/assets/why-travelers.svg';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -218,7 +222,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" 
+                  src={whyObjectsIcon}
                   alt="Planning" 
                   className="w-full h-32 object-contain"
                 />
@@ -232,7 +236,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=200&q=80" 
+                  src={whyCalendarIcon}
                   alt="Search" 
                   className="w-full h-32 object-contain"
                 />
@@ -246,7 +250,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=200&q=80" 
+                  src={whySearchIcon}
                   alt="Prices" 
                   className="w-full h-32 object-contain"
                 />
@@ -260,7 +264,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1522199755839-a2bacb67c546?auto=format&fit=crop&w=200&q=80" 
+                  src={whyTravelersIcon}
                   alt="Travelers" 
                   className="w-full h-32 object-contain"
                 />
