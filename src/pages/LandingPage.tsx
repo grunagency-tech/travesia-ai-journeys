@@ -180,14 +180,14 @@ const LandingPage = () => {
 
               <div className="relative">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl overflow-hidden h-64">
+                  <div className="rounded-2xl overflow-hidden" style={{ width: '305.0526px', height: '390.5837px' }}>
                     <img 
                       src={colosseumImage} 
                       alt="Colosseum" 
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="rounded-2xl overflow-hidden h-64 mt-8">
+                  <div className="rounded-2xl overflow-hidden mt-8" style={{ width: '305.0526px', height: '390.5837px' }}>
                     <img 
                       src={dubaiImage} 
                       alt="Dubai" 
