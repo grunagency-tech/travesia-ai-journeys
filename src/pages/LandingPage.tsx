@@ -7,6 +7,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Paperclip, Send, Pencil, Plane, Building2, Briefcase, Linkedin, Instagram, Facebook } from 'lucide-react';
 import heroBackground from '@/assets/hero-background.jpg';
 import logoFull from '@/assets/logo-full.svg';
+import bookingLogo from '@/assets/partners/booking.svg';
+import tripLogo from '@/assets/partners/trip.svg';
+import viatorLogo from '@/assets/partners/viator.svg';
+import tripadvisorLogo from '@/assets/partners/tripadvisor.svg';
+import expediaLogo from '@/assets/partners/expedia.svg';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -356,15 +361,11 @@ const LandingPage = () => {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-12 mb-12">
-            <span className="text-2xl font-bold text-[#003580]">Booking.com</span>
-            <span className="text-2xl font-bold text-[#00D4FF]">Trip.com</span>
-            <span className="text-2xl font-bold text-[#26A65B]">viator</span>
-            <span className="text-2xl font-bold text-black flex items-center gap-1">
-              <span className="text-3xl">🦉</span> Tripadvisor
-            </span>
-            <span className="text-2xl font-bold text-[#FFCB00] flex items-center gap-1">
-              <span className="text-3xl">✈️</span> Expedia
-            </span>
+            <img src={bookingLogo} alt="Booking.com" className="h-8 object-contain" />
+            <img src={tripLogo} alt="Trip.com" className="h-8 object-contain" />
+            <img src={viatorLogo} alt="Viator" className="h-8 object-contain" />
+            <img src={tripadvisorLogo} alt="Tripadvisor" className="h-8 object-contain" />
+            <img src={expediaLogo} alt="Expedia" className="h-8 object-contain" />
           </div>
 
           <div className="text-center">
