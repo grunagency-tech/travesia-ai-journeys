@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Pencil, Plane, Building2, Briefcase, Linkedin, Instagram, Facebook } from 'lucide-react';
+import { Paperclip, Send, Linkedin, Instagram, Facebook } from 'lucide-react';
 import heroBackground from '@/assets/hero-background.jpg';
 import logoFull from '@/assets/logo-full.svg';
 import bookingLogo from '@/assets/partners/booking.svg';
@@ -12,6 +12,10 @@ import tripLogo from '@/assets/partners/trip.svg';
 import viatorLogo from '@/assets/partners/viator.svg';
 import tripadvisorLogo from '@/assets/partners/tripadvisor.svg';
 import expediaLogo from '@/assets/partners/expedia.svg';
+import luggageIcon from '@/assets/icons/luggage.svg';
+import hotelIcon from '@/assets/icons/hotel.svg';
+import customizeIcon from '@/assets/icons/customize.svg';
+import activitiesIcon from '@/assets/icons/activities.svg';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -111,8 +115,8 @@ const LandingPage = () => {
                 <div className="space-y-6">
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                        <Pencil className="w-6 h-6 text-orange-500" />
+                      <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center p-2">
+                        <img src={luggageIcon} alt="Equipaje" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div>
@@ -125,8 +129,8 @@ const LandingPage = () => {
 
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <Plane className="w-6 h-6 text-blue-500" />
+                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center p-2">
+                        <img src={activitiesIcon} alt="Actividades" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div>
@@ -139,8 +143,8 @@ const LandingPage = () => {
 
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-purple-500" />
+                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center p-2">
+                        <img src={customizeIcon} alt="Personalizar" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div>
@@ -153,8 +157,8 @@ const LandingPage = () => {
 
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">
-                        <Briefcase className="w-6 h-6 text-pink-500" />
+                      <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center p-2">
+                        <img src={hotelIcon} alt="Hotel" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div>
