@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,20 @@ export const Navbar = () => {
   const { currency, setCurrency, currencySymbol } = useCurrency();
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroHeight = window.innerHeight;
+      const scrollPosition = window.scrollY;
+      
+      // Hide navbar when scrolled past hero section
+      setIsVisible(scrollPosition < heroHeight - 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -27,7 +42,11 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-lg z-50 mx-4">
+    <nav 
+      className={`fixed top-4 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-lg z-50 mx-4 transition-all duration-300 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
+      }`}
+    >
       <div className="px-6 flex items-center justify-between" style={{ width: '1228px', height: '79px' }}>
         <Link to="/" className="flex items-center">
           <img src={logoFull} alt="travesIA" className="h-8" />
