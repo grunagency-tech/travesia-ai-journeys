@@ -50,9 +50,6 @@ const LandingPage = () => {
           style={{ backgroundImage: `url(${heroBackground})` }}
         />
         
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/50" />
-        
         {/* Content */}
         <div className="relative z-10 container mx-auto px-6 pb-8">
           <div className="max-w-5xl mx-auto text-center">
