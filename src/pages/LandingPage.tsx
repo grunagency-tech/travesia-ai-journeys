@@ -286,59 +286,56 @@ const LandingPage = () => {
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <div className="bg-white rounded-2xl p-6 shadow-sm relative">
-              <div className="text-6xl text-orange-500 mb-4">"</div>
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
                 <img 
                   src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80" 
                   alt="Maria" 
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-16 h-16 rounded-2xl object-cover"
                 />
-                <div>
-                  <p className="font-semibold">María, Lima</p>
-                  <div className="flex text-primary">★★★★★</div>
-                </div>
-                <span className="ml-auto text-2xl">🇵🇪</span>
+                <span className="text-3xl">🇵🇪</span>
               </div>
-              <p className="text-sm text-muted-foreground italic">
-                "Planifiqué mi viaje a Cusco en segundos y descubrí lugares únicos"
+              <div className="mb-3">
+                <p className="font-semibold text-lg mb-1">María, Lima</p>
+                <div className="flex text-primary text-xl">★★★★★</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                "Planifiqué mi viaje a Cusco en segundos y descubrí lugares únicos."
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm relative">
-              <div className="text-6xl text-orange-500 mb-4">"</div>
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
                 <img 
                   src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" 
                   alt="Jorge" 
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-16 h-16 rounded-2xl object-cover"
                 />
-                <div>
-                  <p className="font-semibold">Jorge, CDMX</p>
-                  <div className="flex text-primary">★★★★★</div>
-                </div>
-                <span className="ml-auto text-2xl">🇲🇽</span>
+                <span className="text-3xl">🇲🇽</span>
               </div>
-              <p className="text-sm text-muted-foreground italic">
+              <div className="mb-3">
+                <p className="font-semibold text-lg mb-1">Jorge, CDMX</p>
+                <div className="flex text-primary text-xl">★★★★★</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 "TravesIA me armó mi Eurotrip en segundos. Me ahorro tiempo y dinero."
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm relative">
-              <div className="text-6xl text-orange-500 mb-4">"</div>
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
                 <img 
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" 
                   alt="Valentina" 
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-16 h-16 rounded-2xl object-cover"
                 />
-                <div>
-                  <p className="font-semibold">Valentina, Bogotá</p>
-                  <div className="flex text-primary">★★★★★</div>
-                </div>
-                <span className="ml-auto text-2xl">🇨🇴</span>
+                <span className="text-3xl">🇨🇴</span>
               </div>
-              <p className="text-sm text-muted-foreground italic">
+              <div className="mb-3">
+                <p className="font-semibold text-lg mb-1">Valentina, Bogotá</p>
+                <div className="flex text-primary text-xl">★★★★★</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 "Me encantó tener todo en un solo lugar, sin estrés."
               </p>
             </div>
