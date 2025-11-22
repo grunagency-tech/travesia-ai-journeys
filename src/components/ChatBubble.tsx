@@ -21,19 +21,8 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (initialMessage) {
-      sendMessage(initialMessage);
-    }
-  }, [initialMessage]);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -85,6 +74,19 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (initialMessage && !hasInitialized) {
+      setHasInitialized(true);
+      sendMessage(initialMessage);
+    }
+  }, [initialMessage, hasInitialized]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
