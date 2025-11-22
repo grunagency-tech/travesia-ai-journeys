@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
+import { ChatBubble } from '@/components/ChatBubble';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Paperclip, Send, Linkedin, Instagram, Facebook } from 'lucide-react';
 import heroBackground from '@/assets/hero-background.jpg';
@@ -26,11 +27,15 @@ import dubaiImage from '@/assets/dubai.png';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialChatMessage, setInitialChatMessage] = useState('');
   const navigate = useNavigate();
 
   const handleGenerate = () => {
     if (tripDescription.trim()) {
-      navigate('/crear-viaje', { state: { description: tripDescription } });
+      setInitialChatMessage(tripDescription);
+      setIsChatOpen(true);
+      setTripDescription('');
     }
   };
 
@@ -41,6 +46,17 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+      
+      {/* Chat Bubble */}
+      {isChatOpen && (
+        <ChatBubble 
+          initialMessage={initialChatMessage}
+          onClose={() => {
+            setIsChatOpen(false);
+            setInitialChatMessage('');
+          }}
+        />
+      )}
       
       {/* Hero Section */}
       <section className="relative h-screen flex items-end overflow-hidden pt-20 pb-12">
