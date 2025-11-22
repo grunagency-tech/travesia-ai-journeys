@@ -45,7 +45,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      {!isChatOpen && <Navbar />}
       
       {/* Hero Section */}
       <section className="relative h-screen flex items-end overflow-hidden pt-20 pb-12">
