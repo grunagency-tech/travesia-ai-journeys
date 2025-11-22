@@ -54,43 +54,43 @@ const LandingPage = () => {
         <div className="relative z-10 container mx-auto px-6 pb-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Hero Title */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-urbanist font-extrabold text-white mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-4 leading-tight px-2">
               Planea tu viaje completo
               <br />
               en segundos
             </h1>
             
             {/* Subtitle */}
-            <p className="text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto font-light">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto font-light px-2">
               Hoteles, vuelos, actividades, itinerarios personalizados, en un solo lugar
             </p>
             
             {/* Input Box */}
-            <div className="bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
               <Textarea
                 placeholder='Se preciso. Ej. "Quiero viajar a Buenos Aires con mi pareja por 7 días con un presupuesto de $900, hospedarnos cerca al Obelisco y realizar actividades extremas fuera de la ciudad"'
-                className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
+                className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
                 value={tripDescription}
                 onChange={(e) => setTripDescription(e.target.value)}
               />
               
-              <div className="flex items-center justify-between gap-4 mt-3">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-3">
                 <Button 
                   variant="ghost" 
-                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                 >
                   <Paperclip className="w-4 h-4" />
-                  <span className="text-sm">Adjuntar archivos</span>
+                  <span className="text-xs sm:text-sm">Adjuntar archivos</span>
                 </Button>
                 
                 <Button 
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-2.5"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-xl px-4 sm:px-6 py-2.5"
                   onClick={handleGenerate}
                   disabled={!tripDescription.trim()}
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Generar mi itinerario
+                  <span className="text-xs sm:text-sm">Generar mi itinerario</span>
                 </Button>
               </div>
             </div>
@@ -109,8 +109,8 @@ const LandingPage = () => {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center mb-12">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6 flex items-center gap-2 flex-wrap">
-                  ¿Cómo funciona <img src={logoText} alt="travesIA" className="h-10 inline-block" /> ?
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 flex items-center gap-2 flex-wrap">
+                  ¿Cómo funciona <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" /> ?
                 </h2>
                 <p className="text-muted-foreground text-lg mb-8">
                   Tu planificador de viajes con inteligencia artificial crea itinerarios personalizados con vuelos, hoteles, actividades y mucho más, en segundos.
@@ -175,16 +175,16 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl overflow-hidden" style={{ width: '305.0526px', height: '390.5837px' }}>
+                  <div className="rounded-2xl overflow-hidden w-full max-w-[305px]" style={{ aspectRatio: '305/390.5837' }}>
                     <img 
                       src={colosseumImage} 
                       alt="Colosseum" 
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="rounded-2xl overflow-hidden mt-8" style={{ width: '305.0526px', height: '390.5837px' }}>
+                  <div className="rounded-2xl overflow-hidden mt-8 w-full max-w-[305px]" style={{ aspectRatio: '305/390.5837' }}>
                     <img 
                       src={dubaiImage} 
                       alt="Dubai" 
@@ -211,14 +211,14 @@ const LandingPage = () => {
       {/* Why use travesIA */}
       <section className="py-12 bg-purple-50/30">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap">
-            ¿Por qué usar <img src={logoText} alt="travesIA" className="h-10 inline-block" />?
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap px-4">
+            ¿Por qué usar <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />?
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
             Tu asistente de viajes con inteligencia artificial crea itinerarios con vuelos, hoteles, actividades y lo que necesites, en segundos
           </p>
 
-          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="mb-4">
                 <img 
@@ -227,8 +227,8 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Todo tu viaje, desde una sola conversación</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Todo tu viaje, desde una sola conversación</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Organiza vuelos, hoteles y experiencias fácilmente, sin complicaciones.
               </p>
             </div>
@@ -241,8 +241,8 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Ahorra horas de búsqueda y comparación</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Ahorra horas de búsqueda y comparación</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Nosotros encontramos las mejores opciones por ti, rápido y claro.
               </p>
             </div>
@@ -255,8 +255,8 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Precios y disponibilidad en tiempo real</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Precios y disponibilidad en tiempo real</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Tarifas actualizadas al instante, sin sorpresas ni letras pequeñas.
               </p>
             </div>
@@ -269,8 +269,8 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Planes hechos por viajeros para viajeros</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Planes hechos por viajeros para viajeros</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Itinerarios que se ajustan a tu estilo, cultura y presupuesto
               </p>
             </div>
@@ -281,25 +281,25 @@ const LandingPage = () => {
       {/* Testimonials */}
       <section className="py-20 bg-gradient-to-b from-purple-50/30 to-white">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-12 flex items-center justify-center gap-2 flex-wrap">
-            Viajeros como tú que ya probaron <img src={logoText} alt="travesIA" className="h-10 inline-block" />
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 flex items-center justify-center gap-2 flex-wrap px-4">
+            Viajeros como tú que ya probaron <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <img 
                   src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80" 
                   alt="Maria" 
-                  className="w-16 h-16 rounded-2xl object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
-                <span className="text-3xl">🇵🇪</span>
+                <span className="text-2xl sm:text-3xl">🇵🇪</span>
               </div>
               <div className="mb-3">
-                <p className="font-semibold text-lg mb-1">María, Lima</p>
-                <div className="flex text-primary text-xl">★★★★★</div>
+                <p className="font-semibold text-base sm:text-lg mb-1">María, Lima</p>
+                <div className="flex text-primary text-lg sm:text-xl">★★★★★</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 "Planifiqué mi viaje a Cusco en segundos y descubrí lugares únicos."
               </p>
             </div>
@@ -309,15 +309,15 @@ const LandingPage = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" 
                   alt="Jorge" 
-                  className="w-16 h-16 rounded-2xl object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
-                <span className="text-3xl">🇲🇽</span>
+                <span className="text-2xl sm:text-3xl">🇲🇽</span>
               </div>
               <div className="mb-3">
-                <p className="font-semibold text-lg mb-1">Jorge, CDMX</p>
-                <div className="flex text-primary text-xl">★★★★★</div>
+                <p className="font-semibold text-base sm:text-lg mb-1">Jorge, CDMX</p>
+                <div className="flex text-primary text-lg sm:text-xl">★★★★★</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 "TravesIA me armó mi Eurotrip en segundos. Me ahorro tiempo y dinero."
               </p>
             </div>
@@ -327,15 +327,15 @@ const LandingPage = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" 
                   alt="Valentina" 
-                  className="w-16 h-16 rounded-2xl object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
-                <span className="text-3xl">🇨🇴</span>
+                <span className="text-2xl sm:text-3xl">🇨🇴</span>
               </div>
               <div className="mb-3">
-                <p className="font-semibold text-lg mb-1">Valentina, Bogotá</p>
-                <div className="flex text-primary text-xl">★★★★★</div>
+                <p className="font-semibold text-base sm:text-lg mb-1">Valentina, Bogotá</p>
+                <div className="flex text-primary text-lg sm:text-xl">★★★★★</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 "Me encantó tener todo en un solo lugar, sin estrés."
               </p>
             </div>
@@ -346,21 +346,21 @@ const LandingPage = () => {
       {/* Partners */}
       <section className="py-20 bg-gradient-to-b from-white to-orange-50/20">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-3">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 px-4">
             Conectados con las plataformas
-            <br />
-            más confiables del mundo
+            <br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>más confiables del mundo
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
             Más de 10,000 itinerarios creados con datos reales de precios, rutas y experiencias. Accede a las mejores opciones del mercado.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-12 mb-12">
-            <img src={bookingLogo} alt="Booking.com" className="h-8 object-contain" />
-            <img src={tripLogo} alt="Trip.com" className="h-8 object-contain" />
-            <img src={viatorLogo} alt="Viator" className="h-8 object-contain" />
-            <img src={tripadvisorLogo} alt="Tripadvisor" className="h-8 object-contain" />
-            <img src={expediaLogo} alt="Expedia" className="h-8 object-contain" />
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-12">
+            <img src={bookingLogo} alt="Booking.com" className="h-6 sm:h-8 object-contain" />
+            <img src={tripLogo} alt="Trip.com" className="h-6 sm:h-8 object-contain" />
+            <img src={viatorLogo} alt="Viator" className="h-6 sm:h-8 object-contain" />
+            <img src={tripadvisorLogo} alt="Tripadvisor" className="h-6 sm:h-8 object-contain" />
+            <img src={expediaLogo} alt="Expedia" className="h-6 sm:h-8 object-contain" />
           </div>
 
           <div className="text-center">
@@ -380,47 +380,47 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
-              <AccordionItem value="item-1" className="bg-white rounded-lg border-0 shadow-sm px-6">
-                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+              <AccordionItem value="item-1" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
                   ¿Cómo puede TravesIA planificar tu viaje completo en solo segundos?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
                   TravesIA utiliza inteligencia artificial para analizar tus preferencias, presupuesto y destino, y generar en segundos un itinerario personalizado con vuelos, hospedajes, actividades, transporte y clima. Solo escribe tu idea —por ejemplo: "Quiero viajar a México con $800 durante 5 días"— y la IA hará el resto, entregándote una guía completa y organizada para tu viaje.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-2" className="bg-white rounded-lg border-0 shadow-sm px-6">
-                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+              <AccordionItem value="item-2" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
                   ¿Qué tipo de información incluye el itinerario que crea TravesIA?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
                   Cada itinerario generado por TravesIA incluye información práctica y actualizada sobre vuelos, opciones de alojamiento, actividades recomendadas, presupuesto estimado, clima, transporte local y consejos culturales. Todo se adapta a tus fechas, estilo de viaje y tipo de experiencia que buscas (romántica, aventura, descanso o cultural).
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-3" className="bg-white rounded-lg border-0 shadow-sm px-6">
-                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+              <AccordionItem value="item-3" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
                   ¿TravesIA realiza reservas o solo muestra las mejores opciones de viaje?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
                   TravesIA no realiza reservas directas. Nuestra inteligencia artificial analiza y selecciona las mejores opciones disponibles en plataformas asociadas como Booking.com, Viator, TripAdvisor y Expedia. Te mostramos los resultados más relevantes y confiables para que puedas reservar fácilmente desde las páginas oficiales de nuestros partners.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-4" className="bg-white rounded-lg border-0 shadow-sm px-6">
-                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+              <AccordionItem value="item-4" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
                   ¿Qué tan confiables son los precios y recomendaciones que muestra TravesIA?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
                   Los precios y recomendaciones de TravesIA se actualizan constantemente a través de integraciones con fuentes oficiales y plataformas globales de viajes. Aunque las tarifas son estimadas y pueden variar según la disponibilidad o la fecha, los valores mostrados reflejan información real y actualizada del mercado.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-5" className="bg-white rounded-lg border-0 shadow-sm px-6">
-                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+              <AccordionItem value="item-5" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
                   ¿Cómo protege TravesIA mi información y mis datos personales?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
                   TravesIA cumple con los estándares internacionales de protección de datos (GDPR e INDECOPI). Tu información solo se usa para mejorar tus recomendaciones personalizadas y nunca se comparte con terceros sin tu consentimiento. Toda la comunicación y almacenamiento de datos se realiza mediante conexiones seguras y cifradas.
                 </AccordionContent>
               </AccordionItem>
