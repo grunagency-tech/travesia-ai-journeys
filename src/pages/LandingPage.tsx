@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
-import { ChatBubble } from '@/components/ChatBubble';
+import { InlineChat } from '@/components/InlineChat';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Paperclip, Send, Linkedin, Instagram, Facebook } from 'lucide-react';
 import heroBackground from '@/assets/hero-background.jpg';
@@ -47,17 +47,6 @@ const LandingPage = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Chat Bubble */}
-      {isChatOpen && (
-        <ChatBubble 
-          initialMessage={initialChatMessage}
-          onClose={() => {
-            setIsChatOpen(false);
-            setInitialChatMessage('');
-          }}
-        />
-      )}
-      
       {/* Hero Section */}
       <section className="relative h-screen flex items-end overflow-hidden pt-20 pb-12">
         {/* Background Image */}
@@ -81,40 +70,53 @@ const LandingPage = () => {
               Hoteles, vuelos, actividades, itinerarios personalizados, en un solo lugar
             </p>
             
-            {/* Input Box */}
-            <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
-              <Textarea
-                placeholder='Se preciso. Ej. "Quiero viajar a Buenos Aires con mi pareja por 7 días con un presupuesto de $900, hospedarnos cerca al Obelisco y realizar actividades extremas fuera de la ciudad"'
-                className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
-                value={tripDescription}
-                onChange={(e) => setTripDescription(e.target.value)}
+            {/* Chat or Input Box */}
+            {isChatOpen ? (
+              <InlineChat 
+                initialMessage={initialChatMessage}
+                onClose={() => {
+                  setIsChatOpen(false);
+                  setInitialChatMessage('');
+                }}
               />
-              
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-3">
-                <Button 
-                  variant="ghost" 
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                >
-                  <Paperclip className="w-4 h-4" />
-                  <span className="text-xs sm:text-sm">Adjuntar archivos</span>
-                </Button>
+            ) : (
+              <>
+                {/* Input Box */}
+                <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
+                  <Textarea
+                    placeholder='Se preciso. Ej. "Quiero viajar a Buenos Aires con mi pareja por 7 días con un presupuesto de $900, hospedarnos cerca al Obelisco y realizar actividades extremas fuera de la ciudad"'
+                    className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
+                    value={tripDescription}
+                    onChange={(e) => setTripDescription(e.target.value)}
+                  />
+                  
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-3">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                      <span className="text-xs sm:text-sm">Adjuntar archivos</span>
+                    </Button>
+                    
+                    <Button 
+                      size="lg"
+                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-xl px-4 sm:px-6 py-2.5"
+                      onClick={handleGenerate}
+                      disabled={!tripDescription.trim()}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      <span className="text-xs sm:text-sm">Generar mi itinerario</span>
+                    </Button>
+                  </div>
+                </div>
                 
-                <Button 
-                  size="lg"
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-xl px-4 sm:px-6 py-2.5"
-                  onClick={handleGenerate}
-                  disabled={!tripDescription.trim()}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  <span className="text-xs sm:text-sm">Generar mi itinerario</span>
-                </Button>
-              </div>
-            </div>
-            
-            {/* Beta Text */}
-            <p className="text-white/80 text-sm flex items-center justify-center gap-2">
-              Gratis durante la beta. Sin tarjeta. Sin problemas. ↓
-            </p>
+                {/* Beta Text */}
+                <p className="text-white/80 text-sm flex items-center justify-center gap-2">
+                  Gratis durante la beta. Sin tarjeta. Sin problemas. ↓
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>
