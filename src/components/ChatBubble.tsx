@@ -50,23 +50,25 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
       });
 
       if (!response.ok) {
-        throw new Error('Error en la respuesta del webhook');
+        throw new Error(`Webhook respondió con status: ${response.status}`);
       }
 
       const data = await response.json();
       
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.response || data.message || 'Lo siento, no pude procesar tu mensaje.',
+        content: data.response || data.message || data.text || 'Lo siento, no pude procesar tu mensaje.',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error sending message:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error sending message:', error);
+      }
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
+        content: 'Error de conexión: El webhook necesita configurar CORS para permitir peticiones desde este dominio. Verifica que el webhook esté activo y acepte peticiones desde https://525d781a-5aef-4bd2-b1c2-ee7df80e9b2f.lovableproject.com',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
