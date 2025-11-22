@@ -1,11 +1,26 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const generateItinerarySchema = z.object({
+  description: z.string().trim().min(1, "Description is required").max(1000, "Description must be less than 1000 characters"),
+  origin: z.string().trim().min(2, "Origin must be at least 2 characters").max(100, "Origin must be less than 100 characters"),
+  destination: z.string().trim().min(2, "Destination must be at least 2 characters").max(100, "Destination must be less than 100 characters"),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be in YYYY-MM-DD format"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format"),
+  travelers: z.number().int().min(1, "At least 1 traveler required").max(20, "Maximum 20 travelers allowed"),
+  budget: z.number().positive("Budget must be positive").max(10000000, "Budget exceeds maximum allowed").optional().nullable(),
+  flightData: z.any().optional()
+}).refine(
+  (data) => new Date(data.startDate) <= new Date(data.endDate),
+  { message: "End date must be after or equal to start date", path: ["endDate"] }
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,7 +28,21 @@ serve(async (req) => {
   }
 
   try {
-    const { description, origin, destination, startDate, endDate, travelers, budget, flightData } = await req.json();
+    const requestBody = await req.json();
+    
+    // Validate input
+    const validationResult = generateItinerarySchema.safeParse(requestBody);
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input',
+          details: validationResult.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`)
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { description, origin, destination, startDate, endDate, travelers, budget, flightData } = validationResult.data;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
