@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
-import { InlineChat } from '@/components/InlineChat';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Paperclip, Send, Linkedin, Instagram, Facebook } from 'lucide-react';
 import heroBackground from '@/assets/hero-background.jpg';
@@ -27,15 +26,11 @@ import dubaiImage from '@/assets/dubai.png';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [initialChatMessage, setInitialChatMessage] = useState('');
   const navigate = useNavigate();
 
   const handleGenerate = () => {
     if (tripDescription.trim()) {
-      setInitialChatMessage(tripDescription);
-      setIsChatOpen(true);
-      setTripDescription('');
+      navigate('/chat', { state: { initialMessage: tripDescription } });
     }
   };
 
@@ -45,7 +40,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {!isChatOpen && <Navbar />}
+      <Navbar />
       
       {/* Hero Section */}
       <section className="relative h-screen flex items-end overflow-hidden pt-20 pb-12">
@@ -70,19 +65,8 @@ const LandingPage = () => {
               Hoteles, vuelos, actividades, itinerarios personalizados, en un solo lugar
             </p>
             
-            {/* Chat or Input Box */}
-            {isChatOpen ? (
-              <InlineChat 
-                initialMessage={initialChatMessage}
-                onClose={() => {
-                  setIsChatOpen(false);
-                  setInitialChatMessage('');
-                }}
-              />
-            ) : (
-              <>
-                {/* Input Box */}
-                <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
+            {/* Input Box */}
+            <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
                   <Textarea
                     placeholder='Se preciso. Ej. "Quiero viajar a Buenos Aires con mi pareja por 7 días con un presupuesto de $900, hospedarnos cerca al Obelisco y realizar actividades extremas fuera de la ciudad"'
                     className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
@@ -109,14 +93,12 @@ const LandingPage = () => {
                       <span className="text-xs sm:text-sm">Generar mi itinerario</span>
                     </Button>
                   </div>
-                </div>
-                
-                {/* Beta Text */}
-                <p className="text-white/80 text-sm flex items-center justify-center gap-2">
-                  Gratis durante la beta. Sin tarjeta. Sin problemas. ↓
-                </p>
-              </>
-            )}
+            </div>
+            
+            {/* Beta Text */}
+            <p className="text-white/80 text-sm flex items-center justify-center gap-2">
+              Gratis durante la beta. Sin tarjeta. Sin problemas. ↓
+            </p>
           </div>
         </div>
       </section>
