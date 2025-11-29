@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import logoFull from '@/assets/logo-full.svg';
+import { languages, getTranslation } from '@/lib/translations';
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -68,7 +69,7 @@ export const Navbar = () => {
             <>
               <Link to="/mis-viajes">
                 <Button variant="ghost" className="text-foreground/80 hover:text-foreground text-sm font-medium">
-                  Mis viajes
+                  {getTranslation('navbar.myTrips', language)}
                 </Button>
               </Link>
               
@@ -101,17 +102,20 @@ export const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                    <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                    <span className="text-lg">{languages[language].flag}</span>
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                  <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
-                    🇪🇸 Español
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
-                    🇬🇧 English
-                  </DropdownMenuItem>
+                  {Object.entries(languages).map(([code, lang]) => (
+                    <DropdownMenuItem 
+                      key={code} 
+                      onClick={() => setLanguage(code as any)} 
+                      className="cursor-pointer"
+                    >
+                      {lang.flag} {lang.name}
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -123,16 +127,16 @@ export const Navbar = () => {
                 onClick={() => scrollToSection('como-funciona')}
                 className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
               >
-                ¿Cómo funciona?
+                {getTranslation('navbar.howItWorks', language)}
               </button>
               <Link to="/auth">
                 <Button variant="ghost" className="text-foreground/80 hover:text-foreground text-sm font-medium">
-                  Iniciar sesión
+                  {getTranslation('navbar.login', language)}
                 </Button>
               </Link>
               <Link to="/register">
                 <Button className="bg-primary hover:bg-primary/90 text-white rounded-lg px-6">
-                  Regístrate Gratis
+                  {getTranslation('navbar.register', language)}
                 </Button>
               </Link>
               
@@ -165,17 +169,20 @@ export const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                    <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                    <span className="text-lg">{languages[language].flag}</span>
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                  <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
-                    🇪🇸 Español
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
-                    🇬🇧 English
-                  </DropdownMenuItem>
+                  {Object.entries(languages).map(([code, lang]) => (
+                    <DropdownMenuItem 
+                      key={code} 
+                      onClick={() => setLanguage(code as any)} 
+                      className="cursor-pointer"
+                    >
+                      {lang.flag} {lang.name}
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
@@ -217,13 +224,19 @@ export const Navbar = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-1">
-                        <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                        <span className="text-lg">{languages[language].flag}</span>
                         <ChevronDown className="w-4 h-4" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setLanguage('ES')}>🇪🇸 Español</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLanguage('EN')}>🇬🇧 English</DropdownMenuItem>
+                      {Object.entries(languages).map(([code, lang]) => (
+                        <DropdownMenuItem 
+                          key={code} 
+                          onClick={() => setLanguage(code as any)}
+                        >
+                          {lang.flag} {lang.name}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -279,13 +292,19 @@ export const Navbar = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-1">
-                        <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                        <span className="text-lg">{languages[language].flag}</span>
                         <ChevronDown className="w-4 h-4" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setLanguage('ES')}>🇪🇸 Español</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLanguage('EN')}>🇬🇧 English</DropdownMenuItem>
+                      {Object.entries(languages).map(([code, lang]) => (
+                        <DropdownMenuItem 
+                          key={code} 
+                          onClick={() => setLanguage(code as any)}
+                        >
+                          {lang.flag} {lang.name}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

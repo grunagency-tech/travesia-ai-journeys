@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Paperclip, Send, Linkedin, Instagram, Facebook } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslation } from '@/lib/translations';
 import heroBackground from '@/assets/hero-background.jpg';
 import logoFull from '@/assets/logo-full.svg';
 import bookingLogo from '@/assets/partners/booking.svg';
@@ -27,6 +29,7 @@ import dubaiImage from '@/assets/dubai.png';
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   const handleGenerate = () => {
     if (tripDescription.trim()) {
@@ -55,20 +58,18 @@ const LandingPage = () => {
           <div className="max-w-5xl mx-auto text-center">
             {/* Hero Title */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-4 leading-tight px-2">
-              Planea tu viaje completo
-              <br />
-              en segundos
+              {getTranslation('hero.title', language)}
             </h1>
             
             {/* Subtitle */}
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto font-light px-2">
-              Hoteles, vuelos, actividades, itinerarios personalizados, en un solo lugar
+              {getTranslation('hero.subtitle', language)}
             </p>
             
             {/* Input Box */}
             <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
                   <Textarea
-                    placeholder='Se preciso. Ej. "Quiero viajar a Buenos Aires con mi pareja por 7 días con un presupuesto de $900, hospedarnos cerca al Obelisco y realizar actividades extremas fuera de la ciudad"'
+                    placeholder={getTranslation('hero.placeholder', language)}
                     className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
                     value={tripDescription}
                     onChange={(e) => setTripDescription(e.target.value)}
@@ -80,7 +81,7 @@ const LandingPage = () => {
                       className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                     >
                       <Paperclip className="w-4 h-4" />
-                      <span className="text-xs sm:text-sm">Adjuntar archivos</span>
+                      <span className="text-xs sm:text-sm">{getTranslation('hero.attachFiles', language)}</span>
                     </Button>
                     
                     <Button 
@@ -90,15 +91,15 @@ const LandingPage = () => {
                       disabled={!tripDescription.trim()}
                     >
                       <Send className="w-4 h-4 mr-2" />
-                      <span className="text-xs sm:text-sm">Generar mi itinerario</span>
+                      <span className="text-xs sm:text-sm">{getTranslation('hero.generateButton', language)}</span>
                     </Button>
                   </div>
-            </div>
-            
-            {/* Beta Text */}
-            <p className="text-white/80 text-sm flex items-center justify-center gap-2">
-              Gratis durante la beta. Sin tarjeta. Sin problemas. ↓
-            </p>
+                </div>
+                
+                {/* Beta Text */}
+                <p className="text-white/80 text-sm flex items-center justify-center gap-2">
+                  {getTranslation('hero.betaText', language)}
+                </p>
           </div>
         </div>
       </section>
