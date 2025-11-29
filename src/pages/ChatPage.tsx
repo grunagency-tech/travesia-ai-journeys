@@ -95,8 +95,8 @@ const ChatPage = () => {
       const data = await response.json();
       
       // Check if response contains a PDF URL
-      if (data.pdfUrl) {
-        setPdfUrl(data.pdfUrl);
+      if (data.pdf_url) {
+        setPdfUrl(data.pdf_url);
       }
 
       const assistantMessage: Message = {
