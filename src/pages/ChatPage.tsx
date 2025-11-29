@@ -157,12 +157,12 @@ const ChatPage = () => {
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
             <div className="flex gap-2">
               <Textarea
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Escribe tu mensaje..."
-                className="resize-none"
-                rows={1}
-                onKeyDown={(e) => {
+                 value={inputValue}
+                 onChange={(e) => setInputValue(e.target.value)}
+                 placeholder="Escribe tu mensaje..."
+                 className="resize-none text-base md:text-sm"
+                 rows={1}
+                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleSubmit(e);
