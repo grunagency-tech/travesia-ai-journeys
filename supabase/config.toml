@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.search-flights]
 verify_jwt = true
+
+[functions.create-payment]
+verify_jwt = false

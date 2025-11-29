@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft } from "lucide-react";
+import { Send, ArrowLeft, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -18,7 +20,10 @@ const ChatPage = () => {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const WEBHOOK_URL = "https://gcp.grunagency.com/webhook/edc6fe1e-5d9a-44d8-9739-a5be993d853a";
 
@@ -33,6 +38,28 @@ const ChatPage = () => {
   useEffect(() => {
     if (initialMessage) {
       sendMessage(initialMessage);
+    }
+
+    // Check for payment success in URL
+    const searchParams = new URLSearchParams(location.search);
+    const paymentStatus = searchParams.get("payment");
+    
+    if (paymentStatus === "success") {
+      setHasPaid(true);
+      toast({
+        title: "¡Pago exitoso!",
+        description: "Ahora puedes ver tu itinerario completo.",
+      });
+      // Clean URL
+      window.history.replaceState({}, "", "/chat");
+    } else if (paymentStatus === "canceled") {
+      toast({
+        title: "Pago cancelado",
+        description: "El pago fue cancelado. Puedes intentarlo nuevamente.",
+        variant: "destructive",
+      });
+      // Clean URL
+      window.history.replaceState({}, "", "/chat");
     }
   }, []);
 
@@ -95,6 +122,37 @@ const ChatPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(inputValue);
+  };
+
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open Stripe Checkout in new tab
+        window.open(data.url, "_blank");
+        toast({
+          title: "Redirigiendo a pago",
+          description: "Se abrirá una nueva pestaña para completar el pago.",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo iniciar el proceso de pago. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   return (
@@ -185,12 +243,43 @@ const ChatPage = () => {
       {/* PDF Preview Section - Hidden on mobile, half width on desktop */}
       <div className="hidden md:flex md:w-1/2 bg-primary items-center justify-center p-6">
         {pdfUrl ? (
-          <div className="w-full h-full bg-white rounded-lg shadow-lg">
+          <div className="w-full h-full bg-white rounded-lg shadow-lg relative">
+            {/* PDF with blur when not paid */}
             <iframe
               src={pdfUrl}
-              className="w-full h-full rounded-lg"
+              className={`w-full h-full rounded-lg ${!hasPaid ? "blur-lg" : ""}`}
               title="PDF Preview"
             />
+            
+            {/* Payment overlay when not paid */}
+            {!hasPaid && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg">
+                <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-2xl">
+                  <div className="mb-4 flex justify-center">
+                    <div className="bg-primary/10 p-4 rounded-full">
+                      <Lock className="w-12 h-12 text-primary" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-900">
+                    Desbloquea tu itinerario
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Para ver tu itinerario completo y detallado, realiza un pago único de <span className="font-bold text-primary">$9.99 USD</span>
+                  </p>
+                  <Button
+                    onClick={handlePayment}
+                    disabled={isProcessingPayment}
+                    size="lg"
+                    className="w-full"
+                  >
+                    {isProcessingPayment ? "Procesando..." : "Desbloquear ahora"}
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-4">
+                    Pago seguro procesado por Stripe
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center text-white">
