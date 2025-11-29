@@ -220,7 +220,7 @@ const LandingPage = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <div className="mb-4">
+              <div className="mb-4 hidden sm:block">
                 <img 
                   src={whyObjectsIcon}
                   alt="Planning" 
@@ -234,7 +234,7 @@ const LandingPage = () => {
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <div className="mb-4">
+              <div className="mb-4 hidden sm:block">
                 <img 
                   src={whyCalendarIcon}
                   alt="Search" 
@@ -248,7 +248,7 @@ const LandingPage = () => {
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <div className="mb-4">
+              <div className="mb-4 hidden sm:block">
                 <img 
                   src={whySearchIcon}
                   alt="Prices" 
@@ -262,7 +262,7 @@ const LandingPage = () => {
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <div className="mb-4">
+              <div className="mb-4 hidden sm:block">
                 <img 
                   src={whyTravelersIcon}
                   alt="Travelers" 
