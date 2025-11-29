@@ -111,10 +111,10 @@ const LandingPage = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center mb-12">
               <div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 flex items-center gap-2 flex-wrap">
-                  ¿Cómo funciona <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" /> ?
+                  {getTranslation('howItWorks.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" /> ?
                 </h2>
                 <p className="text-muted-foreground text-lg mb-8">
-                  Tu planificador de viajes con inteligencia artificial crea itinerarios personalizados con vuelos, hoteles, actividades y mucho más, en segundos.
+                  {getTranslation('howItWorks.description', language)}
                 </p>
                 
                 <div className="space-y-6">
@@ -125,9 +125,9 @@ const LandingPage = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold mb-1">Describe tu idea</h3>
+                      <h3 className="text-lg font-semibold mb-1">{getTranslation('howItWorks.step1Title', language)}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Cuéntanos cómo imaginas tu viaje y deja que TravesIA haga el resto.
+                        {getTranslation('howItWorks.step1Description', language)}
                       </p>
                     </div>
                   </div>
@@ -139,9 +139,9 @@ const LandingPage = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold mb-1">Recibe tu itinerario personalizado al instante</h3>
+                      <h3 className="text-lg font-semibold mb-1">{getTranslation('howItWorks.step2Title', language)}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Obtén un plan de viaje hecho a tu medida en segundos.
+                        {getTranslation('howItWorks.step2Description', language)}
                       </p>
                     </div>
                   </div>
@@ -153,9 +153,9 @@ const LandingPage = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold mb-1">Ajusta, guarda y comparte</h3>
+                      <h3 className="text-lg font-semibold mb-1">{getTranslation('howItWorks.step3Title', language)}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Personaliza tu itinerario y compártelo fácilmente.
+                        {getTranslation('howItWorks.step3Description', language)}
                       </p>
                     </div>
                   </div>
@@ -167,9 +167,9 @@ const LandingPage = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold mb-1">Reserva seguro con nuestros partners</h3>
+                      <h3 className="text-lg font-semibold mb-1">{getTranslation('howItWorks.step4Title', language)}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Reserva todo tu viaje de forma rápida y confiable.
+                        {getTranslation('howItWorks.step4Description', language)}
                       </p>
                     </div>
                   </div>
@@ -202,7 +202,7 @@ const LandingPage = () => {
                 className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
                 onClick={scrollToTop}
               >
-                ¡Pruébalo YA!
+                {getTranslation('howItWorks.tryButton', language)}
               </Button>
             </div>
           </div>
@@ -213,10 +213,10 @@ const LandingPage = () => {
       <section className="py-12 bg-purple-50/30">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap px-4">
-            ¿Por qué usar <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />?
+            {getTranslation('whyUse.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />?
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
-            Tu asistente de viajes con inteligencia artificial crea itinerarios con vuelos, hoteles, actividades y lo que necesites, en segundos
+            {getTranslation('whyUse.description', language)}
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -228,9 +228,9 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Todo tu viaje, desde una sola conversación</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{getTranslation('whyUse.feature1Title', language)}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Organiza vuelos, hoteles y experiencias fácilmente, sin complicaciones.
+                {getTranslation('whyUse.feature1Description', language)}
               </p>
             </div>
 
@@ -242,9 +242,9 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Ahorra horas de búsqueda y comparación</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{getTranslation('whyUse.feature2Title', language)}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Nosotros encontramos las mejores opciones por ti, rápido y claro.
+                {getTranslation('whyUse.feature2Description', language)}
               </p>
             </div>
 
@@ -256,9 +256,9 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Precios y disponibilidad en tiempo real</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{getTranslation('whyUse.feature3Title', language)}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Tarifas actualizadas al instante, sin sorpresas ni letras pequeñas.
+                {getTranslation('whyUse.feature3Description', language)}
               </p>
             </div>
 
@@ -270,9 +270,9 @@ const LandingPage = () => {
                   className="w-full h-32 object-contain"
                 />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Planes hechos por viajeros para viajeros</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{getTranslation('whyUse.feature4Title', language)}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Itinerarios que se ajustan a tu estilo, cultura y presupuesto
+                {getTranslation('whyUse.feature4Description', language)}
               </p>
             </div>
           </div>
@@ -283,7 +283,7 @@ const LandingPage = () => {
       <section className="py-20 bg-gradient-to-b from-purple-50/30 to-white">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 flex items-center justify-center gap-2 flex-wrap px-4">
-            Viajeros como tú que ya probaron <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />
+            {getTranslation('testimonials.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />
           </h2>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
@@ -348,12 +348,10 @@ const LandingPage = () => {
       <section className="py-20 bg-gradient-to-b from-white to-orange-50/20">
         <div className="container mx-auto px-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 px-4">
-            Conectados con las plataformas
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>más confiables del mundo
+            {getTranslation('partners.title', language)}
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
-            Más de 10,000 itinerarios creados con datos reales de precios, rutas y experiencias. Accede a las mejores opciones del mercado.
+            {getTranslation('partners.description', language)}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-12">
@@ -370,7 +368,7 @@ const LandingPage = () => {
               className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
               onClick={scrollToTop}
             >
-              ¡Pruébalo YA!
+              {getTranslation('howItWorks.tryButton', language)}
             </Button>
           </div>
         </div>
@@ -383,19 +381,19 @@ const LandingPage = () => {
             <Accordion type="single" collapsible className="space-y-4">
               <AccordionItem value="item-1" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
                 <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
-                  ¿Cómo puede TravesIA planificar tu viaje completo en solo segundos?
+                  {getTranslation('faq.q1', language)}
                 </AccordionTrigger>
                 <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
-                  TravesIA utiliza inteligencia artificial para analizar tus preferencias, presupuesto y destino, y generar en segundos un itinerario personalizado con vuelos, hospedajes, actividades, transporte y clima. Solo escribe tu idea —por ejemplo: "Quiero viajar a México con $800 durante 5 días"— y la IA hará el resto, entregándote una guía completa y organizada para tu viaje.
+                  {getTranslation('faq.a1', language)}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-2" className="bg-white rounded-lg border-0 shadow-sm px-4 sm:px-6">
                 <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
-                  ¿Qué tipo de información incluye el itinerario que crea TravesIA?
+                  {getTranslation('faq.q2', language)}
                 </AccordionTrigger>
                 <AccordionContent className="text-xs sm:text-sm text-muted-foreground pb-4 sm:pb-5">
-                  Cada itinerario generado por TravesIA incluye información práctica y actualizada sobre vuelos, opciones de alojamiento, actividades recomendadas, presupuesto estimado, clima, transporte local y consejos culturales. Todo se adapta a tus fechas, estilo de viaje y tipo de experiencia que buscas (romántica, aventura, descanso o cultural).
+                  {getTranslation('faq.a2', language)}
                 </AccordionContent>
               </AccordionItem>
 
