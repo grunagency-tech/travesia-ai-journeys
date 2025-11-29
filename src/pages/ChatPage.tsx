@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { Send } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Send, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -12,6 +12,7 @@ interface Message {
 
 const ChatPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const initialMessage = location.state?.initialMessage || "";
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -100,6 +101,22 @@ const ChatPage = () => {
     <div className="h-screen flex">
       {/* Chat Section - Left Half */}
       <div className="w-1/2 flex flex-col bg-white">
+        {/* Header with Back Button */}
+        <div className="border-b bg-white p-4 flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h2 className="font-semibold text-lg">Tu itinerario personalizado</h2>
+            <p className="text-sm text-muted-foreground">Creado por travesIA</p>
+          </div>
+        </div>
+
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-3xl mx-auto space-y-4">
