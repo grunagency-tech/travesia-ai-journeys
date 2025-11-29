@@ -63,7 +63,7 @@ export const Navbar = () => {
         </button>
 
         {/* Desktop menu */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           {user ? (
             <>
               <Link to="/mis-viajes">
@@ -72,52 +72,50 @@ export const Navbar = () => {
                 </Button>
               </Link>
               
-              <div className="flex items-center gap-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                      <span className="text-sm font-medium">{currencySymbol}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                    <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                      $ USD
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                      € EUR
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                      $ MXN
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                      $ ARS
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                      R$ BRL
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                      <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                    <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
-                      🇪🇸 Español
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
-                      🇬🇧 English
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
+                    <span className="text-sm font-medium">{currencySymbol}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
+                    $ USD
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
+                    € EUR
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
+                    $ MXN
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
+                    $ ARS
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
+                    R$ BRL
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
+                    <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
+                    🇪🇸 Español
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
+                    🇬🇧 English
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-                <ProfileMenu />
-              </div>
+              <ProfileMenu />
             </>
           ) : (
             <>
@@ -137,50 +135,49 @@ export const Navbar = () => {
                   Regístrate Gratis
                 </Button>
               </Link>
-              <div className="flex items-center gap-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                      <span className="text-sm font-medium">{currencySymbol}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                    <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                      $ USD
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                      € EUR
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                      $ MXN
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                      $ ARS
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                      R$ BRL
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                      <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                    <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
-                      🇪🇸 Español
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
-                      🇬🇧 English
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
+                    <span className="text-sm font-medium">{currencySymbol}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
+                    $ USD
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
+                    € EUR
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
+                    $ MXN
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
+                    $ ARS
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
+                    R$ BRL
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
+                    <span className="text-lg">{language === 'ES' ? '🇪🇸' : '🇬🇧'}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuItem onClick={() => setLanguage('ES')} className="cursor-pointer">
+                    🇪🇸 Español
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage('EN')} className="cursor-pointer">
+                    🇬🇧 English
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
         </div>
