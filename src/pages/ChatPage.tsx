@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Lock } from "lucide-react";
+import { Send, ArrowLeft, Lock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ const ChatPage = () => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [hasPaid, setHasPaid] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showPdfOnMobile, setShowPdfOnMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -62,6 +63,13 @@ const ChatPage = () => {
       window.history.replaceState({}, "", "/chat");
     }
   }, []);
+
+  useEffect(() => {
+    // Show PDF on mobile when it's available
+    if (pdfUrl) {
+      setShowPdfOnMobile(true);
+    }
+  }, [pdfUrl]);
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -164,8 +172,8 @@ const ChatPage = () => {
 
   return (
     <div className="h-screen flex">
-      {/* Chat Section - Full width on mobile, half on desktop */}
-      <div className="w-full md:w-1/2 flex flex-col bg-white">
+      {/* Chat Section - Hidden on mobile when PDF is shown, half on desktop */}
+      <div className={`${showPdfOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-white`}>
         {/* Header with Back Button */}
         <div className="border-b bg-white p-4 flex items-center gap-3">
           <Button
@@ -247,8 +255,20 @@ const ChatPage = () => {
         </div>
       </div>
 
-      {/* PDF Preview Section - Hidden on mobile, half width on desktop */}
-      <div className="hidden md:flex md:w-1/2 bg-primary items-center justify-center p-6">
+      {/* PDF Preview Section - Full screen on mobile when shown, half width on desktop */}
+      <div className={`${showPdfOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 bg-primary items-center justify-center p-6 relative`}>
+        {/* Close button for mobile */}
+        {showPdfOnMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowPdfOnMobile(false)}
+            className="md:hidden absolute top-4 left-4 z-10 bg-white/90 hover:bg-white"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        )}
+
         {pdfUrl ? (
           <div className="w-full h-full bg-white rounded-lg shadow-lg relative">
             {/* PDF with blur when not paid */}
@@ -261,7 +281,7 @@ const ChatPage = () => {
             {/* Payment overlay when not paid */}
             {!hasPaid && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg">
-                <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-2xl">
+                <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-2xl mx-4">
                   <div className="mb-4 flex justify-center">
                     <div className="bg-primary/10 p-4 rounded-full">
                       <Lock className="w-12 h-12 text-primary" />
