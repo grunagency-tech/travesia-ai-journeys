@@ -56,14 +56,14 @@ export const Navbar = () => {
         
         {/* Mobile menu button */}
         <button 
-          className="md:hidden p-2"
+          className="lg:hidden p-2"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
 
-        {/* Desktop menu */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* Desktop and Tablet menu */}
+        <div className="hidden lg:flex items-center gap-6">
           {user ? (
             <>
               <Link to="/mis-viajes">
@@ -185,7 +185,7 @@ export const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-white rounded-b-lg">
+        <div className="lg:hidden border-t border-border bg-white rounded-b-lg">
           <div className="px-4 py-4 space-y-4">
             {user ? (
               <>
