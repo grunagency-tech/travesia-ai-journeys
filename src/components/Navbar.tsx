@@ -49,9 +49,9 @@ export const Navbar = () => {
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
       }`}
     >
-      <div className="px-4 md:px-6 py-4 md:h-[79px] flex items-center justify-between">
+      <div className="px-4 md:px-8 py-5 md:py-6 md:h-[95px] flex items-center justify-between">
         <Link to="/" className="flex items-center">
-          <img src={logoFull} alt="travesIA" className="h-6 md:h-8" />
+          <img src={logoFull} alt="travesIA" className="h-10 md:h-12" />
         </Link>
         
         {/* Mobile menu button */}
@@ -63,7 +63,7 @@ export const Navbar = () => {
         </button>
 
         {/* Desktop menu */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-8">
           {user ? (
             <>
               <Link to="/mis-viajes">
@@ -72,7 +72,7 @@ export const Navbar = () => {
                 </Button>
               </Link>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
@@ -137,7 +137,7 @@ export const Navbar = () => {
                   Regístrate Gratis
                 </Button>
               </Link>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
