@@ -96,7 +96,14 @@ const ChatPage = () => {
       
       // Check if response contains a PDF URL
       if (data.pdf_url) {
-        setPdfUrl(data.pdf_url);
+        // Convert Google Docs URLs to embeddable format
+        let embedUrl = data.pdf_url;
+        if (embedUrl.includes('docs.google.com/document')) {
+          // Replace /edit with /preview for embedding
+          embedUrl = embedUrl.replace('/edit?usp=sharing', '/preview');
+          embedUrl = embedUrl.replace('/edit', '/preview');
+        }
+        setPdfUrl(embedUrl);
       }
 
       const assistantMessage: Message = {
