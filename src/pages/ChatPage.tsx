@@ -99,8 +99,8 @@ const ChatPage = () => {
 
   return (
     <div className="h-screen flex">
-      {/* Chat Section - Left Half */}
-      <div className="w-1/2 flex flex-col bg-white">
+      {/* Chat Section - Full width on mobile, half on desktop */}
+      <div className="w-full md:w-1/2 flex flex-col bg-white">
         {/* Header with Back Button */}
         <div className="border-b bg-white p-4 flex items-center gap-3">
           <Button
@@ -182,8 +182,8 @@ const ChatPage = () => {
         </div>
       </div>
 
-      {/* PDF Preview Section - Right Half */}
-      <div className="w-1/2 bg-primary flex items-center justify-center p-6">
+      {/* PDF Preview Section - Hidden on mobile, half width on desktop */}
+      <div className="hidden md:flex md:w-1/2 bg-primary items-center justify-center p-6">
         {pdfUrl ? (
           <div className="w-full h-full bg-white rounded-lg shadow-lg">
             <iframe
