@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Plane } from 'lucide-react';
+import { X } from 'lucide-react';
+import logoFull from '@/assets/logo-full.svg';
 
 const Register = () => {
   const { user, signUpWithEmail, loading } = useAuth();
@@ -69,7 +70,7 @@ const Register = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Plane className="w-12 h-12 text-primary animate-bounce mx-auto mb-4" />
+          <img src={logoFull} alt="travesIA" className="w-24 h-24 mx-auto mb-4 animate-pulse" />
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
@@ -78,12 +79,20 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center gradient-hero p-4">
-      <Card className="w-full max-w-md shadow-elegant">
+      <Card className="w-full max-w-md shadow-elegant relative">
+        {/* Close button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 z-10"
+          onClick={() => navigate('/')}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+        
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <Plane className="w-8 h-8 text-primary" />
-            </div>
+            <img src={logoFull} alt="travesIA" className="h-16" />
           </div>
           <CardTitle className="text-2xl">Crear cuenta en travesIA</CardTitle>
           <CardDescription>
