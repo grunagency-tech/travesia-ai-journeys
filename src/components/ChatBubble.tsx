@@ -160,11 +160,11 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
       <form onSubmit={handleSubmit} className="p-4 border-t">
         <div className="flex gap-2">
           <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Escribe tu mensaje..."
-            className="min-h-[60px] resize-none"
-            onKeyDown={(e) => {
+             value={input}
+             onChange={(e) => setInput(e.target.value)}
+             placeholder="Escribe tu mensaje..."
+             className="min-h-[60px] resize-none text-base md:text-sm"
+             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSubmit(e);

@@ -149,13 +149,13 @@ export const InlineChat: React.FC<InlineChatProps> = ({ initialMessage, onClose 
 
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Escribe tu mensaje..."
-          disabled={isLoading}
-          className="flex-1"
-        />
+         <Input
+           value={inputValue}
+           onChange={(e) => setInputValue(e.target.value)}
+           placeholder="Escribe tu mensaje..."
+           disabled={isLoading}
+           className="flex-1 text-base md:text-sm"
+         />
         <Button
           type="submit"
           disabled={!inputValue.trim() || isLoading}
