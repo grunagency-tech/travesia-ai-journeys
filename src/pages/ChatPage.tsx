@@ -114,9 +114,21 @@ const ChatPage = () => {
         setPdfUrl(embedUrl);
       }
 
+      // Handle different response formats from webhook
+      let responseText = "";
+      if (data.message) {
+        responseText = data.message;
+      } else if (data.text) {
+        responseText = data.text;
+      } else if (typeof data === "string") {
+        responseText = data;
+      } else {
+        responseText = "Mensaje recibido correctamente.";
+      }
+
       const assistantMessage: Message = {
         role: "assistant",
-        content: data.message || "Lo siento, no pude procesar tu mensaje.",
+        content: responseText,
         timestamp: new Date(),
       };
 
