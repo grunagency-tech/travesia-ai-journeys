@@ -100,30 +100,34 @@ const ChatPage = () => {
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json();
-      
-      // Check if response contains a PDF URL
-      if (data.pdf_url) {
-        // Convert Google Docs URLs to embeddable format
-        let embedUrl = data.pdf_url;
-        if (embedUrl.includes('docs.google.com/document')) {
-          // Replace /edit with /preview for embedding
-          embedUrl = embedUrl.replace('/edit?usp=sharing', '/preview');
-          embedUrl = embedUrl.replace('/edit', '/preview');
-        }
-        setPdfUrl(embedUrl);
-      }
-
-      // Handle different response formats from webhook
+      // Get response as text first, then try to parse as JSON
+      const responseBody = await response.text();
       let responseText = "";
-      if (data.message) {
-        responseText = data.message;
-      } else if (data.text) {
-        responseText = data.text;
-      } else if (typeof data === "string") {
-        responseText = data;
-      } else {
-        responseText = "Mensaje recibido correctamente.";
+      
+      try {
+        const data = JSON.parse(responseBody);
+        
+        // Check if response contains a PDF URL
+        if (data.pdf_url) {
+          let embedUrl = data.pdf_url;
+          if (embedUrl.includes('docs.google.com/document')) {
+            embedUrl = embedUrl.replace('/edit?usp=sharing', '/preview');
+            embedUrl = embedUrl.replace('/edit', '/preview');
+          }
+          setPdfUrl(embedUrl);
+        }
+
+        // Handle different JSON response formats
+        if (data.message) {
+          responseText = data.message;
+        } else if (data.text) {
+          responseText = data.text;
+        } else {
+          responseText = "Mensaje recibido correctamente.";
+        }
+      } catch {
+        // Response is not JSON (might be HTML or plain text)
+        responseText = responseBody || "Mensaje recibido correctamente.";
       }
 
       const assistantMessage: Message = {
