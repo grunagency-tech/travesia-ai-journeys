@@ -279,8 +279,7 @@ const ChatPage = () => {
     sendMessage(inputValue);
   };
 
-  const canSaveTrip = user && htmlContent && !tripSaved && tripCount < MAX_FREE_TRIPS;
-  const needsPayment = user && htmlContent && !tripSaved && tripCount >= MAX_FREE_TRIPS;
+  const canShowSaveButton = htmlContent && !tripSaved;
 
   return (
     <div className="h-screen flex">
@@ -347,8 +346,8 @@ const ChatPage = () => {
             <h2 className="font-semibold text-lg">Tu itinerario personalizado</h2>
             <p className="text-sm text-muted-foreground">Creado por travesIA</p>
           </div>
-          {/* Save button when logged in and under limit */}
-          {canSaveTrip && (
+          {/* Save button - always show when itinerary exists */}
+          {canShowSaveButton && (
             <Button
               onClick={handleSaveAttempt}
               disabled={isSaving || checkingTripCount}
@@ -357,18 +356,6 @@ const ChatPage = () => {
             >
               <Save className="h-4 w-4" />
               {isSaving ? "Guardando..." : "Guardar"}
-            </Button>
-          )}
-          {/* Payment button when limit reached */}
-          {needsPayment && (
-            <Button
-              onClick={() => setShowPaymentDialog(true)}
-              size="sm"
-              variant="secondary"
-              className="gap-2"
-            >
-              <Lock className="h-4 w-4" />
-              Desbloquear
             </Button>
           )}
           {tripSaved && (
