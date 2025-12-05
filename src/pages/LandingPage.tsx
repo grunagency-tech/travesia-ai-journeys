@@ -294,7 +294,7 @@ const LandingPage = () => {
                   alt="Maria" 
                   className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
-                <span className="text-2xl sm:text-3xl">🇵🇪</span>
+                <img src="https://flagcdn.com/w40/pe.png" alt="Perú" className="w-8 h-6 object-cover rounded-sm" />
               </div>
               <div className="mb-3">
                 <p className="font-semibold text-base sm:text-lg mb-1">María, Lima</p>
@@ -312,7 +312,7 @@ const LandingPage = () => {
                   alt="Jorge" 
                   className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
-                <span className="text-2xl sm:text-3xl">🇲🇽</span>
+                <img src="https://flagcdn.com/w40/mx.png" alt="México" className="w-8 h-6 object-cover rounded-sm" />
               </div>
               <div className="mb-3">
                 <p className="font-semibold text-base sm:text-lg mb-1">Jorge, CDMX</p>
@@ -330,7 +330,7 @@ const LandingPage = () => {
                   alt="Valentina" 
                   className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
-                <span className="text-2xl sm:text-3xl">🇨🇴</span>
+                <img src="https://flagcdn.com/w40/co.png" alt="Colombia" className="w-8 h-6 object-cover rounded-sm" />
               </div>
               <div className="mb-3">
                 <p className="font-semibold text-base sm:text-lg mb-1">Valentina, Bogotá</p>
