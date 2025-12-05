@@ -57,19 +57,23 @@ const ChatPage = () => {
     setIsLoading(true);
 
     try {
+      console.log("Sending message to webhook:", WEBHOOK_URL);
       const response = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        mode: "cors",
         body: JSON.stringify({
           message: messageText,
           timestamp: new Date().toISOString(),
         }),
       });
 
+      console.log("Webhook response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        throw new Error(`Failed to send message: ${response.status}`);
       }
 
       // Get response as text first, then try to parse as JSON
@@ -109,9 +113,11 @@ const ChatPage = () => {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
+      const errorDetails = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error details:", errorDetails);
       const errorMessage: Message = {
         role: "assistant",
-        content: "Lo siento, hubo un error al procesar tu mensaje.",
+        content: `Lo siento, hubo un error al procesar tu mensaje. (${errorDetails})`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
