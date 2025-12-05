@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import logoFull from '@/assets/logo-full.svg';
-import { languages, getTranslation } from '@/lib/translations';
+import { languages, getTranslation, getFlagUrl } from '@/lib/translations';
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -102,7 +102,7 @@ export const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                    <span className="text-lg">{languages[language].flag}</span>
+                    <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -111,9 +111,10 @@ export const Navbar = () => {
                     <DropdownMenuItem 
                       key={code} 
                       onClick={() => setLanguage(code as any)} 
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center gap-2"
                     >
-                      {lang.flag} {lang.name}
+                      <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
+                      {lang.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -169,7 +170,7 @@ export const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors focus:outline-none">
-                    <span className="text-lg">{languages[language].flag}</span>
+                    <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -178,9 +179,10 @@ export const Navbar = () => {
                     <DropdownMenuItem 
                       key={code} 
                       onClick={() => setLanguage(code as any)} 
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center gap-2"
                     >
-                      {lang.flag} {lang.name}
+                      <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
+                      {lang.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -224,7 +226,7 @@ export const Navbar = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-1">
-                        <span className="text-lg">{languages[language].flag}</span>
+                        <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
                         <ChevronDown className="w-4 h-4" />
                       </button>
                     </DropdownMenuTrigger>
@@ -233,8 +235,10 @@ export const Navbar = () => {
                         <DropdownMenuItem 
                           key={code} 
                           onClick={() => setLanguage(code as any)}
+                          className="flex items-center gap-2"
                         >
-                          {lang.flag} {lang.name}
+                          <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
+                          {lang.name}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -292,7 +296,7 @@ export const Navbar = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-1">
-                        <span className="text-lg">{languages[language].flag}</span>
+                        <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
                         <ChevronDown className="w-4 h-4" />
                       </button>
                     </DropdownMenuTrigger>
@@ -301,8 +305,10 @@ export const Navbar = () => {
                         <DropdownMenuItem 
                           key={code} 
                           onClick={() => setLanguage(code as any)}
+                          className="flex items-center gap-2"
                         >
-                          {lang.flag} {lang.name}
+                          <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
+                          {lang.name}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>

@@ -1,12 +1,16 @@
 export type Language = 'ES' | 'EN' | 'DE' | 'PT' | 'IT';
 
 export const languages = {
-  ES: { code: 'ES', flag: '🇪🇸', name: 'Español' },
-  EN: { code: 'EN', flag: '🇬🇧', name: 'English' },
-  DE: { code: 'DE', flag: '🇩🇪', name: 'Deutsch' },
-  PT: { code: 'PT', flag: '🇵🇹', name: 'Português' },
-  IT: { code: 'IT', flag: '🇮🇹', name: 'Italiano' },
+  ES: { code: 'ES', flag: 'es', name: 'Español' },
+  EN: { code: 'EN', flag: 'gb', name: 'English' },
+  DE: { code: 'DE', flag: 'de', name: 'Deutsch' },
+  PT: { code: 'PT', flag: 'pt', name: 'Português' },
+  IT: { code: 'IT', flag: 'it', name: 'Italiano' },
 };
+
+// Helper to get flag URL
+export const getFlagUrl = (countryCode: string) => 
+  `https://flagcdn.com/w40/${countryCode}.png`;
 
 export const translations = {
   hero: {
