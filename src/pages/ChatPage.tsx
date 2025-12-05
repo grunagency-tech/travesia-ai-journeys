@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, X, Save } from "lucide-react";
+import { Send, ArrowLeft, X, Save, Lock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,8 @@ interface Message {
   timestamp: Date;
 }
 
+const MAX_FREE_TRIPS = 2;
+
 const ChatPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,8 +35,11 @@ const ChatPage = () => {
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [showContentOnMobile, setShowContentOnMobile] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [tripSaved, setTripSaved] = useState(false);
+  const [tripCount, setTripCount] = useState(0);
+  const [checkingTripCount, setCheckingTripCount] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
@@ -59,6 +64,32 @@ const ChatPage = () => {
     }
   }, [htmlContent]);
 
+  // Check trip count when user is available
+  useEffect(() => {
+    if (user && !authLoading) {
+      checkTripCount();
+    }
+  }, [user, authLoading]);
+
+  const checkTripCount = async () => {
+    if (!user) return;
+    
+    setCheckingTripCount(true);
+    try {
+      const { count, error } = await supabase
+        .from("trips")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      setTripCount(count || 0);
+    } catch (error) {
+      console.error("Error checking trip count:", error);
+    } finally {
+      setCheckingTripCount(false);
+    }
+  };
+
   // When itinerary arrives and user is not logged in, show auth dialog
   useEffect(() => {
     if (htmlContent && !tripSaved && !authLoading) {
@@ -72,9 +103,26 @@ const ChatPage = () => {
   useEffect(() => {
     if (user && htmlContent && !tripSaved && showAuthDialog) {
       setShowAuthDialog(false);
-      saveTrip();
+      handleSaveAttempt();
     }
   }, [user, htmlContent, tripSaved, showAuthDialog]);
+
+  const handleSaveAttempt = async () => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+
+    // Check trip count first
+    await checkTripCount();
+    
+    if (tripCount >= MAX_FREE_TRIPS) {
+      setShowPaymentDialog(true);
+      return;
+    }
+
+    saveTrip();
+  };
 
   const saveTrip = async () => {
     if (!user || !htmlContent || tripSaved) return;
@@ -97,6 +145,7 @@ const ChatPage = () => {
       if (error) throw error;
 
       setTripSaved(true);
+      setTripCount(prev => prev + 1);
       toast({
         title: "¡Itinerario guardado!",
         description: "Puedes verlo en 'Mis viajes'",
@@ -110,6 +159,25 @@ const ChatPage = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment');
+      
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo iniciar el proceso de pago",
+        variant: "destructive",
+      });
     }
   };
 
@@ -198,6 +266,9 @@ const ChatPage = () => {
     sendMessage(inputValue);
   };
 
+  const canSaveTrip = user && htmlContent && !tripSaved && tripCount < MAX_FREE_TRIPS;
+  const needsPayment = user && htmlContent && !tripSaved && tripCount >= MAX_FREE_TRIPS;
+
   return (
     <div className="h-screen flex">
       {/* Auth Dialog */}
@@ -223,6 +294,31 @@ const ChatPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-primary" />
+              Límite de itinerarios alcanzado
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+              <p>Has alcanzado el límite de <strong>{MAX_FREE_TRIPS} itinerarios gratuitos</strong>.</p>
+              <p>Para guardar más itinerarios y desbloquear funciones premium, actualiza tu cuenta.</p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+              Ver sin guardar
+            </Button>
+            <Button onClick={handlePayment} className="gap-2">
+              <CreditCard className="w-4 h-4" />
+              Desbloquear Premium
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Chat Section */}
       <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-white`}>
         <div className="border-b bg-white p-4 flex items-center gap-3">
@@ -238,16 +334,28 @@ const ChatPage = () => {
             <h2 className="font-semibold text-lg">Tu itinerario personalizado</h2>
             <p className="text-sm text-muted-foreground">Creado por travesIA</p>
           </div>
-          {/* Save button when logged in and itinerary exists */}
-          {user && htmlContent && !tripSaved && (
+          {/* Save button when logged in and under limit */}
+          {canSaveTrip && (
             <Button
-              onClick={saveTrip}
-              disabled={isSaving}
+              onClick={handleSaveAttempt}
+              disabled={isSaving || checkingTripCount}
               size="sm"
               className="gap-2"
             >
               <Save className="h-4 w-4" />
               {isSaving ? "Guardando..." : "Guardar"}
+            </Button>
+          )}
+          {/* Payment button when limit reached */}
+          {needsPayment && (
+            <Button
+              onClick={() => setShowPaymentDialog(true)}
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+            >
+              <Lock className="h-4 w-4" />
+              Desbloquear
             </Button>
           )}
           {tripSaved && (
