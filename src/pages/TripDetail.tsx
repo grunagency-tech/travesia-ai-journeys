@@ -5,9 +5,21 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ItineraryDay {
   id: string;
@@ -37,16 +49,19 @@ interface Trip {
   end_date: string;
   budget: number | null;
   travelers: number;
+  preferences: { itinerary_html?: string } | null;
 }
 
 const TripDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [days, setDays] = useState<ItineraryDay[]>([]);
   const [flights, setFlights] = useState<FlightOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -61,7 +76,6 @@ const TripDetail = () => {
 
   const loadTripDetails = async () => {
     try {
-      // Load trip
       const { data: tripData, error: tripError } = await supabase
         .from('trips')
         .select('*')
@@ -71,7 +85,6 @@ const TripDetail = () => {
       if (tripError) throw tripError;
       setTrip(tripData);
 
-      // Load itinerary days
       const { data: daysData, error: daysError } = await supabase
         .from('itinerary_days')
         .select('*')
@@ -81,7 +94,6 @@ const TripDetail = () => {
       if (daysError) throw daysError;
       setDays(daysData || []);
 
-      // Load flights
       const { data: flightsData, error: flightsError } = await supabase
         .from('flight_options')
         .select('*')
@@ -94,6 +106,35 @@ const TripDetail = () => {
       console.error('Error loading trip details:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTrip = async () => {
+    if (!id) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('trips')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Viaje eliminado",
+        description: "El itinerario ha sido eliminado correctamente",
+      });
+      navigate('/mis-viajes');
+    } catch (error) {
+      console.error('Error deleting trip:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el viaje",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -135,20 +176,46 @@ const TripDetail = () => {
     );
   }
 
+  const itineraryHtml = trip.preferences?.itinerary_html;
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Navbar />
       
       <div className="container mx-auto px-4 pt-24 pb-12">
         <div className="max-w-6xl mx-auto">
-          <Button 
-            variant="ghost" 
-            className="mb-4"
-            onClick={() => navigate('/mis-viajes')}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/mis-viajes')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver
+            </Button>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={isDeleting}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Eliminar
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Eliminar este viaje?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción no se puede deshacer. El itinerario será eliminado permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteTrip}>
+                    Eliminar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
 
           {/* Trip Header */}
           <Card className="shadow-elegant mb-6">
@@ -195,6 +262,21 @@ const TripDetail = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* HTML Itinerary from webhook */}
+          {itineraryHtml && (
+            <Card className="shadow-elegant mb-6">
+              <CardHeader>
+                <CardTitle>Tu itinerario completo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: itineraryHtml }} 
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Flights */}
           {flights.length > 0 && (
@@ -244,48 +326,50 @@ const TripDetail = () => {
           )}
 
           {/* Itinerary Days */}
-          <div className="space-y-6">
-            {days.map((day) => (
-              <Card key={day.id} className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="text-xl">
-                    Día {day.day_number} - {format(new Date(day.date), 'd MMMM', { locale: es })}
-                  </CardTitle>
-                  {day.summary && (
-                    <p className="text-muted-foreground">{day.summary}</p>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {day.activities.map((activity: any, index: number) => (
-                    <div key={index} className="p-4 bg-accent rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="text-sm font-medium text-primary mb-1">
-                            {getTimeOfDayLabel(activity.timeOfDay)}
-                          </p>
-                          <p className="font-semibold">{activity.title}</p>
+          {days.length > 0 && (
+            <div className="space-y-6">
+              {days.map((day) => (
+                <Card key={day.id} className="shadow-card">
+                  <CardHeader>
+                    <CardTitle className="text-xl">
+                      Día {day.day_number} - {format(new Date(day.date), 'd MMMM', { locale: es })}
+                    </CardTitle>
+                    {day.summary && (
+                      <p className="text-muted-foreground">{day.summary}</p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {day.activities.map((activity: any, index: number) => (
+                      <div key={index} className="p-4 bg-accent rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="text-sm font-medium text-primary mb-1">
+                              {getTimeOfDayLabel(activity.timeOfDay)}
+                            </p>
+                            <p className="font-semibold">{activity.title}</p>
+                          </div>
+                          {activity.approxCost && (
+                            <p className="text-sm font-semibold text-primary">
+                              ${activity.approxCost}
+                            </p>
+                          )}
                         </div>
-                        {activity.approxCost && (
-                          <p className="text-sm font-semibold text-primary">
-                            ${activity.approxCost}
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {activity.description}
+                        </p>
+                        {activity.location && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {activity.location}
                           </p>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {activity.description}
-                      </p>
-                      {activity.location && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {activity.location}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
