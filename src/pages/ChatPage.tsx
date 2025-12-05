@@ -56,6 +56,50 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Save messages to sessionStorage when they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+      sessionStorage.setItem('chatUserMessageCount', String(userMessageCountRef.current));
+    }
+  }, [messages]);
+
+  // Save pending message and banner state
+  useEffect(() => {
+    if (pendingMessage) {
+      sessionStorage.setItem('chatPendingMessage', pendingMessage);
+    }
+    sessionStorage.setItem('chatShowRegisterBanner', String(showRegisterBanner));
+  }, [pendingMessage, showRegisterBanner]);
+
+  // Restore messages from sessionStorage on mount
+  useEffect(() => {
+    const savedMessages = sessionStorage.getItem('chatMessages');
+    const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
+    const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
+    const savedUserMessageCount = sessionStorage.getItem('chatUserMessageCount');
+    
+    if (savedMessages) {
+      const parsed = JSON.parse(savedMessages).map((m: any) => ({
+        ...m,
+        timestamp: new Date(m.timestamp)
+      }));
+      setMessages(parsed);
+    }
+    
+    if (savedPendingMessage) {
+      setPendingMessage(savedPendingMessage);
+    }
+    
+    if (savedBannerState === 'true' && !user) {
+      setShowRegisterBanner(true);
+    }
+    
+    if (savedUserMessageCount) {
+      userMessageCountRef.current = parseInt(savedUserMessageCount, 10);
+    }
+  }, []);
+
   // Handle payment success from URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -70,7 +114,7 @@ const ChatPage = () => {
   }, [location.search]);
 
   useEffect(() => {
-    if (initialMessage) {
+    if (initialMessage && messages.length === 0) {
       sendMessage(initialMessage);
     }
   }, []);
@@ -132,6 +176,8 @@ const ChatPage = () => {
   useEffect(() => {
     if (user && pendingMessage && !authLoading) {
       setShowRegisterBanner(false);
+      sessionStorage.removeItem('chatPendingMessage');
+      sessionStorage.setItem('chatShowRegisterBanner', 'false');
       sendMessage(pendingMessage, true);
       setPendingMessage(null);
     }
@@ -440,27 +486,23 @@ const ChatPage = () => {
             
             {/* Register Banner - blocks sending more messages */}
             {showRegisterBanner && !user && (
-              <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 text-white">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div>
-                    <h3 className="font-bold text-xl mb-2">¡Regístrate para continuar!</h3>
-                    <p className="text-sm text-white/90">Para seguir generando tu itinerario personalizado, necesitas crear una cuenta gratuita</p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button 
-                      onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}
-                      className="bg-white text-primary hover:bg-white/90 font-bold uppercase"
-                    >
-                      REGÍSTRATE GRATIS
-                    </Button>
-                    <Button 
-                      onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
-                      variant="outline"
-                      className="border-white text-white hover:bg-white/20"
-                    >
-                      Ya tengo cuenta
-                    </Button>
-                  </div>
+              <div className="bg-primary rounded-2xl py-8 px-6 text-white text-center">
+                <h3 className="font-bold text-xl italic mb-2">¡Regístrate para continuar!</h3>
+                <p className="text-sm text-white/90 mb-6">Para seguir generando tu itinerario personalizado, necesitas crear una cuenta gratuita</p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button 
+                    onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}
+                    className="bg-white text-primary hover:bg-white/90 font-bold uppercase px-8 py-3 rounded-full"
+                  >
+                    REGÍSTRATE GRATIS
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
+                    variant="outline"
+                    className="border-2 border-white text-primary bg-white hover:bg-white/90 font-medium px-8 py-3 rounded-full"
+                  >
+                    Ya tengo cuenta
+                  </Button>
                 </div>
               </div>
             )}
