@@ -42,6 +42,8 @@ const ChatPage = () => {
   const [checkingTripCount, setCheckingTripCount] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [showRegisterBanner, setShowRegisterBanner] = useState(false);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -124,6 +126,15 @@ const ChatPage = () => {
       checkTripCount();
     }
   }, [user, htmlContent, tripSaved, showAuthDialog]);
+
+  // Send pending message when user logs in
+  useEffect(() => {
+    if (user && pendingMessage && !authLoading) {
+      setShowRegisterBanner(false);
+      sendMessage(pendingMessage);
+      setPendingMessage(null);
+    }
+  }, [user, pendingMessage, authLoading]);
 
   const handleSaveAttempt = async () => {
     if (!user) {
@@ -290,6 +301,18 @@ const ChatPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Count current user messages
+    const userMessagesCount = messages.filter(m => m.role === "user").length;
+    
+    // If this would be the 2nd message and user is not logged in, block it
+    if (userMessagesCount >= 1 && !user) {
+      setPendingMessage(inputValue);
+      setInputValue("");
+      setShowRegisterBanner(true);
+      return;
+    }
+    
     sendMessage(inputValue);
   };
 
@@ -381,52 +404,55 @@ const ChatPage = () => {
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((message, index) => {
-              // Count user messages up to this point
-              const userMessagesCount = messages.slice(0, index + 1).filter(m => m.role === "user").length;
-              const showRegisterBanner = !user && message.role === "user" && userMessagesCount === 2;
-              
-              return (
-                <div key={index}>
+            {messages.map((message, index) => (
+              <div key={index}>
+                <div
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
+                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                      message.role === "user"
+                        ? "bg-primary text-white"
+                        : "bg-gray-100 text-gray-900"
                     }`}
                   >
-                    <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                        message.role === "user"
-                          ? "bg-primary text-white"
-                          : "bg-gray-100 text-gray-900"
-                      }`}
-                    >
-                      <p className="text-sm">{message.content}</p>
-                      <p className="text-xs mt-1 opacity-70">
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                    </div>
+                    <p className="text-sm">{message.content}</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
                   </div>
-                  
-                  {/* Register Banner after 2nd user message */}
-                  {showRegisterBanner && (
-                    <div className="mt-4 bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 text-white">
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                        <div>
-                          <h3 className="font-bold text-lg">¡Regístrate ya!</h3>
-                          <p className="text-sm text-white/90">Guarda tus itinerarios y accede a funciones exclusivas</p>
-                        </div>
-                        <Button 
-                          onClick={() => navigate('/register')}
-                          className="bg-white text-primary hover:bg-white/90 font-bold uppercase"
-                        >
-                          REGÍSTRATE GRATIS
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
+            
+            {/* Register Banner - blocks sending more messages */}
+            {showRegisterBanner && !user && (
+              <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 text-white">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div>
+                    <h3 className="font-bold text-xl mb-2">¡Regístrate para continuar!</h3>
+                    <p className="text-sm text-white/90">Para seguir generando tu itinerario personalizado, necesitas crear una cuenta gratuita</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}
+                      className="bg-white text-primary hover:bg-white/90 font-bold uppercase"
+                    >
+                      REGÍSTRATE GRATIS
+                    </Button>
+                    <Button 
+                      onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
+                      variant="outline"
+                      className="border-white text-white hover:bg-white/20"
+                    >
+                      Ya tengo cuenta
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-2xl px-4 py-2">
@@ -445,9 +471,10 @@ const ChatPage = () => {
               <Textarea
                  value={inputValue}
                  onChange={(e) => setInputValue(e.target.value)}
-                 placeholder="Escribe tu mensaje..."
+                 placeholder={showRegisterBanner && !user ? "Regístrate para continuar..." : "Escribe tu mensaje..."}
                  className="resize-none text-base md:text-sm"
                  rows={1}
+                 disabled={showRegisterBanner && !user}
                  onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -458,7 +485,7 @@ const ChatPage = () => {
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || !inputValue.trim()}
+                disabled={isLoading || !inputValue.trim() || (showRegisterBanner && !user)}
                 className="shrink-0"
               >
                 <Send className="h-4 w-4" />
