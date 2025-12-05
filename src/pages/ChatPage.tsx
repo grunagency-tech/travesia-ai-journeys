@@ -103,20 +103,24 @@ const ChatPage = () => {
     }
   };
 
-  // When itinerary arrives and user is not logged in, show auth dialog
+  // When itinerary arrives, check if user needs to login or pay
   useEffect(() => {
-    if (htmlContent && !tripSaved && !authLoading) {
+    if (htmlContent && !tripSaved && !authLoading && !checkingTripCount) {
       if (!user) {
         setShowAuthDialog(true);
+      } else if (tripCount >= MAX_FREE_TRIPS) {
+        // Auto-show payment dialog when limit reached
+        setShowPaymentDialog(true);
       }
     }
-  }, [htmlContent, user, authLoading, tripSaved]);
+  }, [htmlContent, user, authLoading, tripSaved, tripCount, checkingTripCount]);
 
   // Auto-save when user logs in after seeing itinerary
   useEffect(() => {
     if (user && htmlContent && !tripSaved && showAuthDialog) {
       setShowAuthDialog(false);
-      handleSaveAttempt();
+      // Re-check trip count after login
+      checkTripCount();
     }
   }, [user, htmlContent, tripSaved, showAuthDialog]);
 
@@ -280,6 +284,7 @@ const ChatPage = () => {
   };
 
   const canShowSaveButton = htmlContent && !tripSaved;
+  const needsPayment = user && tripCount >= MAX_FREE_TRIPS && !tripSaved;
 
   return (
     <div className="h-screen flex">
@@ -442,8 +447,26 @@ const ChatPage = () => {
         )}
 
         {htmlContent ? (
-          <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-auto p-6">
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          <div className={`w-full h-full bg-white rounded-lg shadow-lg overflow-auto p-6 relative ${needsPayment ? 'select-none' : ''}`}>
+            <div 
+              dangerouslySetInnerHTML={{ __html: htmlContent }} 
+              className={needsPayment ? 'blur-md pointer-events-none' : ''}
+            />
+            {needsPayment && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                <div className="bg-white p-6 rounded-xl shadow-xl text-center max-w-sm">
+                  <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Contenido bloqueado</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Has alcanzado el límite de {MAX_FREE_TRIPS} itinerarios gratuitos
+                  </p>
+                  <Button onClick={handlePayment} className="w-full gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    Desbloquear por $9.99 USD
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center text-white">
