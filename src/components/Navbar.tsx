@@ -82,19 +82,19 @@ export const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                   <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                    $ USD
+                    🇺🇸 $ USD
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                    € EUR
+                    🇪🇺 € EUR
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                    $ MXN
+                    🇲🇽 $ MXN
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                    $ ARS
+                    🇦🇷 $ ARS
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                    R$ BRL
+                    🇧🇷 R$ BRL
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -135,8 +135,8 @@ export const Navbar = () => {
                 </Button>
               </Link>
               <Link to="/register">
-                <Button className="bg-primary hover:bg-primary/90 text-white rounded-lg px-6">
-                  {getTranslation('navbar.register', language)}
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-lg px-6 uppercase font-bold">
+                  {getTranslation('navbar.register', language).toUpperCase()}
                 </Button>
               </Link>
               
@@ -149,19 +149,19 @@ export const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                   <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                    $ USD
+                    🇺🇸 $ USD
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                    € EUR
+                    🇪🇺 € EUR
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                    $ MXN
+                    🇲🇽 $ MXN
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                    $ ARS
+                    🇦🇷 $ ARS
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                    R$ BRL
+                    🇧🇷 R$ BRL
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -211,11 +211,11 @@ export const Navbar = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('USD')}>🇺🇸 $ USD</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>🇪🇺 € EUR</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>🇲🇽 $ MXN</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>🇦🇷 $ ARS</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>🇧🇷 R$ BRL</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -265,8 +265,8 @@ export const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                    Regístrate Gratis
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-white uppercase">
+                    REGÍSTRATE GRATIS
                   </Button>
                 </Link>
                 <div className="flex items-center justify-between py-2">
@@ -279,11 +279,11 @@ export const Navbar = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('USD')}>🇺🇸 $ USD</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>🇪🇺 € EUR</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>🇲🇽 $ MXN</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>🇦🇷 $ ARS</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>🇧🇷 R$ BRL</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
