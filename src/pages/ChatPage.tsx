@@ -131,7 +131,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (user && pendingMessage && !authLoading) {
       setShowRegisterBanner(false);
-      sendMessage(pendingMessage);
+      sendMessage(pendingMessage, true);
       setPendingMessage(null);
     }
   }, [user, pendingMessage, authLoading]);
@@ -219,8 +219,19 @@ const ChatPage = () => {
     }
   };
 
-  const sendMessage = async (messageText: string) => {
+  const sendMessage = async (messageText: string, isFromPending = false) => {
     if (!messageText.trim() || isLoading) return;
+
+    // Count current user messages
+    const currentUserMessages = messages.filter(m => m.role === "user").length;
+    
+    // If this would be 2nd message and user not logged in, block webhook
+    if (currentUserMessages >= 1 && !user && !isFromPending) {
+      setPendingMessage(messageText);
+      setInputValue("");
+      setShowRegisterBanner(true);
+      return;
+    }
 
     const userMessage: Message = {
       role: "user",
@@ -301,18 +312,6 @@ const ChatPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Count current user messages
-    const userMessagesCount = messages.filter(m => m.role === "user").length;
-    
-    // If this would be the 2nd message and user is not logged in, block it
-    if (userMessagesCount >= 1 && !user) {
-      setPendingMessage(inputValue);
-      setInputValue("");
-      setShowRegisterBanner(true);
-      return;
-    }
-    
     sendMessage(inputValue);
   };
 
