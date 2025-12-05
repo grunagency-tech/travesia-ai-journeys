@@ -4,6 +4,7 @@ import { Send, ArrowLeft, X, Save, Lock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -27,6 +28,7 @@ const ChatPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { currency } = useCurrency();
   const { toast } = useToast();
   const initialMessage = location.state?.initialMessage || "";
   const [messages, setMessages] = useState<Message[]>([]);
@@ -312,6 +314,8 @@ const ChatPage = () => {
         body: JSON.stringify({
           message: messageText,
           timestamp: new Date().toISOString(),
+          user_id: user?.id || null,
+          currency: currency,
         }),
       });
 
