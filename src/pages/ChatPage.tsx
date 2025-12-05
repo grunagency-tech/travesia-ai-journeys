@@ -44,6 +44,7 @@ const ChatPage = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [showRegisterBanner, setShowRegisterBanner] = useState(false);
+  const userMessageCountRef = useRef(0);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -222,8 +223,8 @@ const ChatPage = () => {
   const sendMessage = async (messageText: string, isFromPending = false) => {
     if (!messageText.trim() || isLoading) return;
 
-    // Count current user messages
-    const currentUserMessages = messages.filter(m => m.role === "user").length;
+    // Use ref for reliable message count (avoids stale closure issues)
+    const currentUserMessages = userMessageCountRef.current;
     
     console.log("sendMessage called:", { 
       currentUserMessages, 
@@ -240,6 +241,9 @@ const ChatPage = () => {
       setShowRegisterBanner(true);
       return;
     }
+
+    // Increment user message count immediately
+    userMessageCountRef.current += 1;
 
     const userMessage: Message = {
       role: "user",
