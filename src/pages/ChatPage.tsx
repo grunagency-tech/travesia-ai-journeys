@@ -41,6 +41,7 @@ const ChatPage = () => {
   const [tripCount, setTripCount] = useState(0);
   const [checkingTripCount, setCheckingTripCount] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -180,21 +181,30 @@ const ChatPage = () => {
   };
 
   const handlePayment = async () => {
+    setIsProcessingPayment(true);
     try {
+      console.log("Iniciando proceso de pago...");
       const { data, error } = await supabase.functions.invoke('create-payment');
+      
+      console.log("Respuesta de create-payment:", { data, error });
       
       if (error) throw error;
       
       if (data?.url) {
         window.open(data.url, '_blank');
+        setShowPaymentDialog(false);
+      } else {
+        throw new Error("No se recibió URL de pago");
       }
     } catch (error) {
       console.error("Error creating payment:", error);
       toast({
         title: "Error",
-        description: "No se pudo iniciar el proceso de pago",
+        description: "No se pudo iniciar el proceso de pago. Intenta de nuevo.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -325,12 +335,12 @@ const ChatPage = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)} disabled={isProcessingPayment}>
               Ver sin guardar
             </Button>
-            <Button onClick={handlePayment} className="gap-2">
+            <Button onClick={handlePayment} disabled={isProcessingPayment} className="gap-2">
               <CreditCard className="w-4 h-4" />
-              Desbloquear Premium
+              {isProcessingPayment ? "Procesando..." : "Desbloquear Premium"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -460,9 +470,9 @@ const ChatPage = () => {
                   <p className="text-muted-foreground mb-4">
                     Has alcanzado el límite de {MAX_FREE_TRIPS} itinerarios gratuitos
                   </p>
-                  <Button onClick={handlePayment} className="w-full gap-2">
+                  <Button onClick={handlePayment} disabled={isProcessingPayment} className="w-full gap-2">
                     <CreditCard className="w-4 h-4" />
-                    Desbloquear por $9.99 USD
+                    {isProcessingPayment ? "Procesando..." : "Desbloquear por $9.99 USD"}
                   </Button>
                 </div>
               </div>
