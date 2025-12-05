@@ -225,8 +225,16 @@ const ChatPage = () => {
     // Count current user messages
     const currentUserMessages = messages.filter(m => m.role === "user").length;
     
+    console.log("sendMessage called:", { 
+      currentUserMessages, 
+      user: !!user, 
+      isFromPending,
+      messageText: messageText.substring(0, 20)
+    });
+    
     // If this would be 2nd message and user not logged in, block webhook
     if (currentUserMessages >= 1 && !user && !isFromPending) {
+      console.log("BLOCKING: User not logged in and already has 1 message");
       setPendingMessage(messageText);
       setInputValue("");
       setShowRegisterBanner(true);
