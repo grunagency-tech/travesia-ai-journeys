@@ -381,27 +381,52 @@ const ChatPage = () => {
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                    message.role === "user"
-                      ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-900"
-                  }`}
-                >
-                  <p className="text-sm">{message.content}</p>
-                  <p className="text-xs mt-1 opacity-70">
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+            {messages.map((message, index) => {
+              // Count user messages up to this point
+              const userMessagesCount = messages.slice(0, index + 1).filter(m => m.role === "user").length;
+              const showRegisterBanner = !user && message.role === "user" && userMessagesCount === 2;
+              
+              return (
+                <div key={index}>
+                  <div
+                    className={`flex ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                        message.role === "user"
+                          ? "bg-primary text-white"
+                          : "bg-gray-100 text-gray-900"
+                      }`}
+                    >
+                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs mt-1 opacity-70">
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Register Banner after 2nd user message */}
+                  {showRegisterBanner && (
+                    <div className="mt-4 bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 text-white">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div>
+                          <h3 className="font-bold text-lg">¡Regístrate ya!</h3>
+                          <p className="text-sm text-white/90">Guarda tus itinerarios y accede a funciones exclusivas</p>
+                        </div>
+                        <Button 
+                          onClick={() => navigate('/register')}
+                          className="bg-white text-primary hover:bg-white/90 font-bold uppercase"
+                        >
+                          REGÍSTRATE GRATIS
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-2xl px-4 py-2">
