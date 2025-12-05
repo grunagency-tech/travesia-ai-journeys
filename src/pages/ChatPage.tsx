@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Lock, X } from "lucide-react";
+import { Send, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,12 +17,9 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [hasPaid, setHasPaid] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [showPdfOnMobile, setShowPdfOnMobile] = useState(false);
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
+  const [showContentOnMobile, setShowContentOnMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -40,36 +35,13 @@ const ChatPage = () => {
     if (initialMessage) {
       sendMessage(initialMessage);
     }
-
-    // Check for payment success in URL
-    const searchParams = new URLSearchParams(location.search);
-    const paymentStatus = searchParams.get("payment");
-    
-    if (paymentStatus === "success") {
-      setHasPaid(true);
-      toast({
-        title: "¡Pago exitoso!",
-        description: "Ahora puedes ver tu itinerario completo.",
-      });
-      // Clean URL
-      window.history.replaceState({}, "", "/chat");
-    } else if (paymentStatus === "canceled") {
-      toast({
-        title: "Pago cancelado",
-        description: "El pago fue cancelado. Puedes intentarlo nuevamente.",
-        variant: "destructive",
-      });
-      // Clean URL
-      window.history.replaceState({}, "", "/chat");
-    }
   }, []);
 
   useEffect(() => {
-    // Show PDF on mobile when it's available
-    if (pdfUrl) {
-      setShowPdfOnMobile(true);
+    if (htmlContent) {
+      setShowContentOnMobile(true);
     }
-  }, [pdfUrl]);
+  }, [htmlContent]);
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -107,18 +79,11 @@ const ChatPage = () => {
       try {
         const data = JSON.parse(responseBody);
         
-        // Check if response contains a PDF URL
-        if (data.pdf_url) {
-          let embedUrl = data.pdf_url;
-          if (embedUrl.includes('docs.google.com/document')) {
-            embedUrl = embedUrl.replace('/edit?usp=sharing', '/preview');
-            embedUrl = embedUrl.replace('/edit', '/preview');
-          }
-          setPdfUrl(embedUrl);
-        }
-
         // Handle different JSON response formats
-        if (data.message) {
+        if (data.html) {
+          setHtmlContent(data.html);
+          responseText = data.message || "Itinerario generado.";
+        } else if (data.message) {
           responseText = data.message;
         } else if (data.text) {
           responseText = data.text;
@@ -126,8 +91,13 @@ const ChatPage = () => {
           responseText = "Mensaje recibido correctamente.";
         }
       } catch {
-        // Response is not JSON (might be HTML or plain text)
-        responseText = responseBody || "Mensaje recibido correctamente.";
+        // Response is not JSON - it's likely HTML content
+        if (responseBody && responseBody.trim().startsWith('<')) {
+          setHtmlContent(responseBody);
+          responseText = "Itinerario generado.";
+        } else {
+          responseText = responseBody || "Mensaje recibido correctamente.";
+        }
       }
 
       const assistantMessage: Message = {
@@ -155,41 +125,10 @@ const ChatPage = () => {
     sendMessage(inputValue);
   };
 
-  const handlePayment = async () => {
-    setIsProcessingPayment(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-payment", {
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        // Open Stripe Checkout in new tab
-        window.open(data.url, "_blank");
-        toast({
-          title: "Redirigiendo a pago",
-          description: "Se abrirá una nueva pestaña para completar el pago.",
-        });
-      }
-    } catch (error) {
-      console.error("Error creating payment:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo iniciar el proceso de pago. Intenta nuevamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
-
   return (
     <div className="h-screen flex">
-      {/* Chat Section - Hidden on mobile when PDF is shown, half on desktop */}
-      <div className={`${showPdfOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-white`}>
+      {/* Chat Section - Hidden on mobile when content is shown, half on desktop */}
+      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-white`}>
         {/* Header with Back Button */}
         <div className="border-b bg-white p-4 flex items-center gap-3">
           <Button
@@ -271,58 +210,23 @@ const ChatPage = () => {
         </div>
       </div>
 
-      {/* PDF Preview Section - Full screen on mobile when shown, half width on desktop */}
-      <div className={`${showPdfOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 bg-primary items-center justify-center p-6 relative`}>
+      {/* HTML Content Section - Full screen on mobile when shown, half width on desktop */}
+      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 bg-primary items-center justify-center p-6 relative`}>
         {/* Close button for mobile */}
-        {showPdfOnMobile && (
+        {showContentOnMobile && (
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setShowPdfOnMobile(false)}
+            onClick={() => setShowContentOnMobile(false)}
             className="md:hidden absolute top-4 left-4 z-10 bg-white/90 hover:bg-white"
           >
             <X className="h-5 w-5" />
           </Button>
         )}
 
-        {pdfUrl ? (
-          <div className="w-full h-full bg-white rounded-lg shadow-lg relative">
-            {/* PDF with blur when not paid */}
-            <iframe
-              src={pdfUrl}
-              className={`w-full h-full rounded-lg ${!hasPaid ? "blur-lg" : ""}`}
-              title="PDF Preview"
-            />
-            
-            {/* Payment overlay when not paid */}
-            {!hasPaid && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-lg">
-                <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-2xl mx-4">
-                  <div className="mb-4 flex justify-center">
-                    <div className="bg-primary/10 p-4 rounded-full">
-                      <Lock className="w-12 h-12 text-primary" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3 text-gray-900">
-                    Desbloquea tu itinerario
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Para ver tu itinerario completo y detallado, realiza un pago único de <span className="font-bold text-primary">$9.99 USD</span>
-                  </p>
-                  <Button
-                    onClick={handlePayment}
-                    disabled={isProcessingPayment}
-                    size="lg"
-                    className="w-full"
-                  >
-                    {isProcessingPayment ? "Procesando..." : "Desbloquear ahora"}
-                  </Button>
-                  <p className="text-xs text-gray-500 mt-4">
-                    Pago seguro procesado por Stripe
-                  </p>
-                </div>
-              </div>
-            )}
+        {htmlContent ? (
+          <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-auto p-6">
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
           </div>
         ) : (
           <div className="text-center text-white">
@@ -343,7 +247,7 @@ const ChatPage = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Esperando tu itinerario</h3>
             <p className="text-blue-100">
-              El PDF se mostrará aquí cuando esté listo
+              El contenido se mostrará aquí cuando esté listo
             </p>
           </div>
         )}
