@@ -82,19 +82,19 @@ export const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                   <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                    🇺🇸 $ USD
+                    $ USD
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                    🇪🇺 € EUR
+                    € EUR
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                    🇲🇽 $ MXN
+                    $ MXN
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                    🇦🇷 $ ARS
+                    $ ARS
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                    🇧🇷 R$ BRL
+                    R$ BRL
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -150,19 +150,19 @@ export const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                   <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                    🇺🇸 $ USD
+                    $ USD
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                    🇪🇺 € EUR
+                    € EUR
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                    🇲🇽 $ MXN
+                    $ MXN
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                    🇦🇷 $ ARS
+                    $ ARS
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                    🇧🇷 R$ BRL
+                    R$ BRL
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -213,11 +213,11 @@ export const Navbar = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setCurrency('USD')}>🇺🇸 $ USD</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>🇪🇺 € EUR</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>🇲🇽 $ MXN</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>🇦🇷 $ ARS</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>🇧🇷 R$ BRL</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -283,11 +283,11 @@ export const Navbar = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setCurrency('USD')}>🇺🇸 $ USD</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>🇪🇺 € EUR</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>🇲🇽 $ MXN</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>🇦🇷 $ ARS</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>🇧🇷 R$ BRL</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
