@@ -1,8 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, X } from "lucide-react";
+import { Send, ArrowLeft, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,12 +24,17 @@ interface Message {
 const ChatPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const initialMessage = location.state?.initialMessage || "";
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [showContentOnMobile, setShowContentOnMobile] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [tripSaved, setTripSaved] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
@@ -42,6 +58,60 @@ const ChatPage = () => {
       setShowContentOnMobile(true);
     }
   }, [htmlContent]);
+
+  // When itinerary arrives and user is not logged in, show auth dialog
+  useEffect(() => {
+    if (htmlContent && !tripSaved && !authLoading) {
+      if (!user) {
+        setShowAuthDialog(true);
+      }
+    }
+  }, [htmlContent, user, authLoading, tripSaved]);
+
+  // Auto-save when user logs in after seeing itinerary
+  useEffect(() => {
+    if (user && htmlContent && !tripSaved && showAuthDialog) {
+      setShowAuthDialog(false);
+      saveTrip();
+    }
+  }, [user, htmlContent, tripSaved, showAuthDialog]);
+
+  const saveTrip = async () => {
+    if (!user || !htmlContent || tripSaved) return;
+
+    setIsSaving(true);
+    try {
+      const firstUserMessage = messages.find(m => m.role === "user")?.content || "Mi viaje";
+      
+      const { error } = await supabase.from("trips").insert({
+        user_id: user.id,
+        title: `Viaje: ${firstUserMessage.substring(0, 50)}${firstUserMessage.length > 50 ? '...' : ''}`,
+        origin: "Por definir",
+        destination: "Por definir", 
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        travelers: 1,
+        preferences: { itinerary_html: htmlContent },
+      });
+
+      if (error) throw error;
+
+      setTripSaved(true);
+      toast({
+        title: "¡Itinerario guardado!",
+        description: "Puedes verlo en 'Mis viajes'",
+      });
+    } catch (error) {
+      console.error("Error saving trip:", error);
+      toast({
+        title: "Error al guardar",
+        description: "No se pudo guardar el itinerario",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -76,14 +146,12 @@ const ChatPage = () => {
         throw new Error(`Failed to send message: ${response.status}`);
       }
 
-      // Get response as text first, then try to parse as JSON
       const responseBody = await response.text();
       let responseText = "";
       
       try {
         const data = JSON.parse(responseBody);
         
-        // Handle different JSON response formats
         if (data.html) {
           setHtmlContent(data.html);
           responseText = data.message || "Itinerario generado.";
@@ -95,7 +163,6 @@ const ChatPage = () => {
           responseText = "Mensaje recibido correctamente.";
         }
       } catch {
-        // Response is not JSON - it's likely HTML content
         if (responseBody && responseBody.trim().startsWith('<')) {
           setHtmlContent(responseBody);
           responseText = "Itinerario generado.";
@@ -133,9 +200,31 @@ const ChatPage = () => {
 
   return (
     <div className="h-screen flex">
-      {/* Chat Section - Hidden on mobile when content is shown, half on desktop */}
+      {/* Auth Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¡Tu itinerario está listo!</DialogTitle>
+            <DialogDescription>
+              Para guardar este itinerario en tu perfil y acceder a él más tarde, necesitas iniciar sesión o registrarte.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setShowAuthDialog(false)}>
+              Ver sin guardar
+            </Button>
+            <Button onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}>
+              Iniciar sesión
+            </Button>
+            <Button variant="secondary" onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}>
+              Registrarme
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat Section */}
       <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-white`}>
-        {/* Header with Back Button */}
         <div className="border-b bg-white p-4 flex items-center gap-3">
           <Button
             variant="ghost"
@@ -145,10 +234,25 @@ const ChatPage = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h2 className="font-semibold text-lg">Tu itinerario personalizado</h2>
             <p className="text-sm text-muted-foreground">Creado por travesIA</p>
           </div>
+          {/* Save button when logged in and itinerary exists */}
+          {user && htmlContent && !tripSaved && (
+            <Button
+              onClick={saveTrip}
+              disabled={isSaving}
+              size="sm"
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {isSaving ? "Guardando..." : "Guardar"}
+            </Button>
+          )}
+          {tripSaved && (
+            <span className="text-sm text-green-600 font-medium">✓ Guardado</span>
+          )}
         </div>
 
         {/* Chat Messages */}
@@ -216,9 +320,8 @@ const ChatPage = () => {
         </div>
       </div>
 
-      {/* HTML Content Section - Full screen on mobile when shown, half width on desktop */}
+      {/* HTML Content Section */}
       <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 bg-primary items-center justify-center p-6 relative`}>
-        {/* Close button for mobile */}
         {showContentOnMobile && (
           <Button
             variant="ghost"
