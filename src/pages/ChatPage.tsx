@@ -52,6 +52,19 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Handle payment success from URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('payment') === 'success') {
+      toast({
+        title: "¡Pago exitoso!",
+        description: "Ahora puedes guardar itinerarios ilimitados",
+      });
+      // Clear the URL params
+      navigate('/chat', { replace: true });
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (initialMessage) {
       sendMessage(initialMessage);
