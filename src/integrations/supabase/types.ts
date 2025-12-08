@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversations: {
+        Row: {
+          created_at: string
+          destination: string | null
+          id: string
+          last_message_at: string | null
+          title: string | null
+          trip_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination?: string | null
+          id?: string
+          last_message_at?: string | null
+          title?: string | null
+          trip_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string | null
+          id?: string
+          last_message_at?: string | null
+          title?: string | null
+          trip_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_options: {
         Row: {
           airline: string
@@ -98,6 +136,41 @@ export type Database = {
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          html_content: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          html_content?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          html_content?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
