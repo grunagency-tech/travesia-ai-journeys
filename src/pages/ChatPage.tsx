@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, X, Save, Lock, CreditCard } from "lucide-react";
+import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,12 @@ const ChatPage = () => {
   const userMessageCountRef = useRef(0);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
+
+  const { isRecording, isProcessing, toggleRecording } = useVoiceRecorder({
+    onTranscription: (text) => {
+      setInputValue(prev => prev ? `${prev} ${text}` : text);
+    }
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -524,26 +531,52 @@ const ChatPage = () => {
         {/* Input Section */}
         <div className="border-t bg-white p-4">
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-            <div className="flex gap-2">
-              <Textarea
-                 value={inputValue}
-                 onChange={(e) => setInputValue(e.target.value)}
-                 placeholder={showRegisterBanner && !user ? "Regístrate para continuar..." : "Escribe tu mensaje..."}
-                 className="resize-none text-base md:text-sm"
-                 rows={1}
-                 disabled={showRegisterBanner && !user}
-                 onKeyDown={(e) => {
+            <div className="bg-gray-50 rounded-full p-2 flex items-center gap-2">
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="icon"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full shrink-0"
+                disabled={showRegisterBanner && !user}
+              >
+                <Paperclip className="w-5 h-5" />
+              </Button>
+              
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder={showRegisterBanner && !user ? "Regístrate para continuar..." : "Escribe tu mensaje..."}
+                className="flex-1 bg-transparent border-0 focus:outline-none text-base md:text-sm px-2"
+                disabled={showRegisterBanner && !user}
+                onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleSubmit(e);
                   }
                 }}
               />
+              
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="icon"
+                className={`rounded-full shrink-0 ${isRecording ? 'text-red-500 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                onClick={toggleRecording}
+                disabled={isProcessing || (showRegisterBanner && !user)}
+              >
+                {isProcessing ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </Button>
+              
               <Button
                 type="submit"
                 size="icon"
                 disabled={isLoading || !inputValue.trim() || (showRegisterBanner && !user)}
-                className="shrink-0"
+                className="bg-primary hover:bg-primary/90 text-white rounded-full shrink-0"
               >
                 <Send className="h-4 w-4" />
               </Button>
