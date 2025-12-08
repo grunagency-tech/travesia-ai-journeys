@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown } from 'lucide-react';
+import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
+import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import heroBackground from '@/assets/hero-background.jpg';
 import logoFull from '@/assets/logo-full.svg';
 import bookingLogo from '@/assets/partners/booking.svg';
@@ -30,6 +31,12 @@ const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
   const navigate = useNavigate();
   const { language } = useLanguage();
+
+  const { isRecording, isProcessing, toggleRecording } = useVoiceRecorder({
+    onTranscription: (text) => {
+      setTripDescription(prev => prev ? `${prev} ${text}` : text);
+    }
+  });
 
   const handleGenerate = () => {
     if (tripDescription.trim()) {
@@ -88,9 +95,15 @@ const LandingPage = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+                    className={`rounded-full ${isRecording ? 'text-red-500 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                    onClick={toggleRecording}
+                    disabled={isProcessing}
                   >
-                    <Mic className="w-5 h-5" />
+                    {isProcessing ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Mic className="w-5 h-5" />
+                    )}
                   </Button>
                   
                   <Button 
