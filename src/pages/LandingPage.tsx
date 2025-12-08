@@ -53,7 +53,7 @@ const LandingPage = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center sm:items-end overflow-hidden pt-20 pb-12">
+      <section className="relative h-screen flex items-start sm:items-end overflow-hidden pt-32 sm:pt-20 pb-12">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -61,7 +61,7 @@ const LandingPage = () => {
         />
         
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-6 pb-8">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-8">
           <div className="max-w-5xl mx-auto text-left sm:text-center">
             {/* Hero Title */}
             <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-3 sm:mb-4 leading-[1.1] sm:leading-tight">
