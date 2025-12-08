@@ -210,7 +210,7 @@ export const Navbar = () => {
                       <ChevronDown className="w-4 h-4 ml-auto" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                     <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
@@ -226,7 +226,7 @@ export const Navbar = () => {
                       <ChevronDown className="w-4 h-4 ml-auto" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                     {Object.entries(languages).map(([code, lang]) => (
                       <DropdownMenuItem 
                         key={code} 
@@ -275,7 +275,7 @@ export const Navbar = () => {
                       <ChevronDown className="w-4 h-4 ml-auto" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                     <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
@@ -291,7 +291,7 @@ export const Navbar = () => {
                       <ChevronDown className="w-4 h-4 ml-auto" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
                     {Object.entries(languages).map(([code, lang]) => (
                       <DropdownMenuItem 
                         key={code} 
