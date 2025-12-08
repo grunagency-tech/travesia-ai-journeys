@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles } from "lucide-react";
+import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { ConversationList } from "@/components/ConversationList";
 import logoFull from "@/assets/logo-full.svg";
 import logoIcon from "@/assets/logo-icon.svg";
 import {
@@ -18,11 +18,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  htmlContent?: string;
 }
 
 const MAX_FREE_TRIPS = 2;
@@ -34,6 +42,8 @@ const ChatPage = () => {
   const { currency } = useCurrency();
   const { toast } = useToast();
   const initialMessage = location.state?.initialMessage || "";
+  const conversationIdFromState = location.state?.conversationId || null;
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +60,11 @@ const ChatPage = () => {
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [showRegisterBanner, setShowRegisterBanner] = useState(false);
   const userMessageCountRef = useRef(0);
+  const [showSidebar, setShowSidebar] = useState(false);
+  
+  // Conversation state
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationIdFromState);
+  const [conversationTitle, setConversationTitle] = useState<string | null>(null);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -67,13 +82,129 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Save messages to sessionStorage when they change
+  // Load conversation if ID is provided
   useEffect(() => {
-    if (messages.length > 0) {
+    if (conversationIdFromState && user) {
+      loadConversation(conversationIdFromState);
+    }
+  }, [conversationIdFromState, user]);
+
+  const loadConversation = async (convId: string) => {
+    try {
+      // Load conversation details
+      const { data: conv, error: convError } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('id', convId)
+        .maybeSingle();
+
+      if (convError) throw convError;
+      if (!conv) {
+        toast({ title: "Conversación no encontrada", variant: "destructive" });
+        return;
+      }
+
+      setConversationTitle(conv.title);
+      setCurrentConversationId(convId);
+
+      // Load messages
+      const { data: msgs, error: msgsError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true });
+
+      if (msgsError) throw msgsError;
+
+      const loadedMessages: Message[] = (msgs || []).map(m => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+        timestamp: new Date(m.created_at),
+        htmlContent: m.html_content || undefined,
+      }));
+
+      setMessages(loadedMessages);
+      userMessageCountRef.current = loadedMessages.filter(m => m.role === 'user').length;
+
+      // Check if there's HTML content in the last assistant message
+      const lastAssistantMsg = [...loadedMessages].reverse().find(m => m.role === 'assistant' && m.htmlContent);
+      if (lastAssistantMsg?.htmlContent) {
+        setHtmlContent(lastAssistantMsg.htmlContent);
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      toast({ title: "Error al cargar la conversación", variant: "destructive" });
+    }
+  };
+
+  const createConversation = async (): Promise<string | null> => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: user.id,
+          title: null,
+          destination: null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      return null;
+    }
+  };
+
+  const saveMessage = async (convId: string, role: "user" | "assistant", content: string, htmlContent?: string) => {
+    if (!user || !convId) return;
+
+    try {
+      await supabase.from('messages').insert({
+        conversation_id: convId,
+        role,
+        content,
+        html_content: htmlContent || null,
+      });
+
+      // Update conversation last_message_at
+      await supabase
+        .from('conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', convId);
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
+
+  const updateConversationTitle = async (convId: string, title: string, destination?: string) => {
+    if (!user || !convId) return;
+
+    try {
+      await supabase
+        .from('conversations')
+        .update({ 
+          title, 
+          destination: destination || null 
+        })
+        .eq('id', convId);
+      
+      setConversationTitle(title);
+    } catch (error) {
+      console.error('Error updating conversation title:', error);
+    }
+  };
+
+  // Save messages to sessionStorage when they change (for non-logged in users)
+  useEffect(() => {
+    if (messages.length > 0 && !user) {
       sessionStorage.setItem('chatMessages', JSON.stringify(messages));
       sessionStorage.setItem('chatUserMessageCount', String(userMessageCountRef.current));
     }
-  }, [messages]);
+  }, [messages, user]);
 
   // Save pending message and banner state
   useEffect(() => {
@@ -83,8 +214,10 @@ const ChatPage = () => {
     sessionStorage.setItem('chatShowRegisterBanner', String(showRegisterBanner));
   }, [pendingMessage, showRegisterBanner]);
 
-  // Restore messages from sessionStorage on mount
+  // Restore messages from sessionStorage on mount (for non-logged in users)
   useEffect(() => {
+    if (user || currentConversationId) return; // Don't restore if logged in or loading a conversation
+    
     const savedMessages = sessionStorage.getItem('chatMessages');
     const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
     const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
@@ -119,13 +252,12 @@ const ChatPage = () => {
         title: "¡Pago exitoso!",
         description: "Ahora puedes guardar itinerarios ilimitados",
       });
-      // Clear the URL params
       navigate('/chat', { replace: true });
     }
   }, [location.search]);
 
   useEffect(() => {
-    if (initialMessage && messages.length === 0) {
+    if (initialMessage && messages.length === 0 && !conversationIdFromState) {
       sendMessage(initialMessage);
     }
   }, []);
@@ -168,7 +300,6 @@ const ChatPage = () => {
       if (!user) {
         setShowAuthDialog(true);
       } else if (tripCount >= MAX_FREE_TRIPS) {
-        // Auto-show payment dialog when limit reached
         setShowPaymentDialog(true);
       }
     }
@@ -178,7 +309,6 @@ const ChatPage = () => {
   useEffect(() => {
     if (user && htmlContent && !tripSaved && showAuthDialog) {
       setShowAuthDialog(false);
-      // Re-check trip count after login
       checkTripCount();
     }
   }, [user, htmlContent, tripSaved, showAuthDialog]);
@@ -200,7 +330,6 @@ const ChatPage = () => {
       return;
     }
 
-    // Check trip count first
     await checkTripCount();
     
     if (tripCount >= MAX_FREE_TRIPS) {
@@ -217,19 +346,28 @@ const ChatPage = () => {
     setIsSaving(true);
     try {
       const firstUserMessage = messages.find(m => m.role === "user")?.content || "Mi viaje";
+      const tripTitle = conversationTitle || `Viaje: ${firstUserMessage.substring(0, 50)}${firstUserMessage.length > 50 ? '...' : ''}`;
       
-      const { error } = await supabase.from("trips").insert({
+      const { data: trip, error } = await supabase.from("trips").insert({
         user_id: user.id,
-        title: `Viaje: ${firstUserMessage.substring(0, 50)}${firstUserMessage.length > 50 ? '...' : ''}`,
+        title: tripTitle,
         origin: "Por definir",
-        destination: "Por definir", 
+        destination: conversationTitle || "Por definir", 
         start_date: new Date().toISOString().split('T')[0],
         end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         travelers: 1,
         preferences: { itinerary_html: htmlContent },
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Link trip to conversation
+      if (currentConversationId && trip) {
+        await supabase
+          .from('conversations')
+          .update({ trip_id: trip.id })
+          .eq('id', currentConversationId);
+      }
 
       setTripSaved(true);
       setTripCount(prev => prev + 1);
@@ -252,10 +390,7 @@ const ChatPage = () => {
   const handlePayment = async () => {
     setIsProcessingPayment(true);
     try {
-      console.log("Iniciando proceso de pago...");
       const { data, error } = await supabase.functions.invoke('create-payment');
-      
-      console.log("Respuesta de create-payment:", { data, error });
       
       if (error) throw error;
       
@@ -280,26 +415,23 @@ const ChatPage = () => {
   const sendMessage = async (messageText: string, isFromPending = false) => {
     if (!messageText.trim() || isLoading) return;
 
-    // Use ref for reliable message count (avoids stale closure issues)
     const currentUserMessages = userMessageCountRef.current;
-    
-    console.log("sendMessage called:", { 
-      currentUserMessages, 
-      user: !!user, 
-      isFromPending,
-      messageText: messageText.substring(0, 20)
-    });
     
     // If this would be 2nd message and user not logged in, block webhook
     if (currentUserMessages >= 1 && !user && !isFromPending) {
-      console.log("BLOCKING: User not logged in and already has 1 message");
       setPendingMessage(messageText);
       setInputValue("");
       setShowRegisterBanner(true);
       return;
     }
 
-    // Increment user message count immediately
+    // Create conversation if user is logged in and no conversation exists
+    let convId = currentConversationId;
+    if (user && !convId) {
+      convId = await createConversation();
+      setCurrentConversationId(convId);
+    }
+
     userMessageCountRef.current += 1;
 
     const userMessage: Message = {
@@ -312,8 +444,12 @@ const ChatPage = () => {
     setInputValue("");
     setIsLoading(true);
 
+    // Save user message to DB
+    if (convId) {
+      await saveMessage(convId, "user", messageText);
+    }
+
     try {
-      console.log("Sending message to webhook:", WEBHOOK_URL);
       const response = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
@@ -328,20 +464,26 @@ const ChatPage = () => {
         }),
       });
 
-      console.log("Webhook response status:", response.status);
-
       if (!response.ok) {
         throw new Error(`Failed to send message: ${response.status}`);
       }
 
       const responseBody = await response.text();
       let responseText = "";
+      let receivedHtml: string | undefined;
+      let receivedTitle: string | undefined;
       
       try {
         const data = JSON.parse(responseBody);
         
+        // Extract title from webhook response
+        if (data.titulo) {
+          receivedTitle = data.titulo;
+        }
+        
         if (data.html) {
           setHtmlContent(data.html);
+          receivedHtml = data.html;
           responseText = data.message || "Itinerario generado.";
         } else if (data.message) {
           responseText = data.message;
@@ -353,6 +495,7 @@ const ChatPage = () => {
       } catch {
         if (responseBody && responseBody.trim().startsWith('<')) {
           setHtmlContent(responseBody);
+          receivedHtml = responseBody;
           responseText = "Itinerario generado.";
         } else {
           responseText = responseBody || "Mensaje recibido correctamente.";
@@ -363,13 +506,29 @@ const ChatPage = () => {
         role: "assistant",
         content: responseText,
         timestamp: new Date(),
+        htmlContent: receivedHtml,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // Save assistant message to DB
+      if (convId) {
+        await saveMessage(convId, "assistant", responseText, receivedHtml);
+        
+        // Update conversation title if received from webhook
+        if (receivedTitle) {
+          await updateConversationTitle(convId, receivedTitle);
+        } else if (!conversationTitle && messages.length === 0) {
+          // Use first user message as fallback title
+          const shortTitle = messageText.length > 50 
+            ? messageText.substring(0, 50) + '...' 
+            : messageText;
+          await updateConversationTitle(convId, shortTitle);
+        }
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       const errorDetails = error instanceof Error ? error.message : "Error desconocido";
-      console.error("Error details:", errorDetails);
       const errorMessage: Message = {
         role: "assistant",
         content: `Lo siento, hubo un error al procesar tu mensaje. (${errorDetails})`,
@@ -384,6 +543,38 @@ const ChatPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(inputValue);
+  };
+
+  const handleNewChat = () => {
+    // Clear everything and start fresh
+    setMessages([]);
+    setHtmlContent(null);
+    setCurrentConversationId(null);
+    setConversationTitle(null);
+    setTripSaved(false);
+    setShowRegisterBanner(false);
+    setPendingMessage(null);
+    userMessageCountRef.current = 0;
+    sessionStorage.removeItem('chatMessages');
+    sessionStorage.removeItem('chatPendingMessage');
+    sessionStorage.removeItem('chatShowRegisterBanner');
+    sessionStorage.removeItem('chatUserMessageCount');
+    setShowSidebar(false);
+  };
+
+  const handleSelectConversation = (convId: string) => {
+    // Clear current state
+    setMessages([]);
+    setHtmlContent(null);
+    setTripSaved(false);
+    setShowRegisterBanner(false);
+    setPendingMessage(null);
+    userMessageCountRef.current = 0;
+    
+    // Load selected conversation
+    setCurrentConversationId(convId);
+    loadConversation(convId);
+    setShowSidebar(false);
   };
 
   const canShowSaveButton = htmlContent && !tripSaved;
@@ -439,10 +630,46 @@ const ChatPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Sidebar for conversations - Desktop */}
+      {user && (
+        <div className="hidden lg:flex w-72 border-r border-border bg-gray-50 flex-col">
+          <ConversationList 
+            onSelectConversation={handleSelectConversation}
+            onNewChat={handleNewChat}
+            selectedId={currentConversationId || undefined}
+          />
+        </div>
+      )}
+
       {/* Chat Section */}
-      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-gradient-to-b from-gray-50 to-white`}>
+      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gradient-to-b from-gray-50 to-white`}>
         {/* Header with branding */}
         <div className="bg-white shadow-sm p-4 flex items-center gap-3">
+          {/* Mobile sidebar trigger */}
+          {user && (
+            <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden shrink-0 hover:bg-gray-100"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Conversaciones</SheetTitle>
+                </SheetHeader>
+                <ConversationList 
+                  onSelectConversation={handleSelectConversation}
+                  onNewChat={handleNewChat}
+                  selectedId={currentConversationId || undefined}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
+
           <Button
             variant="ghost"
             size="icon"
@@ -455,6 +682,12 @@ const ChatPage = () => {
           <Link to="/" className="flex items-center gap-2">
             <img src={logoFull} alt="travesIA" className="h-8" />
           </Link>
+          
+          {conversationTitle && (
+            <span className="hidden sm:block text-sm text-muted-foreground truncate max-w-[200px]">
+              {conversationTitle}
+            </span>
+          )}
           
           <div className="flex-1" />
           
@@ -611,7 +844,7 @@ const ChatPage = () => {
       </div>
 
       {/* HTML Content Section */}
-      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 bg-primary items-center justify-center p-6 relative`}>
+      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 lg:w-2/5 bg-primary items-center justify-center p-6 relative`}>
         {showContentOnMobile && (
           <Button
             variant="ghost"
