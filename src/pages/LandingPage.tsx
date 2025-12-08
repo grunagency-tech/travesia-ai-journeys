@@ -275,7 +275,7 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="text-center mt-16 mb-16">
+            <div className="text-center py-16 md:py-20">
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
