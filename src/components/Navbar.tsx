@@ -203,47 +203,42 @@ export const Navbar = () => {
                     Mis viajes
                   </Button>
                 </Link>
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-sm font-medium">Moneda:</span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1">
-                        <span className="text-sm font-medium">{currencySymbol}</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-sm font-medium">Idioma:</span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1">
-                        <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {Object.entries(languages).map(([code, lang]) => (
-                        <DropdownMenuItem 
-                          key={code} 
-                          onClick={() => setLanguage(code as any)}
-                          className="flex items-center gap-2"
-                        >
-                          <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
-                          {lang.name}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
+                      Moneda: <span className="font-normal">{currencySymbol}</span>
+                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                    <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
+                      Idioma: 
+                      <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
+                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                    {Object.entries(languages).map(([code, lang]) => (
+                      <DropdownMenuItem 
+                        key={code} 
+                        onClick={() => setLanguage(code as any)}
+                        className="flex items-center gap-2"
+                      >
+                        <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
+                        {lang.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button 
                   variant="outline" 
                   className="w-full"
@@ -273,47 +268,42 @@ export const Navbar = () => {
                     REGÍSTRATE GRATIS
                   </Button>
                 </Link>
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-sm font-medium">Moneda:</span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1">
-                        <span className="text-sm font-medium">{currencySymbol}</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-sm font-medium">Idioma:</span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1">
-                        <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {Object.entries(languages).map(([code, lang]) => (
-                        <DropdownMenuItem 
-                          key={code} 
-                          onClick={() => setLanguage(code as any)}
-                          className="flex items-center gap-2"
-                        >
-                          <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
-                          {lang.name}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
+                      Moneda: <span className="font-normal">{currencySymbol}</span>
+                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                    <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
+                      Idioma: 
+                      <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
+                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-background border border-border rounded-lg z-50">
+                    {Object.entries(languages).map(([code, lang]) => (
+                      <DropdownMenuItem 
+                        key={code} 
+                        onClick={() => setLanguage(code as any)}
+                        className="flex items-center gap-2"
+                      >
+                        <img src={getFlagUrl(lang.flag)} alt={code} className="w-5 h-4 object-cover rounded-sm" />
+                        {lang.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
