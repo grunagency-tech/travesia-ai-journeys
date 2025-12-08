@@ -275,7 +275,7 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="text-center mt-12">
+            <div className="text-center mt-16 mb-16">
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
@@ -289,7 +289,7 @@ const LandingPage = () => {
       </section>
 
       {/* Why use travesIA */}
-      <section className="py-12 bg-purple-50/30">
+      <section className="py-16 bg-purple-50/30">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap px-4">
             {getTranslation('whyUse.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />?
