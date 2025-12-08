@@ -46,7 +46,7 @@ const LandingPage = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-screen flex items-end overflow-hidden pt-20 pb-12">
+      <section className="relative h-screen flex items-center sm:items-end overflow-hidden pt-20 pb-12">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -55,14 +55,14 @@ const LandingPage = () => {
         
         {/* Content */}
         <div className="relative z-10 container mx-auto px-6 pb-8">
-          <div className="max-w-5xl mx-auto text-center">
+          <div className="max-w-5xl mx-auto text-left sm:text-center">
             {/* Hero Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-4 leading-tight px-2">
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-3 sm:mb-4 leading-[1.1] sm:leading-tight">
               {getTranslation('hero.title', language)}
             </h1>
             
             {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto font-light px-2">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-5 sm:mb-6 max-w-3xl sm:mx-auto font-light">
               {getTranslation('hero.subtitle', language)}
             </p>
             
