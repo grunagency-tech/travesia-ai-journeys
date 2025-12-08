@@ -29,6 +29,7 @@ import dubaiImage from '@/assets/dubai.png';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
   const { language } = useLanguage();
 
@@ -36,6 +37,13 @@ const LandingPage = () => {
     onTranscription: (text) => {
       setTripDescription(prev => prev ? `${prev} ${text}` : text);
     }
+  });
+
+  // Preload hero image
+  useState(() => {
+    const img = new Image();
+    img.src = heroBackground;
+    img.onload = () => setImageLoaded(true);
   });
 
   const handleGenerate = () => {
@@ -54,9 +62,12 @@ const LandingPage = () => {
       
       {/* Hero Section */}
       <section className="relative h-screen flex flex-col justify-between sm:flex-row sm:items-end overflow-hidden pt-24 sm:pt-20 pb-6 sm:pb-12">
-        {/* Background Image */}
+        {/* Background placeholder gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-blue-900" />
+        
+        {/* Background Image with lazy loading */}
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           style={{ backgroundImage: `url(${heroBackground})` }}
         />
         
@@ -65,7 +76,7 @@ const LandingPage = () => {
           {/* Title Section - at top on mobile */}
           <div className="max-w-5xl mx-auto text-left sm:text-center flex-shrink-0">
             {/* Hero Title */}
-            <h1 className="text-[3.25rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-urbanist font-extrabold text-white mb-2 sm:mb-4 leading-[1.05] sm:leading-tight">
+            <h1 className="text-[3.25rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-2 sm:mb-4 leading-[1.05] sm:leading-tight">
               {getTranslation('hero.title', language)}
             </h1>
             
