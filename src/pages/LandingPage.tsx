@@ -53,7 +53,7 @@ const LandingPage = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-screen flex items-start sm:items-end overflow-hidden pt-32 sm:pt-20 pb-12">
+      <section className="relative h-screen flex flex-col justify-between sm:flex-row sm:items-end overflow-hidden pt-24 sm:pt-20 pb-6 sm:pb-12">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -61,17 +61,25 @@ const LandingPage = () => {
         />
         
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-8">
-          <div className="max-w-5xl mx-auto text-left sm:text-center">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 flex flex-col h-full sm:h-auto sm:pb-8">
+          {/* Title Section - at top on mobile */}
+          <div className="max-w-5xl mx-auto text-left sm:text-center flex-shrink-0">
             {/* Hero Title */}
-            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-3 sm:mb-4 leading-[1.1] sm:leading-tight">
+            <h1 className="text-[2.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-2 sm:mb-4 leading-[1.05] sm:leading-tight">
               {getTranslation('hero.title', language)}
             </h1>
             
             {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-5 sm:mb-6 max-w-3xl sm:mx-auto font-light">
+            <p className="text-sm sm:text-lg md:text-xl text-white/90 mb-0 sm:mb-6 max-w-3xl sm:mx-auto font-light">
               {getTranslation('hero.subtitle', language)}
             </p>
+          </div>
+          
+          {/* Spacer for mobile - pushes input to bottom */}
+          <div className="flex-1 sm:hidden" />
+          
+          {/* Input Section - at bottom on mobile */}
+          <div className="max-w-5xl mx-auto text-left sm:text-center w-full">
             
             {/* Input Box - Mobile Version */}
             <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
