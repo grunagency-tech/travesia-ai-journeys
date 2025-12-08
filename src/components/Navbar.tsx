@@ -205,9 +205,12 @@ export const Navbar = () => {
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
-                      Moneda: <span className="font-normal">{currencySymbol}</span>
-                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center justify-between">
+                      <span>Moneda</span>
+                      <span className="flex items-center gap-1">
+                        <span className="font-normal">{currencySymbol}</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
@@ -220,10 +223,12 @@ export const Navbar = () => {
                 </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
-                      Idioma: 
-                      <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
-                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center justify-between">
+                      <span>Idioma</span>
+                      <span className="flex items-center gap-1">
+                        <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
@@ -270,9 +275,12 @@ export const Navbar = () => {
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
-                      Moneda: <span className="font-normal">{currencySymbol}</span>
-                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center justify-between">
+                      <span>Moneda</span>
+                      <span className="flex items-center gap-1">
+                        <span className="font-normal">{currencySymbol}</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
@@ -285,10 +293,12 @@ export const Navbar = () => {
                 </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center gap-2">
-                      Idioma: 
-                      <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
-                      <ChevronDown className="w-4 h-4 ml-auto" />
+                    <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium flex items-center justify-between">
+                      <span>Idioma</span>
+                      <span className="flex items-center gap-1">
+                        <img src={getFlagUrl(languages[language].flag)} alt={language} className="w-5 h-4 object-cover rounded-sm" />
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
