@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Linkedin, Instagram, Facebook } from 'lucide-react';
+import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import heroBackground from '@/assets/hero-background.jpg';
@@ -66,40 +66,87 @@ const LandingPage = () => {
               {getTranslation('hero.subtitle', language)}
             </p>
             
-            {/* Input Box */}
-            <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 mb-3 max-w-4xl mx-auto">
-                  <Textarea
-                    placeholder={getTranslation('hero.placeholder', language)}
-                    className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
-                    value={tripDescription}
-                    onChange={(e) => setTripDescription(e.target.value)}
-                  />
-                  
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-3">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                    >
-                      <Paperclip className="w-4 h-4" />
-                      <span className="text-xs sm:text-sm">{getTranslation('hero.attachFiles', language)}</span>
-                    </Button>
-                    
-                    <Button 
-                      size="lg"
-                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-xl px-4 sm:px-6 py-2.5"
-                      onClick={handleGenerate}
-                      disabled={!tripDescription.trim()}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      <span className="text-xs sm:text-sm">{getTranslation('hero.generateButton', language)}</span>
-                    </Button>
-                  </div>
-                </div>
+            {/* Input Box - Mobile Version */}
+            <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
+              <Textarea
+                placeholder={getTranslation('hero.placeholder', language)}
+                className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-500"
+                value={tripDescription}
+                onChange={(e) => setTripDescription(e.target.value)}
+              />
+              
+              <div className="flex items-center justify-between mt-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </Button>
                 
-                {/* Beta Text */}
-                <p className="text-white/80 text-sm flex items-center justify-center gap-2">
-                  {getTranslation('hero.betaText', language)}
-                </p>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+                  >
+                    <Mic className="w-5 h-5" />
+                  </Button>
+                  
+                  <Button 
+                    size="icon"
+                    className="bg-primary hover:bg-primary/90 text-white rounded-full w-10 h-10"
+                    onClick={handleGenerate}
+                    disabled={!tripDescription.trim()}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Input Box - Desktop Version */}
+            <div className="hidden sm:block bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
+              <Textarea
+                placeholder={getTranslation('hero.placeholder', language)}
+                className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
+                value={tripDescription}
+                onChange={(e) => setTripDescription(e.target.value)}
+              />
+              
+              <div className="flex items-center justify-between gap-4 mt-3">
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                >
+                  <Paperclip className="w-4 h-4" />
+                  <span className="text-sm">{getTranslation('hero.attachFiles', language)}</span>
+                </Button>
+                
+                <Button 
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 py-2.5"
+                  onClick={handleGenerate}
+                  disabled={!tripDescription.trim()}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  <span className="text-sm">{getTranslation('hero.generateButton', language)}</span>
+                </Button>
+              </div>
+            </div>
+                
+            {/* Beta Text with gray background on mobile */}
+            <div className="sm:hidden bg-gray-800/60 backdrop-blur-sm rounded-full px-6 py-3 mx-auto inline-flex items-center gap-2">
+              <p className="text-white text-sm">
+                {getTranslation('hero.betaText', language)}
+              </p>
+              <ChevronDown className="w-4 h-4 text-white" />
+            </div>
+            
+            {/* Beta Text - Desktop */}
+            <p className="hidden sm:flex text-white/80 text-sm items-center justify-center gap-2">
+              {getTranslation('hero.betaText', language)}
+            </p>
           </div>
         </div>
       </section>
