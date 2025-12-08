@@ -61,7 +61,7 @@ const LandingPage = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-screen flex flex-col justify-between sm:flex-row sm:items-end overflow-hidden pt-24 sm:pt-20 pb-6 sm:pb-12">
+      <section className="relative h-screen flex flex-col justify-end sm:flex-row sm:items-end overflow-hidden pt-24 sm:pt-20 pb-6 sm:pb-12">
         {/* Background placeholder gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-blue-900" />
         
@@ -72,9 +72,9 @@ const LandingPage = () => {
         />
         
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 flex flex-col h-full sm:h-auto sm:pb-8">
-          {/* Title Section - at top on mobile */}
-          <div className="max-w-5xl mx-auto text-left sm:text-center flex-shrink-0">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 flex flex-col justify-center flex-1 sm:flex-initial sm:h-auto sm:pb-8">
+          {/* Title Section - centered vertically on mobile */}
+          <div className="max-w-5xl mx-auto text-left sm:text-center flex-shrink-0 mb-auto sm:mb-0 mt-auto sm:mt-0">
             {/* Hero Title */}
             <h1 className="text-[3.25rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-2 sm:mb-4 leading-[1.05] sm:leading-tight">
               {getTranslation('hero.title', language)}
@@ -87,7 +87,7 @@ const LandingPage = () => {
           </div>
           
           {/* Spacer for mobile - pushes input to bottom */}
-          <div className="flex-1 sm:hidden" />
+          <div className="flex-1 sm:hidden min-h-8" />
           
           {/* Input Section - at bottom on mobile */}
           <div className="max-w-5xl mx-auto text-left sm:text-center w-full">
