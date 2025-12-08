@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2 } from "lucide-react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,8 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import logoFull from "@/assets/logo-full.svg";
+import logoIcon from "@/assets/logo-icon.svg";
 import {
   Dialog,
   DialogContent,
@@ -438,57 +440,80 @@ const ChatPage = () => {
       </Dialog>
 
       {/* Chat Section */}
-      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-white`}>
-        <div className="border-b bg-white p-4 flex items-center gap-3">
+      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/2 flex-col bg-gradient-to-b from-gray-50 to-white`}>
+        {/* Header with branding */}
+        <div className="bg-white shadow-sm p-4 flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/')}
-            className="shrink-0"
+            className="shrink-0 hover:bg-gray-100"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
-            <h2 className="font-semibold text-lg">Tu itinerario personalizado</h2>
-            <p className="text-sm text-muted-foreground">Creado por travesIA</p>
-          </div>
+          
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoFull} alt="travesIA" className="h-8" />
+          </Link>
+          
+          <div className="flex-1" />
+          
           {/* Save button - always show when itinerary exists */}
           {canShowSaveButton && (
             <Button
               onClick={handleSaveAttempt}
               disabled={isSaving || checkingTripCount}
               size="sm"
-              className="gap-2"
+              className="gap-2 bg-primary hover:bg-primary/90"
             >
               <Save className="h-4 w-4" />
               {isSaving ? "Guardando..." : "Guardar"}
             </Button>
           )}
           {tripSaved && (
-            <span className="text-sm text-green-600 font-medium">✓ Guardado</span>
+            <span className="text-sm text-green-600 font-medium flex items-center gap-1">
+              <Sparkles className="h-4 w-4" />
+              Guardado
+            </span>
           )}
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="max-w-3xl mx-auto space-y-4">
+            {/* Welcome message if no messages yet */}
+            {messages.length === 0 && !isLoading && (
+              <div className="text-center py-12">
+                <img src={logoIcon} alt="travesIA" className="w-16 h-16 mx-auto mb-4 opacity-80" />
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">¡Hola! Soy tu asistente de viajes</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Cuéntame sobre tu viaje ideal y te ayudaré a crear el itinerario perfecto.
+                </p>
+              </div>
+            )}
+            
             {messages.map((message, index) => (
-              <div key={index}>
+              <div key={index} className="animate-fade-in">
                 <div
-                  className={`flex ${
+                  className={`flex items-end gap-2 ${
                     message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
+                  {message.role === "assistant" && (
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <img src={logoIcon} alt="travesIA" className="w-5 h-5" />
+                    </div>
+                  )}
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                       message.role === "user"
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 text-gray-900"
+                        ? "bg-primary text-white rounded-br-md"
+                        : "bg-white shadow-sm border border-gray-100 text-gray-900 rounded-bl-md"
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
-                    <p className="text-xs mt-1 opacity-70">
-                      {message.timestamp.toLocaleTimeString()}
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    <p className="text-xs mt-1.5 opacity-60">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
@@ -621,26 +646,23 @@ const ChatPage = () => {
             )}
           </div>
         ) : (
-          <div className="text-center text-white">
-            <div className="mb-4">
-              <svg
-                className="w-24 h-24 mx-auto animate-pulse"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+          <div className="text-center text-white px-8">
+            <div className="mb-6 relative">
+              <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <img src={logoIcon} alt="travesIA" className="w-14 h-14 animate-pulse" />
+              </div>
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                <Sparkles className="w-6 h-6 text-yellow-300 animate-bounce" />
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Esperando tu itinerario</h3>
-            <p className="text-blue-100">
-              El contenido se mostrará aquí cuando esté listo
+            <h3 className="text-2xl font-bold mb-3">Tu itinerario está en camino</h3>
+            <p className="text-blue-100 text-lg max-w-sm mx-auto">
+              Escribe los detalles de tu viaje ideal y la magia de travesIA hará el resto
             </p>
+            <div className="mt-8 flex items-center justify-center gap-2 text-white/60 text-sm">
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" />
+              <span>Esperando tu mensaje...</span>
+            </div>
           </div>
         )}
       </div>
