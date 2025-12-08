@@ -645,7 +645,29 @@ const ChatPage = () => {
       <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gradient-to-b from-gray-50 to-white`}>
         {/* Header with branding */}
         <div className="bg-white shadow-sm p-4 flex items-center gap-3">
-          {/* Mobile sidebar trigger */}
+          {/* Left side: Back arrow + Logo */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="shrink-0 hover:bg-gray-100"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoFull} alt="travesIA" className="h-8" />
+          </Link>
+          
+          {conversationTitle && (
+            <span className="hidden sm:block text-sm text-muted-foreground truncate max-w-[200px]">
+              {conversationTitle}
+            </span>
+          )}
+          
+          <div className="flex-1" />
+          
+          {/* Right side: Chat sidebar trigger + Save button */}
           {user && (
             <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
               <SheetTrigger asChild>
@@ -669,27 +691,6 @@ const ChatPage = () => {
               </SheetContent>
             </Sheet>
           )}
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="shrink-0 hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoFull} alt="travesIA" className="h-8" />
-          </Link>
-          
-          {conversationTitle && (
-            <span className="hidden sm:block text-sm text-muted-foreground truncate max-w-[200px]">
-              {conversationTitle}
-            </span>
-          )}
-          
-          <div className="flex-1" />
           
           {/* Save button - always show when itinerary exists */}
           {canShowSaveButton && (
