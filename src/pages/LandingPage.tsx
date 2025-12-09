@@ -433,28 +433,31 @@ const LandingPage = () => {
             {getTranslation('partners.description', language)}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mb-12">
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
             <img src={bookingLogo} alt="Booking.com" className="h-6 sm:h-8 object-contain" />
             <img src={tripLogo} alt="Trip.com" className="h-6 sm:h-8 object-contain" />
             <img src={viatorLogo} alt="Viator" className="h-6 sm:h-8 object-contain" />
             <img src={tripadvisorLogo} alt="Tripadvisor" className="h-6 sm:h-8 object-contain" />
             <img src={expediaLogo} alt="Expedia" className="h-6 sm:h-8 object-contain" />
           </div>
+        </div>
+      </section>
 
-          <div className="text-center pt-8 pb-24 md:pb-28">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
-              onClick={scrollToTop}
-            >
-              {getTranslation('howItWorks.tryButton', language)}
-            </Button>
-          </div>
+      {/* CTA Button - centered between sections */}
+      <section className="py-16 md:py-20 bg-gradient-to-b from-white to-orange-50/20">
+        <div className="container mx-auto px-6 text-center">
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
+            onClick={scrollToTop}
+          >
+            {getTranslation('howItWorks.tryButton', language)}
+          </Button>
         </div>
       </section>
 
       {/* FAQs */}
-      <section className="pt-24 md:pt-28 pb-20 bg-orange-50/20">
+      <section className="py-20 bg-orange-50/20">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
