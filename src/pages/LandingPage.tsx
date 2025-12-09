@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2 } from 'lucide-react';
+import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
+import { useAuth } from '@/hooks/useAuth';
 import heroBackground from '@/assets/hero-background.jpg';
 import logoFull from '@/assets/logo-full.svg';
 import bookingLogo from '@/assets/partners/booking.svg';
@@ -31,6 +32,7 @@ const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { language } = useLanguage();
 
   const { isRecording, isProcessing, toggleRecording } = useVoiceRecorder({
@@ -111,6 +113,18 @@ const LandingPage = () => {
                 </Button>
                 
                 <div className="flex items-center gap-2">
+                  {user && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="rounded-full text-gray-400 hover:text-primary hover:bg-primary/10"
+                      onClick={() => navigate('/chat')}
+                      title="Historial de chats"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                    </Button>
+                  )}
+                  
                   <Button 
                     variant="ghost" 
                     size="icon"
@@ -155,6 +169,18 @@ const LandingPage = () => {
                     <Paperclip className="w-4 h-4" />
                     <span className="text-sm">{getTranslation('hero.attachFiles', language)}</span>
                   </Button>
+                  
+                  {user && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="rounded-full text-gray-400 hover:text-primary hover:bg-primary/10"
+                      onClick={() => navigate('/chat')}
+                      title="Historial de chats"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                    </Button>
+                  )}
                   
                   <Button 
                     variant="ghost" 
