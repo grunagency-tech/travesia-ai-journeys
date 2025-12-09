@@ -50,11 +50,11 @@ export const translations = {
       IT: 'Genera il mio itinerario',
     },
     betaText: {
-      ES: 'Gratis durante la beta. Sin tarjeta. Sin problemas. ↓',
-      EN: 'Free during beta. No card. No worries. ↓',
-      DE: 'Kostenlos während der Beta. Keine Karte. Keine Sorgen. ↓',
-      PT: 'Grátis durante o beta. Sem cartão. Sem preocupações. ↓',
-      IT: 'Gratis durante la beta. Nessuna carta. Nessun problema. ↓',
+      ES: 'Gratis durante la beta. Sin tarjeta. Sin problemas',
+      EN: 'Free during beta. No card. No worries',
+      DE: 'Kostenlos während der Beta. Keine Karte. Keine Sorgen',
+      PT: 'Grátis durante o beta. Sem cartão. Sem preocupações',
+      IT: 'Gratis durante la beta. Nessuna carta. Nessun problema',
     },
   },
   howItWorks: {
