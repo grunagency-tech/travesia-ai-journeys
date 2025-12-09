@@ -65,6 +65,7 @@ const ChatPage = () => {
   // Conversation state
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationIdFromState);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
+  const [tripDate, setTripDate] = useState<string | null>(null);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -348,13 +349,21 @@ const ChatPage = () => {
       const firstUserMessage = messages.find(m => m.role === "user")?.content || "Mi viaje";
       const tripTitle = conversationTitle || `Viaje: ${firstUserMessage.substring(0, 50)}${firstUserMessage.length > 50 ? '...' : ''}`;
       
+      // Use tripDate from webhook or default to today
+      const startDate = tripDate || new Date().toISOString().split('T')[0];
+      // Calculate end date as 7 days after start date
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(startDateObj);
+      endDateObj.setDate(endDateObj.getDate() + 7);
+      const endDate = endDateObj.toISOString().split('T')[0];
+      
       const { data: trip, error } = await supabase.from("trips").insert({
         user_id: user.id,
         title: tripTitle,
         origin: "Por definir",
         destination: conversationTitle || "Por definir", 
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        start_date: startDate,
+        end_date: endDate,
         travelers: 1,
         preferences: { itinerary_html: htmlContent },
       }).select().single();
@@ -487,9 +496,17 @@ const ChatPage = () => {
         
         // Extract title from webhook response (support both 'title' and 'titulo')
         if (data.title) {
-          receivedTitle = data.title;
+          receivedTitle = data.title.trim();
+          setConversationTitle(receivedTitle);
         } else if (data.titulo) {
-          receivedTitle = data.titulo;
+          receivedTitle = data.titulo.trim();
+          setConversationTitle(receivedTitle);
+        }
+        
+        // Extract date from webhook response (Fecha field)
+        if (data.Fecha) {
+          setTripDate(data.Fecha);
+          console.log("Trip date received:", data.Fecha);
         }
         
         // Check for HTML content
@@ -568,6 +585,7 @@ const ChatPage = () => {
     setHtmlContent(null);
     setCurrentConversationId(null);
     setConversationTitle(null);
+    setTripDate(null);
     setTripSaved(false);
     setShowRegisterBanner(false);
     setPendingMessage(null);
