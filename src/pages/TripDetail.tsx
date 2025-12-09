@@ -236,7 +236,7 @@ const TripDetail = () => {
         <div className="h-20" />
 
         {/* Navigation & Actions - Inside container, aligned */}
-        <div className="relative container mx-auto px-4 md:px-8 pt-6">
+        <div className="relative container mx-auto px-4 md:px-8 pt-14">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
             <Button 
               variant="ghost" 
