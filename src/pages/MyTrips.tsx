@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight, Plane, Sparkles } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getTravelImage } from '@/lib/travelImages';
+import logoIcon from '@/assets/logo-icon.svg';
 
 interface Trip {
   id: string;
@@ -64,15 +65,15 @@ const MyTrips = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="min-h-screen bg-gradient-hero">
         <Navbar />
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-primary/10 animate-pulse" />
-              <Loader2 className="w-8 h-8 animate-spin text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <img src={logoIcon} alt="travesIA" className="w-10 h-10 animate-pulse" />
             </div>
-            <p className="text-muted-foreground font-medium">Cargando tus aventuras...</p>
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <p className="text-muted-foreground text-sm">Cargando tus aventuras...</p>
           </div>
         </div>
       </div>
@@ -80,42 +81,51 @@ const MyTrips = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-hero">
       <Navbar />
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent" />
-        <div className="absolute top-20 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl" />
-        
-        <div className="container mx-auto px-6 lg:px-8 pt-32 lg:pt-40 pb-12 relative">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
-              <div className="space-y-6">
-                <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-primary/20 px-5 py-2.5 rounded-full shadow-sm">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
-                    <Plane className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    {trips.length} {trips.length === 1 ? 'aventura guardada' : 'aventuras guardadas'}
-                  </span>
+      <div className="relative">
+        {/* Background decorative elements */}
+        <div className="absolute inset-x-0 top-0 h-[280px] md:h-[320px] overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-blue-500/10" />
+          <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-blue-400/10 rounded-full blur-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        </div>
+
+        {/* Spacer for navbar */}
+        <div className="h-20" />
+
+        {/* Header Content */}
+        <div className="relative container mx-auto px-4 md:px-8 pt-14">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <img src={logoIcon} alt="travesIA" className="w-8 h-8" />
                 </div>
-                
-                <h1 className="text-5xl lg:text-7xl font-bold text-foreground tracking-tight font-urbanist">
-                  Mis viajes
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-lg leading-relaxed">
-                  Tus itinerarios personalizados, listos para explorar
-                </p>
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="font-urbanist font-extrabold text-3xl md:text-4xl text-foreground">
+                      Mis viajes
+                    </h1>
+                    <span className="bg-primary/10 text-primary text-sm font-semibold px-3 py-1 rounded-full">
+                      {trips.length}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground text-sm flex items-center gap-1">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Tus itinerarios generados con IA
+                  </p>
+                </div>
               </div>
               
               <Button 
                 onClick={() => navigate('/crear-viaje')}
-                size="lg"
-                className="h-14 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all text-base font-semibold gap-2 bg-gradient-to-r from-primary to-blue-600"
+                className="rounded-full px-6 shadow-lg"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4 mr-2" />
                 Nuevo viaje
               </Button>
             </div>
@@ -123,109 +133,144 @@ const MyTrips = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 lg:px-8 pb-20">
-        <div className="max-w-7xl mx-auto">
+      {/* Content */}
+      <div className="container mx-auto px-4 md:px-8 pb-16">
+        <div className="max-w-5xl mx-auto">
           {trips.length === 0 ? (
             /* Empty State */
-            <div className="relative bg-white rounded-[2rem] shadow-2xl border border-gray-100/50 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-blue-500/5" />
-              
-              <div className="relative p-12 lg:p-20 text-center">
-                <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-gradient-to-br from-primary/20 to-blue-400/20 flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center">
-                    <MapPin className="w-10 h-10 text-primary" />
-                  </div>
-                </div>
-                
-                <h3 className="text-3xl lg:text-4xl font-bold text-foreground mb-4 font-urbanist">
-                  ¡Tu próxima aventura te espera!
-                </h3>
-                <p className="text-muted-foreground text-lg mb-10 max-w-md mx-auto leading-relaxed">
-                  Crea tu primer itinerario personalizado con inteligencia artificial
+            <div className="bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in">
+              <div className="bg-gradient-to-r from-primary to-blue-600 px-6 md:px-10 py-6">
+                <h2 className="font-urbanist font-bold text-xl md:text-2xl text-white flex items-center gap-3">
+                  <Sparkles className="w-6 h-6" />
+                  ¡Comienza tu aventura!
+                </h2>
+                <p className="text-white/80 text-sm mt-1">
+                  Crea tu primer itinerario personalizado
                 </p>
-                
+              </div>
+              <div className="p-10 md:p-16 text-center">
+                <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center">
+                  <MapPin className="w-10 h-10 text-primary" />
+                </div>
+                <h3 className="font-urbanist font-bold text-2xl text-foreground mb-3">
+                  Aún no tienes viajes guardados
+                </h3>
+                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                  Planifica tu próximo destino con ayuda de nuestra inteligencia artificial
+                </p>
                 <Button 
                   onClick={() => navigate('/crear-viaje')}
-                  size="lg"
-                  className="h-14 px-10 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all text-base font-semibold gap-2 bg-gradient-to-r from-primary to-blue-600"
+                  className="rounded-full px-8"
                 >
-                  <Sparkles className="w-5 h-5" />
+                  <Plus className="w-4 h-4 mr-2" />
                   Crear mi primer viaje
                 </Button>
               </div>
             </div>
           ) : (
-            /* Trip Cards Grid */
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-              {trips.map((trip, index) => (
+            /* Trip Cards */
+            <div className="space-y-6">
+              {trips.map((trip) => (
                 <div 
                   key={trip.id} 
-                  className="group relative bg-white rounded-[1.5rem] shadow-lg hover:shadow-2xl border border-gray-100/80 overflow-hidden transition-all duration-500 cursor-pointer hover:-translate-y-1"
+                  className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 animate-fade-in"
                   onClick={() => navigate(`/viaje/${trip.id}`)}
-                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Image Section */}
-                  <div className="relative h-52 overflow-hidden">
-                    <img 
-                      src={getTravelImage(trip.id)}
-                      alt={trip.destination}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                    
-                    {/* Duration Badge */}
-                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md">
-                      <span className="text-xs font-bold text-foreground">
-                        {getDuration(trip.start_date, trip.end_date)} días
-                      </span>
-                    </div>
-                    
-                    {/* Destination overlay */}
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h2 className="text-2xl font-bold text-white font-urbanist drop-shadow-lg">
-                        {trip.destination}
-                      </h2>
-                      <div className="flex items-center gap-2 text-white/90 text-sm mt-1">
-                        <span>{trip.origin}</span>
-                        <ArrowRight className="w-3 h-3" />
-                        <span>{trip.destination}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="p-5">
-                    {/* Trip Details */}
-                    <div className="flex items-center gap-4 mb-5">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-primary" />
-                        </div>
-                        <span className="font-medium">
-                          {format(new Date(trip.start_date), 'd MMM', { locale: es })} - {format(new Date(trip.end_date), 'd MMM', { locale: es })}
+                  <div className="flex flex-col md:flex-row">
+                    {/* Image Section */}
+                    <div className="relative w-full md:w-2/5 h-48 md:h-auto md:min-h-[240px]">
+                      <img 
+                        src={getTravelImage(trip.id)}
+                        alt={trip.destination}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
+                      
+                      {/* Duration Badge */}
+                      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
+                        <span className="text-sm font-bold text-foreground">
+                          {getDuration(trip.start_date, trip.end_date)} días
                         </span>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Users className="w-4 h-4 text-primary" />
-                        </div>
-                        <span className="font-medium">{trip.travelers}</span>
+                      {/* Destination on image (mobile) */}
+                      <div className="absolute bottom-4 left-4 md:hidden">
+                        <h2 className="font-urbanist font-extrabold text-2xl text-white drop-shadow-lg">
+                          {trip.destination}
+                        </h2>
                       </div>
                     </div>
 
-                    {/* CTA Button */}
-                    <Button 
-                      className="w-full rounded-xl h-11 text-sm font-semibold bg-gradient-to-r from-primary/10 to-blue-500/10 text-primary hover:from-primary hover:to-blue-600 hover:text-white transition-all duration-300 border-0" 
-                      variant="outline"
-                    >
-                      Ver itinerario
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                    {/* Content Section */}
+                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
+                      <div>
+                        {/* Destination (desktop) */}
+                        <h2 className="hidden md:block font-urbanist font-extrabold text-2xl md:text-3xl text-foreground mb-4">
+                          {trip.destination}
+                        </h2>
+
+                        {/* Trip Info Grid */}
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
+                                <MapPin className="w-4 h-4 text-primary" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium uppercase">Ruta</span>
+                            </div>
+                            <p className="font-semibold text-foreground text-sm">
+                              {trip.origin} → {trip.destination}
+                            </p>
+                          </div>
+
+                          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-8 h-8 bg-orange-200 rounded-xl flex items-center justify-center">
+                                <Calendar className="w-4 h-4 text-orange-600" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium uppercase">Fechas</span>
+                            </div>
+                            <p className="font-semibold text-foreground text-sm">
+                              {format(new Date(trip.start_date), 'd MMM', { locale: es })} - {format(new Date(trip.end_date), 'd MMM', { locale: es })}
+                            </p>
+                          </div>
+
+                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-8 h-8 bg-green-200 rounded-xl flex items-center justify-center">
+                                <Users className="w-4 h-4 text-green-600" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium uppercase">Viajeros</span>
+                            </div>
+                            <p className="font-semibold text-foreground text-sm">
+                              {trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}
+                            </p>
+                          </div>
+
+                          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-8 h-8 bg-purple-200 rounded-xl flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-purple-600" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium uppercase">IA</span>
+                            </div>
+                            <p className="font-semibold text-foreground text-sm">
+                              Generado
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CTA Button */}
+                      <Button 
+                        className="w-full rounded-full"
+                        variant="default"
+                      >
+                        Ver itinerario
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
                   </div>
-                  
-                  {/* Hover glow effect */}
-                  <div className="absolute inset-0 rounded-[1.5rem] ring-2 ring-primary/0 group-hover:ring-primary/20 transition-all duration-300 pointer-events-none" />
                 </div>
               ))}
             </div>
