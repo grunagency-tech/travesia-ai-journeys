@@ -221,24 +221,27 @@ const TripDetail = () => {
       <Navbar />
       
       {/* Hero Header with Image */}
-      <div className="relative pt-20">
-        {/* Background Image */}
-        <div className="absolute inset-x-0 top-20 h-72 md:h-80 overflow-hidden">
+      <div className="relative">
+        {/* Background Image - Full width from top */}
+        <div className="absolute inset-x-0 top-0 h-[320px] md:h-[380px] overflow-hidden">
           <img 
             src={tripImage} 
             alt={trip.destination}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-background" />
         </div>
 
-        {/* Navigation & Actions */}
+        {/* Spacer for navbar */}
+        <div className="h-20" />
+
+        {/* Navigation & Actions - Inside container, aligned */}
         <div className="relative container mx-auto px-4 md:px-8 pt-6">
-          <div className="flex items-center justify-between">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/mis-viajes')}
-              className="bg-white/90 backdrop-blur-sm hover:bg-white text-foreground rounded-full px-5 shadow-lg"
+              className="bg-white/95 backdrop-blur-sm hover:bg-white text-foreground rounded-full px-5 shadow-lg border border-white/20"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver
@@ -277,8 +280,8 @@ const TripDetail = () => {
         </div>
 
         {/* Trip Title Card */}
-        <div className="relative container mx-auto px-4 md:px-8 mt-24 md:mt-32">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-5xl mx-auto">
+        <div className="relative container mx-auto px-4 md:px-8 mt-20 md:mt-28 pb-6">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-5xl mx-auto animate-fade-in">
             {/* Title Section */}
             <div className="flex items-start gap-4 mb-8">
               <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
