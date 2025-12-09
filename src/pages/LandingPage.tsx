@@ -209,12 +209,11 @@ const LandingPage = () => {
               </div>
             </div>
                 
-            {/* Beta Text - Both mobile and desktop */}
-            <div className="bg-gray-400/60 backdrop-blur-sm rounded-full px-8 py-4 mx-auto inline-flex items-center gap-4">
-              <p className="text-white text-sm sm:text-base italic">
+            {/* Beta Text */}
+            <div className="bg-gray-400/60 backdrop-blur-sm rounded-full px-6 py-3 mx-auto inline-flex items-center justify-center">
+              <p className="text-white text-sm italic">
                 {getTranslation('hero.betaText', language)}
               </p>
-              <ChevronDown className="w-5 h-5 text-white flex-shrink-0" />
             </div>
           </div>
         </div>
