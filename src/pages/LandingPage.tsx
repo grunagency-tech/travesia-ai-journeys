@@ -209,18 +209,13 @@ const LandingPage = () => {
               </div>
             </div>
                 
-            {/* Beta Text with gray background on mobile */}
-            <div className="sm:hidden bg-gray-800/60 backdrop-blur-sm rounded-full px-6 py-3 mx-auto inline-flex items-center gap-2">
-              <p className="text-white text-sm">
+            {/* Beta Text - Both mobile and desktop */}
+            <div className="bg-gray-600/70 backdrop-blur-sm rounded-full px-8 py-4 mx-auto inline-flex items-center gap-4">
+              <p className="text-white text-sm sm:text-base italic">
                 {getTranslation('hero.betaText', language)}
               </p>
-              <ChevronDown className="w-4 h-4 text-white" />
+              <ChevronDown className="w-5 h-5 text-white flex-shrink-0" />
             </div>
-            
-            {/* Beta Text - Desktop */}
-            <p className="hidden sm:flex text-white/80 text-sm items-center justify-center gap-2">
-              {getTranslation('hero.betaText', language)}
-            </p>
           </div>
         </div>
       </section>
