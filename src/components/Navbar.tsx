@@ -80,21 +80,21 @@ export const Navbar = () => {
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50 min-w-[100px]">
                   <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                    $ USD
+                    <span className="inline-block w-6 text-right mr-1">$</span> USD
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                    € EUR
+                    <span className="inline-block w-6 text-right mr-1">€</span> EUR
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                    $ MXN
+                    <span className="inline-block w-6 text-right mr-1">$</span> MXN
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                    $ ARS
+                    <span className="inline-block w-6 text-right mr-1">$</span> ARS
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                    R$ BRL
+                    <span className="inline-block w-6 text-right mr-1">R$</span> BRL
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -148,21 +148,21 @@ export const Navbar = () => {
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
+                <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50 min-w-[100px]">
                   <DropdownMenuItem onClick={() => setCurrency('USD')} className="cursor-pointer">
-                    $ USD
+                    <span className="inline-block w-6 text-right mr-1">$</span> USD
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('EUR')} className="cursor-pointer">
-                    € EUR
+                    <span className="inline-block w-6 text-right mr-1">€</span> EUR
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('MXN')} className="cursor-pointer">
-                    $ MXN
+                    <span className="inline-block w-6 text-right mr-1">$</span> MXN
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('ARS')} className="cursor-pointer">
-                    $ ARS
+                    <span className="inline-block w-6 text-right mr-1">$</span> ARS
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
-                    R$ BRL
+                    <span className="inline-block w-6 text-right mr-1">R$</span> BRL
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -213,12 +213,12 @@ export const Navbar = () => {
                       </span>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                    <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50 min-w-[100px]">
+                    <DropdownMenuItem onClick={() => setCurrency('USD')}><span className="inline-block w-6 text-right mr-1">$</span> USD</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('EUR')}><span className="inline-block w-6 text-right mr-1">€</span> EUR</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('MXN')}><span className="inline-block w-6 text-right mr-1">$</span> MXN</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('ARS')}><span className="inline-block w-6 text-right mr-1">$</span> ARS</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('BRL')}><span className="inline-block w-6 text-right mr-1">R$</span> BRL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
@@ -283,12 +283,12 @@ export const Navbar = () => {
                       </span>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50">
-                    <DropdownMenuItem onClick={() => setCurrency('USD')}>$ USD</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('EUR')}>€ EUR</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('MXN')}>$ MXN</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('ARS')}>$ ARS</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCurrency('BRL')}>R$ BRL</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="bg-background border border-border rounded-lg z-50 min-w-[100px]">
+                    <DropdownMenuItem onClick={() => setCurrency('USD')}><span className="inline-block w-6 text-right mr-1">$</span> USD</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('EUR')}><span className="inline-block w-6 text-right mr-1">€</span> EUR</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('MXN')}><span className="inline-block w-6 text-right mr-1">$</span> MXN</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('ARS')}><span className="inline-block w-6 text-right mr-1">$</span> ARS</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('BRL')}><span className="inline-block w-6 text-right mr-1">R$</span> BRL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
