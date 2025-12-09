@@ -95,7 +95,7 @@ const LandingPage = () => {
           <div className="max-w-5xl mx-auto text-left sm:text-center w-full">
             
             {/* Input Box - Mobile Version */}
-            <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
+            <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto -mt-4">
               <Textarea
                 placeholder={getTranslation('hero.placeholder', language)}
                 className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-500"
@@ -210,7 +210,7 @@ const LandingPage = () => {
             </div>
                 
             {/* Beta Text */}
-            <div className="flex justify-center w-full -mt-2">
+            <div className="flex justify-center w-full">
               <div className="bg-gray-400/60 backdrop-blur-sm rounded-full px-6 py-3 inline-flex items-center justify-center">
                 <p className="text-white text-sm text-center">
                   {getTranslation('hero.betaText', language)}
