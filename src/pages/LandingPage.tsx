@@ -184,7 +184,7 @@ const LandingPage = () => {
       </section>
 
       {/* How it works */}
-      <section id="como-funciona" className="py-20 bg-gradient-to-b from-white to-purple-50/30">
+      <section id="como-funciona" className="py-12 md:py-16 bg-gradient-to-b from-white to-purple-50/30">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center mb-12">
@@ -280,7 +280,7 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Button - centered between How it works and Why use */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-purple-50/30 to-purple-50/30">
+      <section className="py-10 md:py-12 bg-gradient-to-b from-purple-50/30 to-purple-50/30">
         <div className="container mx-auto px-6 text-center">
           <Button 
             size="lg" 
@@ -293,7 +293,7 @@ const LandingPage = () => {
       </section>
 
       {/* Why use travesIA */}
-      <section className="py-20 bg-purple-50/30">
+      <section className="py-12 md:py-16 bg-purple-50/30">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap px-4">
             {getTranslation('whyUse.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />?
@@ -363,7 +363,7 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-gradient-to-b from-purple-50/30 to-white">
+      <section className="py-12 md:py-16 bg-gradient-to-b from-purple-50/30 to-white">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 flex items-center justify-center gap-2 flex-wrap px-4">
             {getTranslation('testimonials.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />
@@ -428,7 +428,7 @@ const LandingPage = () => {
       </section>
 
       {/* Partners */}
-      <section className="py-20 bg-gradient-to-b from-white to-orange-50/20">
+      <section className="py-12 md:py-16 bg-gradient-to-b from-white to-orange-50/20">
         <div className="container mx-auto px-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 px-4">
             {getTranslation('partners.title', language)}
@@ -448,7 +448,7 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Button - centered between sections */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-white to-orange-50/20">
+      <section className="py-10 md:py-12 bg-gradient-to-b from-white to-orange-50/20">
         <div className="container mx-auto px-6 text-center">
           <Button 
             size="lg" 
@@ -461,7 +461,7 @@ const LandingPage = () => {
       </section>
 
       {/* FAQs */}
-      <section className="py-20 bg-orange-50/20">
+      <section className="py-12 md:py-16 bg-orange-50/20">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
