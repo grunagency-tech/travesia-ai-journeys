@@ -198,10 +198,12 @@ export const Navbar = () => {
           <div className="px-4 py-4 space-y-4">
             {user ? (
               <>
-                <Link to="/mis-viajes" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Mis viajes
-                  </Button>
+                <Link 
+                  to="/mis-viajes" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium"
+                >
+                  Mis viajes
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
