@@ -470,42 +470,46 @@ const ChatPage = () => {
 
       const responseBody = await response.text();
       console.log("Webhook raw response:", responseBody);
-      console.log("Response length:", responseBody?.length);
       
       let responseText = "";
       let receivedHtml: string | undefined;
       let receivedTitle: string | undefined;
       
       try {
-        const data = JSON.parse(responseBody);
-        console.log("Parsed JSON data:", data);
-        console.log("Data keys:", Object.keys(data));
+        let data = JSON.parse(responseBody);
         
-        // Extract title from webhook response
-        if (data.titulo) {
+        // Handle if response is an array
+        if (Array.isArray(data)) {
+          data = data[0];
+        }
+        
+        console.log("Parsed data:", data);
+        
+        // Extract title from webhook response (support both 'title' and 'titulo')
+        if (data.title) {
+          receivedTitle = data.title;
+        } else if (data.titulo) {
           receivedTitle = data.titulo;
         }
         
-        // Check multiple possible HTML field names
-        const htmlContent = data.html || data.HTML || data.content || data.response || data.itinerary;
-        if (htmlContent) {
-          console.log("Found HTML content, length:", htmlContent.length);
-          setHtmlContent(htmlContent);
-          receivedHtml = htmlContent;
-          responseText = data.message || data.text || "Itinerario generado.";
+        // Check for HTML content
+        if (data.html) {
+          console.log("Found HTML content, length:", data.html.length);
+          setHtmlContent(data.html);
+          receivedHtml = data.html;
+          responseText = data.message || data.text || receivedTitle || "Itinerario generado.";
         } else if (data.message) {
           responseText = data.message;
         } else if (data.text) {
           responseText = data.text;
-        } else if (typeof data === 'string') {
-          responseText = data;
+        } else if (data.type === 'html_panel' && !data.html) {
+          // Edge case: type indicates HTML but no html field
+          responseText = "Respuesta recibida pero sin contenido HTML.";
         } else {
-          // If data is an object but no known fields, stringify it for display
-          responseText = JSON.stringify(data);
-          console.log("Unknown response format, stringified:", responseText);
+          responseText = "Mensaje recibido correctamente.";
         }
       } catch (parseError) {
-        console.log("JSON parse failed, treating as raw text/HTML:", parseError);
+        console.log("JSON parse failed:", parseError);
         if (responseBody && responseBody.trim().startsWith('<')) {
           setHtmlContent(responseBody);
           receivedHtml = responseBody;
