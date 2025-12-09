@@ -211,7 +211,7 @@ const LandingPage = () => {
                 
             {/* Beta Text */}
             <div className="bg-gray-400/60 backdrop-blur-sm rounded-full px-6 py-3 mx-auto inline-flex items-center justify-center">
-              <p className="text-white text-sm italic">
+              <p className="text-white text-sm">
                 {getTranslation('hero.betaText', language)}
               </p>
             </div>
