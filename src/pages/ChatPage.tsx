@@ -469,30 +469,43 @@ const ChatPage = () => {
       }
 
       const responseBody = await response.text();
+      console.log("Webhook raw response:", responseBody);
+      console.log("Response length:", responseBody?.length);
+      
       let responseText = "";
       let receivedHtml: string | undefined;
       let receivedTitle: string | undefined;
       
       try {
         const data = JSON.parse(responseBody);
+        console.log("Parsed JSON data:", data);
+        console.log("Data keys:", Object.keys(data));
         
         // Extract title from webhook response
         if (data.titulo) {
           receivedTitle = data.titulo;
         }
         
-        if (data.html) {
-          setHtmlContent(data.html);
-          receivedHtml = data.html;
-          responseText = data.message || "Itinerario generado.";
+        // Check multiple possible HTML field names
+        const htmlContent = data.html || data.HTML || data.content || data.response || data.itinerary;
+        if (htmlContent) {
+          console.log("Found HTML content, length:", htmlContent.length);
+          setHtmlContent(htmlContent);
+          receivedHtml = htmlContent;
+          responseText = data.message || data.text || "Itinerario generado.";
         } else if (data.message) {
           responseText = data.message;
         } else if (data.text) {
           responseText = data.text;
+        } else if (typeof data === 'string') {
+          responseText = data;
         } else {
-          responseText = "Mensaje recibido correctamente.";
+          // If data is an object but no known fields, stringify it for display
+          responseText = JSON.stringify(data);
+          console.log("Unknown response format, stringified:", responseText);
         }
-      } catch {
+      } catch (parseError) {
+        console.log("JSON parse failed, treating as raw text/HTML:", parseError);
         if (responseBody && responseBody.trim().startsWith('<')) {
           setHtmlContent(responseBody);
           receivedHtml = responseBody;
