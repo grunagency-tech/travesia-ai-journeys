@@ -80,33 +80,33 @@ const MyTrips = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-28 pb-16">
-        <div className="max-w-6xl mx-auto">
+      <div className="container mx-auto px-6 lg:px-8 pt-32 lg:pt-40 pb-20">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-12">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    <Plane className="w-6 h-6 text-primary" />
+          <div className="mb-16 lg:mb-20">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Plane className="w-7 h-7 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
+                  <span className="text-sm font-medium text-primary bg-primary/10 px-4 py-1.5 rounded-full">
                     {trips.length} {trips.length === 1 ? 'viaje' : 'viajes'}
                   </span>
                 </div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-2">
+                <h1 className="text-5xl lg:text-6xl font-bold text-foreground tracking-tight">
                   Mis viajes
                 </h1>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-xl text-muted-foreground max-w-xl">
                   Explora y gestiona todas tus aventuras planificadas
                 </p>
               </div>
               <Button 
                 onClick={() => navigate('/crear-viaje')}
                 size="lg"
-                className="h-14 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all text-base font-semibold gap-2"
+                className="h-16 px-10 rounded-2xl shadow-lg hover:shadow-xl transition-all text-lg font-semibold gap-3"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-6 h-6" />
                 Nuevo viaje
               </Button>
             </div>
@@ -115,42 +115,42 @@ const MyTrips = () => {
           {trips.length === 0 ? (
             /* Empty State */
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="relative h-64 bg-gradient-to-br from-primary/20 via-primary/10 to-blue-50">
+              <div className="relative h-72 bg-gradient-to-br from-primary/20 via-primary/10 to-blue-50">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center">
-                    <MapPin className="w-12 h-12 text-primary" />
+                  <div className="w-28 h-28 rounded-full bg-white shadow-lg flex items-center justify-center">
+                    <MapPin className="w-14 h-14 text-primary" />
                   </div>
                 </div>
               </div>
-              <div className="p-8 lg:p-12 text-center">
-                <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-4">
+              <div className="p-10 lg:p-16 text-center">
+                <h3 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
                   ¡Tu próxima aventura te espera!
                 </h3>
-                <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
+                <p className="text-muted-foreground text-xl mb-10 max-w-xl mx-auto leading-relaxed">
                   Aún no tienes viajes guardados. Crea tu primer itinerario personalizado con inteligencia artificial.
                 </p>
                 <Button 
                   onClick={() => navigate('/crear-viaje')}
                   size="lg"
-                  className="h-14 px-10 rounded-2xl shadow-lg hover:shadow-xl transition-all text-base font-semibold gap-2"
+                  className="h-16 px-12 rounded-2xl shadow-lg hover:shadow-xl transition-all text-lg font-semibold gap-3"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-6 h-6" />
                   Crear mi primer viaje
                 </Button>
               </div>
             </div>
           ) : (
             /* Trip Cards Grid */
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-10">
               {trips.map((trip) => (
                 <div 
                   key={trip.id} 
-                  className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-1"
+                  className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-2"
                   onClick={() => navigate(`/viaje/${trip.id}`)}
                 >
                   <div className="flex flex-col sm:flex-row h-full">
                     {/* Image Section */}
-                    <div className="relative w-full sm:w-2/5 h-48 sm:h-auto min-h-[200px]">
+                    <div className="relative w-full sm:w-2/5 h-56 sm:h-auto min-h-[240px]">
                       <img 
                         src={getTravelImage(trip.id)}
                         alt={trip.destination}
@@ -159,7 +159,7 @@ const MyTrips = () => {
                       <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/40 to-transparent" />
                       
                       {/* Duration Badge */}
-                      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md">
+                      <div className="absolute top-5 left-5 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
                         <span className="text-sm font-semibold text-foreground">
                           {getDuration(trip.start_date, trip.end_date)} días
                         </span>
@@ -167,41 +167,41 @@ const MyTrips = () => {
                     </div>
 
                     {/* Content Section */}
-                    <div className="flex-1 p-6 flex flex-col justify-between">
-                      <div>
+                    <div className="flex-1 p-8 flex flex-col justify-between">
+                      <div className="space-y-5">
                         {/* Destination as Main Title */}
-                        <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        <h2 className="text-2xl lg:text-3xl font-bold text-foreground group-hover:text-primary transition-colors">
                           {trip.destination}
                         </h2>
                         
                         {/* Route */}
-                        <div className="flex items-center gap-2 text-muted-foreground mb-4">
-                          <span className="text-sm">{trip.origin}</span>
-                          <ArrowRight className="w-4 h-4" />
-                          <span className="text-sm font-medium text-foreground">{trip.destination}</span>
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <span className="text-base">{trip.origin}</span>
+                          <ArrowRight className="w-5 h-5" />
+                          <span className="text-base font-medium text-foreground">{trip.destination}</span>
                         </div>
 
                         {/* Trip Details */}
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Calendar className="w-4 h-4 text-primary" />
+                        <div className="space-y-4 pt-2">
+                          <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Calendar className="w-5 h-5 text-primary" />
                             </div>
                             <div>
-                              <p className="text-xs text-muted-foreground">Fechas</p>
-                              <p className="text-sm font-medium text-foreground">
+                              <p className="text-sm text-muted-foreground">Fechas</p>
+                              <p className="text-base font-medium text-foreground">
                                 {format(new Date(trip.start_date), 'd MMM', { locale: es })} - {format(new Date(trip.end_date), 'd MMM yyyy', { locale: es })}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Users className="w-4 h-4 text-primary" />
+                          <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Users className="w-5 h-5 text-primary" />
                             </div>
                             <div>
-                              <p className="text-xs text-muted-foreground">Viajeros</p>
-                              <p className="text-sm font-medium text-foreground">
+                              <p className="text-sm text-muted-foreground">Viajeros</p>
+                              <p className="text-base font-medium text-foreground">
                                 {trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}
                               </p>
                             </div>
@@ -211,11 +211,11 @@ const MyTrips = () => {
 
                       {/* CTA Button */}
                       <Button 
-                        className="mt-6 w-full rounded-xl h-12 font-semibold group-hover:bg-primary group-hover:text-white transition-all" 
+                        className="mt-8 w-full rounded-xl h-14 text-base font-semibold group-hover:bg-primary group-hover:text-white transition-all" 
                         variant="secondary"
                       >
                         Ver itinerario
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </div>
                   </div>
