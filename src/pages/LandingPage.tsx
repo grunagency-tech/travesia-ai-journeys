@@ -275,21 +275,25 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="text-center py-16 md:py-20">
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
-                onClick={scrollToTop}
-              >
-                {getTranslation('howItWorks.tryButton', language)}
-              </Button>
-            </div>
           </div>
         </div>
       </section>
 
+      {/* CTA Button - centered between How it works and Why use */}
+      <section className="py-16 md:py-20 bg-gradient-to-b from-purple-50/30 to-purple-50/30">
+        <div className="container mx-auto px-6 text-center">
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-3 text-base font-semibold"
+            onClick={scrollToTop}
+          >
+            {getTranslation('howItWorks.tryButton', language)}
+          </Button>
+        </div>
+      </section>
+
       {/* Why use travesIA */}
-      <section className="py-16 bg-purple-50/30">
+      <section className="py-20 bg-purple-50/30">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 flex items-center justify-center gap-2 flex-wrap px-4">
             {getTranslation('whyUse.title', language)} <img src={logoText} alt="travesIA" className="h-8 sm:h-10 inline-block" />?
