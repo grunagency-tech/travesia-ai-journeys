@@ -404,8 +404,8 @@ const ChatPage = () => {
       if (error) throw error;
       
       if (data?.url) {
-        window.open(data.url, '_blank');
-        setShowPaymentDialog(false);
+        // Use location.href instead of window.open to avoid popup blockers on mobile
+        window.location.href = data.url;
       } else {
         throw new Error("No se recibió URL de pago");
       }
@@ -416,7 +416,6 @@ const ChatPage = () => {
         description: "No se pudo iniciar el proceso de pago. Intenta de nuevo.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessingPayment(false);
     }
   };
