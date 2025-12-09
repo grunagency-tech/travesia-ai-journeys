@@ -147,13 +147,29 @@ const LandingPage = () => {
               />
               
               <div className="flex items-center justify-between gap-4 mt-3">
-                <Button 
-                  variant="ghost" 
-                  className="flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                >
-                  <Paperclip className="w-4 h-4" />
-                  <span className="text-sm">{getTranslation('hero.attachFiles', language)}</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center justify-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                    <span className="text-sm">{getTranslation('hero.attachFiles', language)}</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className={`rounded-full ${isRecording ? 'text-red-500 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                    onClick={toggleRecording}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Mic className="w-5 h-5" />
+                    )}
+                  </Button>
+                </div>
                 
                 <Button 
                   size="lg"
