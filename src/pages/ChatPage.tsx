@@ -469,6 +469,7 @@ const ChatPage = () => {
           timestamp: new Date().toISOString(),
           user_id: user?.id || null,
           currency: currency,
+          conversationId: convId || null,
         }),
       });
 
