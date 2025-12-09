@@ -83,7 +83,7 @@ const LandingPage = () => {
             </h1>
             
             {/* Subtitle */}
-            <p className="text-sm sm:text-lg md:text-xl text-white/90 mb-0 sm:mb-6 max-w-3xl sm:mx-auto font-light">
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-0 sm:mb-6 max-w-3xl sm:mx-auto font-light mt-4 sm:mt-0">
               {getTranslation('hero.subtitle', language)}
             </p>
           </div>
@@ -95,7 +95,7 @@ const LandingPage = () => {
           <div className="max-w-5xl mx-auto text-left sm:text-center w-full">
             
             {/* Input Box - Mobile Version */}
-            <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto -mt-4">
+            <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto -mt-20">
               <Textarea
                 placeholder={getTranslation('hero.placeholder', language)}
                 className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-500"
