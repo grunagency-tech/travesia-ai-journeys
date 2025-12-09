@@ -825,24 +825,29 @@ const ChatPage = () => {
         {/* Input Section */}
         <div className="border-t bg-white p-4">
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-            <div className="bg-gray-50 rounded-full p-2 flex items-center gap-2">
+            <div className="bg-gray-50 rounded-2xl p-2 flex items-end gap-2">
               <Button 
                 type="button"
                 variant="ghost" 
                 size="icon"
-                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full shrink-0"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full shrink-0 mb-0.5"
                 disabled={showRegisterBanner && !user}
               >
                 <Paperclip className="w-5 h-5" />
               </Button>
               
-              <input
-                type="text"
+              <textarea
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  // Auto-resize textarea
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                }}
                 placeholder={showRegisterBanner && !user ? "Regístrate para continuar..." : "Escribe tu mensaje..."}
-                className="flex-1 bg-transparent border-0 focus:outline-none text-base md:text-sm px-2"
+                className="flex-1 bg-transparent border-0 focus:outline-none text-base md:text-sm px-2 resize-none min-h-[36px] max-h-[120px] py-2"
                 disabled={showRegisterBanner && !user}
+                rows={1}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -855,7 +860,7 @@ const ChatPage = () => {
                 type="button"
                 variant="ghost" 
                 size="icon"
-                className={`rounded-full shrink-0 ${isRecording ? 'text-red-500 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                className={`rounded-full shrink-0 mb-0.5 ${isRecording ? 'text-red-500 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                 onClick={toggleRecording}
                 disabled={isProcessing || (showRegisterBanner && !user)}
               >
@@ -870,7 +875,7 @@ const ChatPage = () => {
                 type="submit"
                 size="icon"
                 disabled={isLoading || !inputValue.trim() || (showRegisterBanner && !user)}
-                className="bg-primary hover:bg-primary/90 text-white rounded-full shrink-0"
+                className="bg-primary hover:bg-primary/90 text-white rounded-full shrink-0 mb-0.5"
               >
                 <Send className="h-4 w-4" />
               </Button>
