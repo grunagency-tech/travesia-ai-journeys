@@ -152,7 +152,7 @@ const LandingPage = () => {
             </div>
 
             {/* Input Box - Desktop Version */}
-            <div className="hidden sm:block bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto">
+            <div className="hidden sm:block bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto -mt-4">
               <Textarea
                 placeholder={getTranslation('hero.placeholder', language)}
                 className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
@@ -210,7 +210,7 @@ const LandingPage = () => {
             </div>
                 
             {/* Beta Text */}
-            <div className="flex justify-center w-full">
+            <div className="flex justify-center w-full -mt-2">
               <div className="bg-gray-400/60 backdrop-blur-sm rounded-full px-6 py-3 inline-flex items-center justify-center">
                 <p className="text-white text-sm text-center">
                   {getTranslation('hero.betaText', language)}
