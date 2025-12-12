@@ -11,12 +11,15 @@ import { Separator } from '@/components/ui/separator';
 import logoFull from '@/assets/logo-full.svg';
 
 const Auth = () => {
-  const { user, signInWithGoogle, signInWithEmail, loading } = useAuth();
+  const { user, signInWithGoogle, signInWithEmail, resetPassword, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -50,6 +53,30 @@ const Auth = () => {
     }
     
     setIsLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetting(true);
+    
+    const { error } = await resetPassword(resetEmail);
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: '¡Correo enviado!',
+        description: 'Revisa tu bandeja de entrada para restablecer tu contraseña.',
+      });
+      setShowForgotPassword(false);
+      setResetEmail('');
+    }
+    
+    setIsResetting(false);
   };
 
   if (loading) {
@@ -99,7 +126,16 @@ const Auth = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Contraseña</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -153,6 +189,55 @@ const Auth = () => {
           </p>
         </CardContent>
       </Card>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Recuperar contraseña</CardTitle>
+              <CardDescription>
+                Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="resetEmail">Correo electrónico</Label>
+                  <Input
+                    id="resetEmail"
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setResetEmail('');
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1"
+                    disabled={isResetting}
+                  >
+                    {isResetting ? 'Enviando...' : 'Enviar enlace'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
