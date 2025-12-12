@@ -13,6 +13,8 @@ const Register = () => {
   const { user, signUpWithEmail, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,7 +49,7 @@ const Register = () => {
 
     setIsLoading(true);
     
-    const { error } = await signUpWithEmail(email, password);
+    const { error } = await signUpWithEmail(email, password, firstName, lastName);
     
     if (error) {
       toast({
@@ -57,8 +59,8 @@ const Register = () => {
       });
     } else {
       toast({
-        title: '¡Cuenta creada!',
-        description: 'Tu cuenta ha sido creada exitosamente. Ya puedes iniciar sesión.',
+        title: '¡Revisa tu correo!',
+        description: 'Te hemos enviado un enlace de confirmación. Por favor revisa tu bandeja de entrada.',
       });
       navigate('/auth');
     }
@@ -101,6 +103,30 @@ const Register = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleRegister} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Nombre</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="Juan"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Apellido</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Pérez"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
               <Input
