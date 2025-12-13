@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { LocationProvider } from "./contexts/LocationContext";
 import Index from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import Register from "./pages/Register";
@@ -21,24 +22,26 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <CurrencyProvider>
       <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/crear-viaje" element={<CreateTrip />} />
-              <Route path="/mis-viajes" element={<MyTrips />} />
-              <Route path="/viaje/:id" element={<TripDetail />} />
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <LocationProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/crear-viaje" element={<CreateTrip />} />
+                <Route path="/mis-viajes" element={<MyTrips />} />
+                <Route path="/viaje/:id" element={<TripDetail />} />
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LocationProvider>
       </LanguageProvider>
     </CurrencyProvider>
   </QueryClientProvider>

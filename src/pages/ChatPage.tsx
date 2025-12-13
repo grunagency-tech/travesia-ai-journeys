@@ -4,6 +4,7 @@ import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sp
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useUserLocation } from "@/contexts/LocationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
@@ -40,6 +41,7 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { currency } = useCurrency();
+  const { country, city } = useUserLocation();
   const { toast } = useToast();
   const initialMessage = location.state?.initialMessage || "";
   const conversationIdFromState = location.state?.conversationId || null;
@@ -471,6 +473,10 @@ const ChatPage = () => {
           user_id: user?.id || null,
           currency: currency,
           conversationId: convId || null,
+          location: {
+            country: country || null,
+            city: city || null,
+          },
         }),
       });
 
