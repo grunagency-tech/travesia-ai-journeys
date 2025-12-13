@@ -6,9 +6,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
 import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS, de, pt, it } from 'date-fns/locale';
 import { getTravelImage } from '@/lib/travelImages';
 import logoIcon from '@/assets/logo-icon.svg';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslation } from '@/lib/translations';
+
+const locales = { ES: es, EN: enUS, DE: de, PT: pt, IT: it };
 
 interface Trip {
   id: string;
@@ -24,9 +28,13 @@ interface Trip {
 
 const MyTrips = () => {
   const { user, loading: authLoading } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const t = (key: string) => getTranslation(`myTrips.${key}`, language);
+  const dateLocale = locales[language] || es;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -73,7 +81,9 @@ const MyTrips = () => {
               <img src={logoIcon} alt="travesIA" className="w-10 h-10 animate-pulse" />
             </div>
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <p className="text-muted-foreground text-sm">Cargando tus aventuras...</p>
+            <p className="text-muted-foreground text-sm">{t('loading')}</p>
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -108,7 +118,7 @@ const MyTrips = () => {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="font-urbanist font-extrabold text-3xl md:text-4xl text-foreground">
-                      Mis viajes
+                      {t('title')}
                     </h1>
                     <span className="bg-primary/10 text-primary text-sm font-semibold px-3 py-1 rounded-full">
                       {trips.length}
@@ -116,7 +126,7 @@ const MyTrips = () => {
                   </div>
                   <p className="text-muted-foreground text-sm flex items-center gap-1">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Tus itinerarios generados con IA
+                    {t('subtitle')}
                   </p>
                 </div>
               </div>
@@ -126,7 +136,7 @@ const MyTrips = () => {
                 className="rounded-full px-6 shadow-lg"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Nuevo viaje
+                {t('newTrip')}
               </Button>
             </div>
           </div>
