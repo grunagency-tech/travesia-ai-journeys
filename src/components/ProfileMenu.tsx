@@ -1,6 +1,8 @@
 import { User, HelpCircle, LogOut, Plane } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslation } from '@/lib/translations';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +14,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export const ProfileMenu = () => {
   const { user, signOut } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
+
+  const t = (key: string) => getTranslation(`profileMenu.${key}`, language);
 
   const handleSignOut = async () => {
     await signOut();
@@ -44,21 +49,21 @@ export const ProfileMenu = () => {
           className="cursor-pointer rounded-lg px-4 py-3 hover:bg-secondary/50 focus:bg-secondary/50"
         >
           <User className="mr-3 h-4 w-4 text-foreground/60" />
-          <span className="text-sm font-medium">Mi Perfil</span>
+          <span className="text-sm font-medium">{t('myProfile')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => navigate('/mis-viajes')}
           className="cursor-pointer rounded-lg px-4 py-3 hover:bg-secondary/50 focus:bg-secondary/50"
         >
           <Plane className="mr-3 h-4 w-4 text-foreground/60" />
-          <span className="text-sm font-medium">Mis Viajes</span>
+          <span className="text-sm font-medium">{t('myTrips')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => navigate('/ayuda')}
           className="cursor-pointer rounded-lg px-4 py-3 hover:bg-secondary/50 focus:bg-secondary/50"
         >
           <HelpCircle className="mr-3 h-4 w-4 text-foreground/60" />
-          <span className="text-sm font-medium">Centro de ayuda</span>
+          <span className="text-sm font-medium">{t('helpCenter')}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="my-2 bg-border" />
         <DropdownMenuItem 
@@ -66,7 +71,7 @@ export const ProfileMenu = () => {
           className="cursor-pointer rounded-lg px-4 py-3 hover:bg-destructive/10 focus:bg-destructive/10 text-destructive"
         >
           <LogOut className="mr-3 h-4 w-4" />
-          <span className="text-sm font-medium">Cerrar sesión</span>
+          <span className="text-sm font-medium">{t('signOut')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
