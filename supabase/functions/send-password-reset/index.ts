@@ -103,11 +103,11 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "travesIA <noreply@grunagency.com>",
+        from: "travesIA <noreply@travel.grunagency.com>",
         to: [email],
         subject: "Restablece tu contraseña - travesIA",
         html: htmlContent,
