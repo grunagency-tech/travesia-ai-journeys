@@ -69,11 +69,51 @@ export const useAuth = () => {
   const resetPassword = async (email: string) => {
     const resetLink = `${window.location.origin}/reset-password`;
     
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    // First, trigger Supabase password reset to generate the token
+    const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: resetLink,
     });
     
-    return { error };
+    if (supabaseError) {
+      return { error: supabaseError };
+    }
+
+    // Get user's first name from profiles if available
+    let firstName: string | undefined;
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('email', email)
+        .single();
+      
+      if (profile?.name) {
+        firstName = profile.name.split(' ')[0];
+      }
+    } catch (e) {
+      // Ignore - name is optional
+    }
+
+    // Send our branded email via edge function
+    try {
+      const response = await supabase.functions.invoke('send-password-reset', {
+        body: {
+          email,
+          resetLink,
+          firstName,
+        },
+      });
+      
+      if (response.error) {
+        console.error('Error sending branded email:', response.error);
+        // Don't return error - Supabase already sent a backup email
+      }
+    } catch (e) {
+      console.error('Error calling send-password-reset:', e);
+      // Don't return error - Supabase already sent a backup email
+    }
+    
+    return { error: null };
   };
 
   const updatePassword = async (newPassword: string) => {
