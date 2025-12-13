@@ -158,6 +158,12 @@ const LandingPage = () => {
                 className="min-h-[80px] text-sm border-0 focus-visible:ring-0 resize-none bg-transparent text-gray-900 placeholder:text-gray-400/80"
                 value={tripDescription}
                 onChange={(e) => setTripDescription(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && tripDescription.trim()) {
+                    e.preventDefault();
+                    handleGenerate();
+                  }
+                }}
               />
               
               <div className="flex items-center justify-between gap-4 mt-3">
