@@ -945,7 +945,7 @@ const ChatPage = () => {
       </div>
 
       {/* HTML Content Section */}
-      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 lg:w-2/5 bg-gradient-to-br from-[#1a3a5c] via-[#1e4976] to-[#2563eb] items-center justify-center p-6 relative overflow-hidden`}>
+      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 lg:w-2/5 bg-primary items-center justify-center p-6 relative overflow-hidden`}>
         {/* Decorative background elements */}
         <div className="absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
         <div className="absolute bottom-20 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-xl" />
