@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +12,7 @@ const corsHeaders = {
 
 interface PasswordResetRequest {
   email: string;
-  resetLink: string;
+  redirectUrl: string;
   firstName?: string;
 }
 
@@ -19,7 +22,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, resetLink, firstName }: PasswordResetRequest = await req.json();
+    const { email, redirectUrl, firstName }: PasswordResetRequest = await req.json();
+
+    console.log("Processing password reset for:", email);
+
+    // Create Supabase client with service role
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // Generate a unique token
+    const token = crypto.randomUUID();
+    
+    // Set expiration to 1 hour from now
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+    // Store token in database
+    const { error: insertError } = await supabase
+      .from('password_reset_tokens')
+      .insert({
+        email,
+        token,
+        expires_at: expiresAt,
+      });
+
+    if (insertError) {
+      console.error("Error storing token:", insertError);
+      throw new Error("Failed to create reset token");
+    }
+
+    // Build the reset link with our token
+    const resetLink = `${redirectUrl}?token=${token}`;
 
     console.log("Sending password reset email to:", email);
 
@@ -123,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", data);
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
