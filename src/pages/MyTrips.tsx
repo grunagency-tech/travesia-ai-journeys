@@ -128,14 +128,6 @@ const MyTrips = () => {
                   </p>
                 </div>
               </div>
-              
-              <Button 
-                onClick={() => navigate('/crear-viaje')}
-                className="rounded-full px-6 shadow-lg"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t('newTrip')}
-              </Button>
             </div>
           </div>
         </div>
