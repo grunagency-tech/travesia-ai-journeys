@@ -4,10 +4,43 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
 import logoFull from '@/assets/logo-full.svg';
+
+const COUNTRIES = [
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'BO', name: 'Bolivia', flag: '🇧🇴' },
+  { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'CR', name: 'Costa Rica', flag: '🇨🇷' },
+  { code: 'CU', name: 'Cuba', flag: '🇨🇺' },
+  { code: 'EC', name: 'Ecuador', flag: '🇪🇨' },
+  { code: 'SV', name: 'El Salvador', flag: '🇸🇻' },
+  { code: 'ES', name: 'España', flag: '🇪🇸' },
+  { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' },
+  { code: 'GT', name: 'Guatemala', flag: '🇬🇹' },
+  { code: 'HN', name: 'Honduras', flag: '🇭🇳' },
+  { code: 'MX', name: 'México', flag: '🇲🇽' },
+  { code: 'NI', name: 'Nicaragua', flag: '🇳🇮' },
+  { code: 'PA', name: 'Panamá', flag: '🇵🇦' },
+  { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
+  { code: 'PE', name: 'Perú', flag: '🇵🇪' },
+  { code: 'PR', name: 'Puerto Rico', flag: '🇵🇷' },
+  { code: 'DO', name: 'República Dominicana', flag: '🇩🇴' },
+  { code: 'UY', name: 'Uruguay', flag: '🇺🇾' },
+  { code: 'VE', name: 'Venezuela', flag: '🇻🇪' },
+  { code: 'DE', name: 'Alemania', flag: '🇩🇪' },
+  { code: 'FR', name: 'Francia', flag: '🇫🇷' },
+  { code: 'IT', name: 'Italia', flag: '🇮🇹' },
+  { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+  { code: 'GB', name: 'Reino Unido', flag: '🇬🇧' },
+  { code: 'CA', name: 'Canadá', flag: '🇨🇦' },
+  { code: 'OTHER', name: 'Otro', flag: '🌍' },
+];
 
 const Register = () => {
   const { user, signUpWithEmail, loading } = useAuth();
@@ -15,6 +48,7 @@ const Register = () => {
   const { toast } = useToast();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -49,7 +83,7 @@ const Register = () => {
 
     setIsLoading(true);
     
-    const { error } = await signUpWithEmail(email, password, firstName, lastName);
+    const { error } = await signUpWithEmail(email, password, firstName, lastName, country);
     
     if (error) {
       toast({
@@ -126,6 +160,24 @@ const Register = () => {
                   required
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="country">País de origen</Label>
+              <Select value={country} onValueChange={setCountry} required>
+                <SelectTrigger id="country" className="bg-background">
+                  <SelectValue placeholder="Selecciona tu país" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {COUNTRIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      <span className="flex items-center gap-2">
+                        <span>{c.flag}</span>
+                        <span>{c.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
