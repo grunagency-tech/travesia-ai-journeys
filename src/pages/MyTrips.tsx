@@ -84,8 +84,6 @@ const MyTrips = () => {
             <p className="text-muted-foreground text-sm">{t('loading')}</p>
           </div>
         </div>
-          </div>
-        </div>
       </div>
     );
   }
