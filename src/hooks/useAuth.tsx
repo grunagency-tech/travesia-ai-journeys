@@ -49,7 +49,7 @@ export const useAuth = () => {
     return { error };
   };
 
-  const signUpWithEmail = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUpWithEmail = async (email: string, password: string, firstName?: string, lastName?: string, country?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -59,6 +59,7 @@ export const useAuth = () => {
           first_name: firstName,
           last_name: lastName,
           name: `${firstName || ''} ${lastName || ''}`.trim(),
+          country: country,
         },
       },
     });
