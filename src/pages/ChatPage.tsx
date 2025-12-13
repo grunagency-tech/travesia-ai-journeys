@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useUserLocation } from "@/contexts/LocationContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getTranslation } from "@/lib/translations";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
@@ -42,7 +44,9 @@ const ChatPage = () => {
   const { user, loading: authLoading } = useAuth();
   const { currency } = useCurrency();
   const { country, city } = useUserLocation();
+  const { language } = useLanguage();
   const { toast } = useToast();
+  const t = (key: string) => getTranslation(`chat.${key}`, language);
   const initialMessage = location.state?.initialMessage || "";
   const conversationIdFromState = location.state?.conversationId || null;
   
@@ -833,10 +837,10 @@ const ChatPage = () => {
                   </div>
                   
                   <h3 className="font-urbanist font-extrabold text-2xl sm:text-3xl mb-3 text-foreground flex items-center justify-center gap-2 flex-wrap">
-                    ¡Únete a <img src={logoFull} alt="travesIA" className="h-7 sm:h-8 inline-block" />!
+                    {t('joinTravesia').replace('travesIA!', '')} <img src={logoFull} alt="travesIA" className="h-7 sm:h-8 inline-block" />!
                   </h3>
                   <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-sm mx-auto leading-relaxed">
-                    Crea tu cuenta gratuita para continuar planificando tu viaje perfecto
+                    {t('joinDescription')}
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -845,19 +849,19 @@ const ChatPage = () => {
                       className="bg-primary text-white hover:bg-primary/90 font-bold px-8 py-3 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
-                      Crear cuenta gratis
+                      {t('createFreeAccount')}
                     </Button>
                     <Button 
                       onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
                       variant="outline"
                       className="text-foreground hover:bg-slate-50 font-medium px-6 py-3 h-12 rounded-full border-slate-200 hover:border-primary/30 transition-all duration-300"
                     >
-                      Ya tengo cuenta
+                      {t('alreadyHaveAccount')}
                     </Button>
                   </div>
                   
                   <p className="text-xs text-muted-foreground mt-6">
-                    ✨ Guarda itinerarios • Accede desde cualquier dispositivo • 100% gratis
+                    ✨ {t('freeFeatures')}
                   </p>
                 </div>
               </div>
@@ -865,7 +869,7 @@ const ChatPage = () => {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-2xl px-4 py-2">
-                  <p className="text-sm text-gray-600">Escribiendo...</p>
+                  <p className="text-sm text-gray-600">{t('writing')}</p>
                 </div>
               </div>
             )}
@@ -895,7 +899,7 @@ const ChatPage = () => {
                   e.target.style.height = 'auto';
                   e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                 }}
-                placeholder={showRegisterBanner && !user ? "Regístrate para continuar..." : "Escribe tu mensaje..."}
+                placeholder={showRegisterBanner && !user ? t('registerToContinue') : t('placeholder')}
                 className="flex-1 bg-transparent border-0 focus:outline-none text-base md:text-sm px-2 resize-none min-h-[36px] max-h-[120px] py-2"
                 disabled={showRegisterBanner && !user}
                 rows={1}
@@ -934,7 +938,7 @@ const ChatPage = () => {
             
             {/* Disclaimer message */}
             <p className="text-xs text-center text-muted-foreground mt-2">
-              TravesIA puede cometer errores. Consulta información importante.
+              {t('disclaimer')}
             </p>
           </form>
         </div>
@@ -995,7 +999,7 @@ const ChatPage = () => {
             </div>
             
             <h3 className="text-2xl font-urbanist font-bold mb-4 text-white">
-              Tu itinerario está en camino
+              {t('itineraryOnWay')}
             </h3>
             
             <div className="flex items-center justify-center gap-2 mb-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mx-auto w-fit">
@@ -1003,12 +1007,12 @@ const ChatPage = () => {
             </div>
             
             <p className="text-blue-100 text-base max-w-sm mx-auto leading-relaxed">
-              está preparando un plan personalizado con vuelos, hospedaje, actividades y todo lo que necesitas para tu viaje
+              {t('preparingPlan')}
             </p>
             
             <div className="mt-10 flex items-center justify-center gap-3">
               <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse" />
-              <span className="text-sm text-white/70">Esperando tu mensaje...</span>
+              <span className="text-sm text-white/70">{t('waitingMessage')}</span>
               <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
             </div>
           </div>

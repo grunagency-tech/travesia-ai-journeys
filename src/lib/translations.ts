@@ -825,6 +825,20 @@ export const translations = {
       PT: 'Esperando sua mensagem...',
       IT: 'In attesa del tuo messaggio...',
     },
+    preparingPlan: {
+      ES: 'está preparando un plan personalizado con vuelos, hospedaje, actividades y todo lo que necesitas para tu viaje',
+      EN: 'is preparing a personalized plan with flights, accommodation, activities and everything you need for your trip',
+      DE: 'bereitet einen personalisierten Plan mit Flügen, Unterkunft, Aktivitäten und allem vor, was Sie für Ihre Reise benötigen',
+      PT: 'está preparando um plano personalizado com voos, hospedagem, atividades e tudo o que você precisa para sua viagem',
+      IT: 'sta preparando un piano personalizzato con voli, alloggio, attività e tutto ciò di cui hai bisogno per il tuo viaggio',
+    },
+    joinDescription: {
+      ES: 'Crea tu cuenta gratuita para continuar planificando tu viaje perfecto',
+      EN: 'Create your free account to continue planning your perfect trip',
+      DE: 'Erstellen Sie Ihr kostenloses Konto, um Ihre perfekte Reise weiter zu planen',
+      PT: 'Crie sua conta gratuita para continuar planejando sua viagem perfeita',
+      IT: 'Crea il tuo account gratuito per continuare a pianificare il tuo viaggio perfetto',
+    },
     contentBlocked: {
       ES: 'Contenido bloqueado',
       EN: 'Content blocked',
@@ -845,13 +859,6 @@ export const translations = {
       DE: 'Treten Sie travesIA bei!',
       PT: 'Junte-se ao travesIA!',
       IT: 'Unisciti a travesIA!',
-    },
-    joinDescription: {
-      ES: 'Crea una cuenta gratuita para continuar planificando tu viaje perfecto con IA',
-      EN: 'Create a free account to continue planning your perfect trip with AI',
-      DE: 'Erstellen Sie ein kostenloses Konto, um Ihre perfekte Reise mit KI weiter zu planen',
-      PT: 'Crie uma conta gratuita para continuar planejando sua viagem perfeita com IA',
-      IT: 'Crea un account gratuito per continuare a pianificare il tuo viaggio perfetto con IA',
     },
     createFreeAccount: {
       ES: 'Crear cuenta gratis',
