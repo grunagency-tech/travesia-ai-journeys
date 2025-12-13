@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle } from "lucide-react";
+import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -61,6 +61,7 @@ const ChatPage = () => {
   const [showRegisterBanner, setShowRegisterBanner] = useState(false);
   const userMessageCountRef = useRef(0);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
   
   // Conversation state
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationIdFromState);
@@ -666,8 +667,17 @@ const ChatPage = () => {
       </Dialog>
 
       {/* Sidebar for conversations - Desktop */}
-      {user && (
-        <div className="hidden lg:flex w-72 border-r border-border bg-gray-50 flex-col">
+      {user && showDesktopSidebar && (
+        <div className="hidden lg:flex w-72 border-r border-border bg-gray-50 flex-col relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowDesktopSidebar(false)}
+            className="absolute top-3 right-3 z-10 hover:bg-gray-200"
+            title="Ocultar historial"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </Button>
           <ConversationList 
             onSelectConversation={handleSelectConversation}
             onNewChat={handleNewChat}
@@ -680,7 +690,19 @@ const ChatPage = () => {
       <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gradient-to-b from-gray-50 to-white`}>
         {/* Header with branding */}
         <div className="bg-white shadow-sm p-4 flex items-center gap-3">
-          {/* Left side: Back arrow + Logo */}
+          {/* Left side: Show sidebar button (when hidden) + Back arrow + Logo */}
+          {user && !showDesktopSidebar && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowDesktopSidebar(true)}
+              className="hidden lg:flex shrink-0 hover:bg-gray-100"
+              title="Mostrar historial"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+          )}
+          
           <Button
             variant="ghost"
             size="icon"
@@ -903,6 +925,11 @@ const ChatPage = () => {
                 <Send className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Disclaimer message */}
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              TravesIA puede cometer errores. Consulta información importante.
+            </p>
           </form>
         </div>
       </div>
