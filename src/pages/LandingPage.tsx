@@ -29,7 +29,6 @@ import colosseumImage from '@/assets/colosseum.png';
 import dubaiImage from '@/assets/dubai.png';
 import valentinaImage from '@/assets/testimonials/valentina.jpg';
 import mariaImage from '@/assets/testimonials/maria.jpg';
-import jorgeImage from '@/assets/testimonials/jorge.heic';
 
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
@@ -438,8 +437,8 @@ const LandingPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <img 
-                  src={jorgeImage} 
-                  alt="Jorge" 
+                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" 
+                  alt="Jorge"
                   className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover"
                 />
                 <img src="https://flagcdn.com/w40/mx.png" alt="México" className="w-8 h-6 object-cover rounded-sm" />
