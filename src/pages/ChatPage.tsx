@@ -988,12 +988,12 @@ const ChatPage = () => {
         ) : (
           <div className="text-center px-8 relative z-10">
             <div className="mb-8 relative">
-              <div className="w-28 h-28 mx-auto bg-white/15 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl border border-white/20">
-                <img src={logoIcon} alt="travesIA" className="w-16 h-16 animate-pulse" />
+              <div className="w-28 h-28 mx-auto bg-orange-500 rounded-3xl flex items-center justify-center shadow-2xl">
+                <img src={logoIcon} alt="travesIA" className="w-16 h-16 animate-pulse brightness-0 invert" />
               </div>
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
-                <div className="bg-white/20 backdrop-blur-sm shadow-lg rounded-full p-2 border border-white/30">
-                  <Sparkles className="w-5 h-5 text-amber-300 animate-bounce" />
+                <div className="bg-orange-400 shadow-lg rounded-full p-2">
+                  <Sparkles className="w-5 h-5 text-white animate-bounce" />
                 </div>
               </div>
             </div>
