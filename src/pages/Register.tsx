@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
 import logoFull from '@/assets/logo-full.svg';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslation } from '@/lib/translations';
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
@@ -44,6 +46,7 @@ const COUNTRIES = [
 
 const Register = () => {
   const { user, signUpWithEmail, loading } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [firstName, setFirstName] = useState('');
@@ -53,6 +56,8 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const t = (key: string) => getTranslation(`register.${key}`, language);
 
   useEffect(() => {
     if (user) {
@@ -66,7 +71,7 @@ const Register = () => {
     if (password !== confirmPassword) {
       toast({
         title: 'Error',
-        description: 'Las contraseñas no coinciden',
+        description: t('passwordMismatch'),
         variant: 'destructive',
       });
       return;
@@ -75,7 +80,7 @@ const Register = () => {
     if (password.length < 6) {
       toast({
         title: 'Error',
-        description: 'La contraseña debe tener al menos 6 caracteres',
+        description: t('passwordTooShort'),
         variant: 'destructive',
       });
       return;
@@ -93,8 +98,8 @@ const Register = () => {
       });
     } else {
       toast({
-        title: '¡Revisa tu correo!',
-        description: 'Te hemos enviado un enlace de confirmación. Por favor revisa tu bandeja de entrada.',
+        title: t('checkEmail'),
+        description: t('confirmationSent'),
       });
       navigate('/auth');
     }
@@ -107,7 +112,7 @@ const Register = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <img src={logoFull} alt="travesIA" className="w-24 h-24 mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -130,16 +135,16 @@ const Register = () => {
           <div className="flex justify-center mb-4">
             <img src={logoFull} alt="travesIA" className="h-16" />
           </div>
-          <CardTitle className="text-2xl">Crear cuenta en travesIA</CardTitle>
+          <CardTitle className="text-2xl">{t('title')}</CardTitle>
           <CardDescription>
-            Regístrate para comenzar a planificar tus viajes con IA
+            {t('subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">Nombre</Label>
+                <Label htmlFor="firstName">{t('firstName')}</Label>
                 <Input
                   id="firstName"
                   type="text"
@@ -150,7 +155,7 @@ const Register = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Apellido</Label>
+                <Label htmlFor="lastName">{t('lastName')}</Label>
                 <Input
                   id="lastName"
                   type="text"
@@ -162,10 +167,10 @@ const Register = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="country">País de origen</Label>
+              <Label htmlFor="country">{t('country')}</Label>
               <Select value={country} onValueChange={setCountry} required>
                 <SelectTrigger id="country" className="bg-background">
-                  <SelectValue placeholder="Selecciona tu país" />
+                  <SelectValue placeholder={t('selectCountry')} />
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
                   {COUNTRIES.map((c) => (
@@ -180,7 +185,7 @@ const Register = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -191,7 +196,7 @@ const Register = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -203,7 +208,7 @@ const Register = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -220,14 +225,14 @@ const Register = () => {
               size="lg"
               disabled={isLoading}
             >
-              {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
+              {isLoading ? t('submitting') : t('submit')}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            ¿Ya tienes cuenta?{' '}
+            {t('hasAccount')}{' '}
             <Link to="/auth" className="text-primary hover:underline font-medium">
-              Iniciar sesión
+              {t('signIn')}
             </Link>
           </p>
         </CardContent>
