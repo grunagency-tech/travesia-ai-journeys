@@ -51,6 +51,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build the reset link with our token
     const resetLink = `${redirectUrl}?token=${token}`;
+    
+    // Extract the base URL for logo
+    const baseUrl = redirectUrl.replace('/reset-password', '');
+    const logoUrl = `${baseUrl}/logo-email.svg`;
 
     console.log("Sending password reset email to:", email);
 
@@ -65,61 +69,43 @@ const handler = async (req: Request): Promise<Response> => {
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
         <table role="presentation" style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td align="center" style="padding: 40px 0;">
-              <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);">
+            <td align="center" style="padding: 40px 20px;">
+              <table role="presentation" style="width: 100%; max-width: 520px; border-collapse: collapse; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
                 <!-- Header with logo -->
                 <tr>
-                  <td align="center" style="padding: 40px 40px 20px 40px; background: linear-gradient(135deg, #2E37DB 0%, #4F46E5 100%); border-radius: 16px 16px 0 0;">
-                    <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; font-family: 'Urbanist', 'Segoe UI', sans-serif;">
-                      traves<span style="color: #F48C37;">IA</span>
-                    </h1>
-                    <p style="margin: 8px 0 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">Tu asistente de viajes con IA</p>
+                  <td align="center" style="padding: 40px 40px 24px 40px; background-color: #2E37DB;">
+                    <img src="${logoUrl}" alt="travesIA" style="height: 48px; width: auto;" />
+                    <p style="margin: 12px 0 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.85); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Tu asistente de viajes con IA</p>
                   </td>
                 </tr>
                 
                 <!-- Main content -->
                 <tr>
-                  <td style="padding: 40px;">
-                    <h2 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #1a1a1a;">
+                  <td style="padding: 36px 40px 40px 40px;">
+                    <h2 style="margin: 0 0 20px 0; font-size: 26px; font-weight: 600; color: #1a1a1a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                       ¡Hola${firstName ? ` ${firstName}` : ''}!
                     </h2>
-                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #4a4a4a;">
+                    <p style="margin: 0 0 28px 0; font-size: 16px; line-height: 1.7; color: #444444; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                       Recibimos una solicitud para restablecer la contraseña de tu cuenta en travesIA. Si no realizaste esta solicitud, puedes ignorar este correo.
                     </p>
                     
                     <!-- CTA Button -->
                     <table role="presentation" style="width: 100%; border-collapse: collapse;">
                       <tr>
-                        <td align="center" style="padding: 16px 0;">
+                        <td align="center" style="padding: 8px 0 32px 0;">
                           <a href="${resetLink}" 
-                             style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #2E37DB 0%, #4F46E5 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 12px; box-shadow: 0 4px 14px rgba(46, 55, 219, 0.4);">
+                             style="display: inline-block; padding: 14px 48px; background-color: #2E37DB; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                             Restablecer contraseña
                           </a>
                         </td>
                       </tr>
                     </table>
                     
-                    <p style="margin: 24px 0 0 0; font-size: 14px; line-height: 1.6; color: #6a6a6a;">
+                    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #666666; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                       Si el botón no funciona, copia y pega este enlace en tu navegador:
                     </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; line-height: 1.6; color: #2E37DB; word-break: break-all;">
-                      ${resetLink}
-                    </p>
-                    
-                    <p style="margin: 32px 0 0 0; font-size: 14px; line-height: 1.6; color: #6a6a6a;">
-                      Este enlace expirará en 1 hora por seguridad.
-                    </p>
-                  </td>
-                </tr>
-                
-                <!-- Footer -->
-                <tr>
-                  <td style="padding: 24px 40px; background-color: #f9fafb; border-radius: 0 0 16px 16px; border-top: 1px solid #e5e7eb;">
-                    <p style="margin: 0; font-size: 12px; color: #9ca3af; text-align: center;">
-                      © 2024 travesIA by Grün Agency. Todos los derechos reservados.
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #9ca3af; text-align: center;">
-                      <a href="https://travel.grunagency.com" style="color: #2E37DB; text-decoration: none;">travel.grunagency.com</a>
+                    <p style="margin: 8px 0 0 0; font-size: 13px; line-height: 1.6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                      <a href="${resetLink}" style="color: #2E37DB; text-decoration: underline; word-break: break-all;">${resetLink}</a>
                     </p>
                   </td>
                 </tr>
