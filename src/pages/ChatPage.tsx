@@ -819,44 +819,44 @@ const ChatPage = () => {
             
             {/* Register Banner - blocks sending more messages */}
             {showRegisterBanner && !user && (
-              <div className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-blue-600 rounded-3xl py-10 px-8 text-white text-center shadow-2xl">
+              <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-3xl py-10 px-8 text-center shadow-2xl border border-slate-100">
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-                <div className="absolute top-1/2 left-1/4 w-3 h-3 bg-white/30 rounded-full" />
-                <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-white/20 rounded-full" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+                <div className="absolute top-1/2 left-1/4 w-3 h-3 bg-primary/20 rounded-full" />
+                <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-primary/15 rounded-full" />
                 
                 <div className="relative z-10">
                   {/* Logo icon */}
-                  <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    <img src={logoIcon} alt="travesIA" className="w-10 h-10" />
+                  <div className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-primary/10 to-blue-100 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-primary/10">
+                    <img src={logoIcon} alt="travesIA" className="w-12 h-12" />
                   </div>
                   
-                  <h3 className="font-urbanist font-extrabold text-2xl sm:text-3xl mb-3">
-                    ¡Únete a travesIA!
+                  <h3 className="font-urbanist font-extrabold text-2xl sm:text-3xl mb-3 text-foreground flex items-center justify-center gap-2 flex-wrap">
+                    ¡Únete a <img src={logoFull} alt="travesIA" className="h-7 sm:h-8 inline-block" />!
                   </h3>
-                  <p className="text-sm sm:text-base text-white/85 mb-8 max-w-sm mx-auto leading-relaxed">
-                    Crea una cuenta gratuita para continuar planificando tu viaje perfecto con IA
+                  <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-sm mx-auto leading-relaxed">
+                    Crea tu cuenta gratuita para continuar planificando tu viaje perfecto
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                     <Button 
                       onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}
-                      className="bg-white text-primary hover:bg-white/95 font-bold px-8 py-3 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      className="bg-primary text-white hover:bg-primary/90 font-bold px-8 py-3 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       Crear cuenta gratis
                     </Button>
                     <Button 
                       onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
-                      variant="ghost"
-                      className="text-white hover:bg-white/15 font-medium px-6 py-3 h-12 rounded-full border border-white/30 hover:border-white/50 transition-all duration-300"
+                      variant="outline"
+                      className="text-foreground hover:bg-slate-50 font-medium px-6 py-3 h-12 rounded-full border-slate-200 hover:border-primary/30 transition-all duration-300"
                     >
                       Ya tengo cuenta
                     </Button>
                   </div>
                   
-                  <p className="text-xs text-white/60 mt-6">
+                  <p className="text-xs text-muted-foreground mt-6">
                     ✨ Guarda itinerarios • Accede desde cualquier dispositivo • 100% gratis
                   </p>
                 </div>
