@@ -1,4 +1,4 @@
-import { User, Settings, FileText, HelpCircle, LogOut } from 'lucide-react';
+import { User, HelpCircle, LogOut, Plane } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -50,15 +50,8 @@ export const ProfileMenu = () => {
           onClick={() => navigate('/mis-viajes')}
           className="cursor-pointer rounded-lg px-4 py-3 hover:bg-secondary/50 focus:bg-secondary/50"
         >
-          <FileText className="mr-3 h-4 w-4 text-foreground/60" />
-          <span className="text-sm font-medium">Mis itinerarios</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => navigate('/configuracion')}
-          className="cursor-pointer rounded-lg px-4 py-3 hover:bg-secondary/50 focus:bg-secondary/50"
-        >
-          <Settings className="mr-3 h-4 w-4 text-foreground/60" />
-          <span className="text-sm font-medium">Configuración</span>
+          <Plane className="mr-3 h-4 w-4 text-foreground/60" />
+          <span className="text-sm font-medium">Mis Viajes</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => navigate('/ayuda')}
