@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -67,17 +66,8 @@ export const useAuth = () => {
   };
 
   const resetPassword = async (email: string) => {
-    const resetLink = `${window.location.origin}/reset-password`;
+    const redirectUrl = `${window.location.origin}/reset-password`;
     
-    // First, trigger Supabase password reset to generate the token
-    const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: resetLink,
-    });
-    
-    if (supabaseError) {
-      return { error: supabaseError };
-    }
-
     // Get user's first name from profiles if available
     let firstName: string | undefined;
     try {
@@ -94,23 +84,18 @@ export const useAuth = () => {
       // Ignore - name is optional
     }
 
-    // Send our branded email via edge function
-    try {
-      const response = await supabase.functions.invoke('send-password-reset', {
-        body: {
-          email,
-          resetLink,
-          firstName,
-        },
-      });
-      
-      if (response.error) {
-        console.error('Error sending branded email:', response.error);
-        // Don't return error - Supabase already sent a backup email
-      }
-    } catch (e) {
-      console.error('Error calling send-password-reset:', e);
-      // Don't return error - Supabase already sent a backup email
+    // Call our custom edge function to send branded email
+    const response = await supabase.functions.invoke('send-password-reset', {
+      body: {
+        email,
+        redirectUrl,
+        firstName,
+      },
+    });
+    
+    if (response.error) {
+      console.error('Error sending password reset:', response.error);
+      return { error: { message: 'Error al enviar el correo de recuperación' } };
     }
     
     return { error: null };
