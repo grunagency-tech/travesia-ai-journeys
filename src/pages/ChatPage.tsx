@@ -941,13 +941,13 @@ const ChatPage = () => {
       </div>
 
       {/* HTML Content Section */}
-      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 lg:w-2/5 bg-primary items-center justify-center p-6 relative`}>
+      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-1/2 lg:w-2/5 bg-gradient-to-br from-slate-50 via-white to-blue-50 items-center justify-center p-6 relative`}>
         {showContentOnMobile && (
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setShowContentOnMobile(false)}
-            className="md:hidden absolute top-4 left-4 z-10 bg-white/90 hover:bg-white"
+            className="md:hidden absolute top-4 left-4 z-10 bg-white/90 hover:bg-white shadow-md"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -976,22 +976,40 @@ const ChatPage = () => {
             )}
           </div>
         ) : (
-          <div className="text-center text-white px-8">
-            <div className="mb-6 relative">
-              <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <img src={logoIcon} alt="travesIA" className="w-14 h-14 animate-pulse" />
+          <div className="text-center px-8">
+            {/* Decorative background elements */}
+            <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
+            <div className="absolute bottom-20 left-10 w-24 h-24 bg-blue-100/50 rounded-full blur-xl" />
+            
+            <div className="relative z-10">
+              <div className="mb-8 relative">
+                <div className="w-28 h-28 mx-auto bg-gradient-to-br from-primary/10 to-blue-100 rounded-3xl flex items-center justify-center shadow-xl border border-primary/10">
+                  <img src={logoIcon} alt="travesIA" className="w-16 h-16 animate-pulse" />
+                </div>
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
+                  <div className="bg-white shadow-lg rounded-full p-2">
+                    <Sparkles className="w-5 h-5 text-primary animate-bounce" />
+                  </div>
+                </div>
               </div>
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                <Sparkles className="w-6 h-6 text-yellow-300 animate-bounce" />
+              
+              <h3 className="text-2xl font-urbanist font-bold mb-4 text-foreground">
+                Tu itinerario está en camino
+              </h3>
+              
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <img src={logoFull} alt="travesIA" className="h-6" />
               </div>
-            </div>
-            <h3 className="text-2xl font-bold mb-3">Tu itinerario está en camino</h3>
-            <p className="text-blue-100 text-lg max-w-sm mx-auto">
-              Escribe los detalles de tu viaje ideal y la magia de travesIA hará el resto
-            </p>
-            <div className="mt-8 flex items-center justify-center gap-2 text-white/60 text-sm">
-              <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" />
-              <span>Esperando tu mensaje...</span>
+              
+              <p className="text-muted-foreground text-base max-w-sm mx-auto leading-relaxed">
+                está preparando un plan personalizado con vuelos, hospedaje, actividades y todo lo que necesitas para tu viaje
+              </p>
+              
+              <div className="mt-10 flex items-center justify-center gap-3">
+                <div className="w-2 h-2 bg-primary/40 rounded-full animate-pulse" />
+                <span className="text-sm text-muted-foreground">Esperando tu mensaje...</span>
+                <div className="w-2 h-2 bg-primary/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+              </div>
             </div>
           </div>
         )}
