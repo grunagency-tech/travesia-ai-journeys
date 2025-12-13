@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -65,10 +66,38 @@ export const useAuth = () => {
   };
 
   const resetPassword = async (email: string) => {
+    // First, generate the reset link using Supabase
+    const resetLink = `${window.location.origin}/reset-password`;
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: resetLink,
     });
-    return { error };
+    
+    if (error) {
+      return { error };
+    }
+    
+    // Then send branded email via our edge function
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/send-password-reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          resetLink,
+        }),
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to send branded email, but Supabase email was sent');
+      }
+    } catch (e) {
+      console.error('Error sending branded email:', e);
+    }
+    
+    return { error: null };
   };
 
   const updatePassword = async (newPassword: string) => {
