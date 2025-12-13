@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -10,11 +11,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface PasswordResetRequest {
-  email: string;
-  redirectUrl: string;
-  firstName?: string;
-}
+// Validation schema for password reset request
+const passwordResetSchema = z.object({
+  email: z.string()
+    .email("Correo electrónico inválido")
+    .max(255, "El correo electrónico es demasiado largo"),
+  redirectUrl: z.string()
+    .url("URL de redirección inválida")
+    .refine(
+      (url) => {
+        const allowedDomains = ['lovableproject.com', 'localhost', 'grunagency.com'];
+        return allowedDomains.some(domain => url.includes(domain));
+      },
+      "URL de redirección no permitida"
+    ),
+  firstName: z.string().max(100, "Nombre demasiado largo").optional()
+});
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -22,9 +34,22 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, redirectUrl, firstName }: PasswordResetRequest = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const parseResult = passwordResetSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error("Validation error:", parseResult.error.errors);
+      // Return generic message to prevent email enumeration
+      return new Response(
+        JSON.stringify({ success: true, message: "Si el correo existe, recibirás un enlace de recuperación" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    
+    const { email, redirectUrl, firstName } = parseResult.data;
 
-    console.log("Processing password reset for:", email);
+    console.log("Processing password reset request");
 
     // Create Supabase client with service role
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
