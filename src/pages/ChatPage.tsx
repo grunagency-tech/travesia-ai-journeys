@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft } from "lucide-react";
+import ItineraryHeader from "@/components/ItineraryHeader";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -964,11 +965,21 @@ const ChatPage = () => {
         )}
 
         {htmlContent ? (
-          <div className={`w-full h-full bg-white rounded-lg shadow-lg overflow-auto p-6 relative ${needsPayment ? 'select-none' : ''}`}>
-            <div 
-              dangerouslySetInnerHTML={{ __html: htmlContent }} 
-              className={needsPayment ? 'blur-md pointer-events-none' : ''}
-            />
+          <div className={`w-full h-full bg-white rounded-lg shadow-lg overflow-auto relative ${needsPayment ? 'select-none' : ''}`}>
+            <div className={needsPayment ? 'blur-md pointer-events-none' : ''}>
+              {/* Itinerary Header with image + map */}
+              <ItineraryHeader 
+                title={conversationTitle || "Tu viaje"}
+                destination={conversationTitle}
+                startDate={tripDate || undefined}
+                travelers={1}
+              />
+              
+              {/* HTML Content */}
+              <div className="p-6 pt-0">
+                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+              </div>
+            </div>
             {needsPayment && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
                 <div className="bg-white p-6 rounded-xl shadow-xl text-center max-w-sm">
