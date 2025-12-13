@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -9,10 +10,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface VerifyTokenRequest {
-  token: string;
-  newPassword?: string;
-}
+// Validation schema for request body
+const verifyTokenSchema = z.object({
+  token: z.string().uuid("Token inválido"),
+  newPassword: z.string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .max(72, "La contraseña no puede tener más de 72 caracteres")
+    .optional()
+});
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -20,7 +25,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { token, newPassword }: VerifyTokenRequest = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const parseResult = verifyTokenSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error("Validation error:", parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: parseResult.error.errors[0]?.message || "Datos inválidos" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    
+    const { token, newPassword } = parseResult.data;
 
     console.log("Verifying reset token");
 
