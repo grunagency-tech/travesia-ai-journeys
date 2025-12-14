@@ -203,7 +203,7 @@ export const Navbar = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium"
                 >
-                  Mis viajes
+                  Mis Viajes
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
