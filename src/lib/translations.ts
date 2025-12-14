@@ -231,11 +231,11 @@ export const translations = {
       IT: 'Registrati Gratis',
     },
     myTrips: {
-      ES: 'Mis viajes',
-      EN: 'My trips',
+      ES: 'Mis Viajes',
+      EN: 'My Trips',
       DE: 'Meine Reisen',
-      PT: 'Minhas viagens',
-      IT: 'I miei viaggi',
+      PT: 'Minhas Viagens',
+      IT: 'I Miei Viaggi',
     },
   },
   partners: {

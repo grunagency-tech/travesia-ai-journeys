@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
@@ -45,6 +46,7 @@ const COUNTRIES = [
 ];
 
 const Register = () => {
+  const isMobile = useIsMobile();
   const { user, signUpWithEmail, loading } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -176,7 +178,7 @@ const Register = () => {
                   {COUNTRIES.map((c) => (
                     <SelectItem key={c.code} value={c.code}>
                       <span className="flex items-center gap-2">
-                        <span>{c.flag}</span>
+                        {isMobile && <span>{c.flag}</span>}
                         <span>{c.name}</span>
                       </span>
                     </SelectItem>
