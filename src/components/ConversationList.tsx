@@ -122,17 +122,6 @@ export const ConversationList = ({ onSelectConversation, onNewChat, selectedId }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-border">
-        <Button 
-          onClick={onNewChat}
-          className="w-full gap-2"
-          variant="default"
-        >
-          <Plus className="w-4 h-4" />
-          Nuevo viaje
-        </Button>
-      </div>
-
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="p-4 text-center text-muted-foreground text-sm">
@@ -189,6 +178,17 @@ export const ConversationList = ({ onSelectConversation, onNewChat, selectedId }
             ))}
           </div>
         )}
+      </div>
+
+      <div className="p-4 border-t border-border mt-auto">
+        <Button 
+          onClick={onNewChat}
+          className="w-full gap-2"
+          variant="default"
+        >
+          <Plus className="w-4 h-4" />
+          Nuevo Chat
+        </Button>
       </div>
 
       {/* Delete confirmation dialog */}
