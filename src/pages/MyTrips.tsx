@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight, Sparkles } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS, de, pt, it } from 'date-fns/locale';
 import { getTravelImage } from '@/lib/travelImages';
@@ -122,8 +122,7 @@ const MyTrips = () => {
                       {trips.length}
                     </span>
                   </div>
-                  <p className="text-muted-foreground text-sm flex items-center gap-1">
-                    <Sparkles className="w-4 h-4 text-primary" />
+                  <p className="text-muted-foreground text-sm">
                     {t('subtitle')}
                   </p>
                 </div>
@@ -141,7 +140,6 @@ const MyTrips = () => {
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in">
               <div className="bg-gradient-to-r from-primary to-blue-600 px-6 md:px-10 py-6">
                 <h2 className="font-urbanist font-bold text-xl md:text-2xl text-white flex items-center gap-3">
-                  <Sparkles className="w-6 h-6" />
                   ¡Comienza tu aventura!
                 </h2>
                 <p className="text-white/80 text-sm mt-1">
@@ -247,17 +245,6 @@ const MyTrips = () => {
                             </p>
                           </div>
 
-                          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4">
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-8 h-8 bg-purple-200 rounded-xl flex items-center justify-center">
-                                <Sparkles className="w-4 h-4 text-purple-600" />
-                              </div>
-                              <span className="text-xs text-muted-foreground font-medium uppercase">IA</span>
-                            </div>
-                            <p className="font-semibold text-foreground text-sm">
-                              Generado
-                            </p>
-                          </div>
                         </div>
                       </div>
 

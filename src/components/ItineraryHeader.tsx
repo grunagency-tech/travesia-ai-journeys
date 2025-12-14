@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MapPin, Calendar, Users, Sparkles } from "lucide-react";
+import { MapPin, Calendar, Users } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -153,11 +153,6 @@ const ItineraryHeader = ({
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         
-        {/* AI Verified Badge */}
-        <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5 shadow-lg">
-          <Sparkles className="w-4 h-4" />
-          Verificado con IA
-        </div>
         
         {/* Title overlay */}
         <div className="absolute bottom-4 left-4 right-4">

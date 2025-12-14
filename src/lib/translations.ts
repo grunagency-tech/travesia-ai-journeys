@@ -572,11 +572,11 @@ export const translations = {
       IT: 'I Miei Viaggi',
     },
     subtitle: {
-      ES: 'Tus itinerarios generados con IA',
-      EN: 'Your AI-generated itineraries',
-      DE: 'Ihre KI-generierten Reiserouten',
-      PT: 'Seus itinerários gerados com IA',
-      IT: 'I tuoi itinerari generati con IA',
+      ES: 'Tus itinerarios personalizados',
+      EN: 'Your personalized itineraries',
+      DE: 'Ihre personalisierten Reiserouten',
+      PT: 'Seus itinerários personalizados',
+      IT: 'I tuoi itinerari personalizzati',
     },
     loading: {
       ES: 'Cargando tus aventuras...',
