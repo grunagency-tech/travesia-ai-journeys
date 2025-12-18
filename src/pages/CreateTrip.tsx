@@ -86,9 +86,14 @@ const CreateTrip = () => {
 
       setItinerary(data.itinerary);
       
+      // Auto-save the trip after generation
+      if (user) {
+        await autoSaveTrip(data.itinerary);
+      }
+      
       toast({
-        title: '¡Itinerario generado!',
-        description: 'Tu plan de viaje está listo',
+        title: '¡Itinerario generado y guardado!',
+        description: 'Puedes verlo en "Mis viajes"',
       });
     } catch (error: any) {
       console.error('Error generating itinerary:', error);
@@ -102,20 +107,8 @@ const CreateTrip = () => {
     }
   };
 
-  const handleSaveTrip = async () => {
-    if (!user) {
-      toast({
-        title: 'Inicia sesión',
-        description: 'Debes iniciar sesión para guardar el viaje',
-        variant: 'destructive',
-      });
-      navigate('/auth');
-      return;
-    }
-
-    if (!itinerary) return;
-
-    setSavingTrip(true);
+  const autoSaveTrip = async (itineraryData: any) => {
+    if (!user) return;
 
     try {
       // Save trip
@@ -123,7 +116,7 @@ const CreateTrip = () => {
         .from('trips')
         .insert({
           user_id: user.id,
-          title: itinerary.trip.title,
+          title: itineraryData.trip.title,
           origin,
           destination,
           start_date: startDate,
@@ -138,7 +131,7 @@ const CreateTrip = () => {
       if (tripError) throw tripError;
 
       // Save itinerary days
-      const daysData = itinerary.days.map((day: any) => ({
+      const daysData = itineraryData.days.map((day: any) => ({
         trip_id: trip.id,
         day_number: day.dayNumber,
         date: day.date,
@@ -153,8 +146,8 @@ const CreateTrip = () => {
       if (daysError) throw daysError;
 
       // Save flight options
-      if (itinerary.flights && itinerary.flights.length > 0) {
-        const flightsData = itinerary.flights.map((flight: any) => ({
+      if (itineraryData.flights && itineraryData.flights.length > 0) {
+        const flightsData = itineraryData.flights.map((flight: any) => ({
           trip_id: trip.id,
           airline: flight.airline,
           origin: flight.origin,
@@ -172,24 +165,13 @@ const CreateTrip = () => {
 
         if (flightsError) throw flightsError;
       }
-
-      toast({
-        title: '¡Viaje guardado!',
-        description: 'Puedes verlo en "Mis viajes"',
-      });
-
-      navigate('/mis-viajes');
     } catch (error: any) {
-      console.error('Error saving trip:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'No se pudo guardar el viaje',
-        variant: 'destructive',
-      });
-    } finally {
-      setSavingTrip(false);
+      console.error('Error auto-saving trip:', error);
+      // Don't throw - we already have the itinerary displayed
     }
   };
+
+  // handleSaveTrip removed - trips are now auto-saved after generation
 
   if (authLoading) {
     return (
@@ -412,20 +394,16 @@ const CreateTrip = () => {
                       </div>
                     </div>
 
-                    {/* Actions */}
+                    {/* Auto-saved message */}
+                    <div className="w-full text-center py-4 text-green-600 font-medium flex items-center justify-center gap-2">
+                      <span className="text-lg">✓</span>
+                      Itinerario guardado automáticamente
+                    </div>
                     <Button 
-                      className="w-full h-14 text-base font-semibold rounded-xl shadow-hover hover:shadow-elegant transition-all mt-2" 
-                      onClick={handleSaveTrip}
-                      disabled={savingTrip}
+                      className="w-full h-14 text-base font-semibold rounded-xl shadow-hover hover:shadow-elegant transition-all" 
+                      onClick={() => navigate('/mis-viajes')}
                     >
-                      {savingTrip ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Guardando tu viaje...
-                        </>
-                      ) : (
-                        'Guardar este itinerario'
-                      )}
+                      Ver mis viajes
                     </Button>
                   </CardContent>
                 </Card>
