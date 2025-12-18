@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Currency = 'USD' | 'EUR' | 'MXN' | 'ARS' | 'BRL';
+type Currency = 'USD' | 'EUR' | 'MXN' | 'ARS' | 'BRL' | 'PEN';
 
 interface CurrencyContextType {
   currency: Currency;
@@ -16,6 +16,7 @@ const currencySymbols: Record<Currency, string> = {
   MXN: '$',
   ARS: '$',
   BRL: 'R$',
+  PEN: 'S/',
 };
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
