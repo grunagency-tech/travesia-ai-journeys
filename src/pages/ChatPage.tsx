@@ -44,7 +44,7 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { currency } = useCurrency();
-  const { country, city } = useUserLocation();
+  const { country, state, city } = useUserLocation();
   const { language } = useLanguage();
   const { toast } = useToast();
   const t = (key: string) => getTranslation(`chat.${key}`, language);
@@ -480,6 +480,7 @@ const ChatPage = () => {
           conversationId: convId || null,
           location: {
             country: country || null,
+            state: state || null,
             city: city || null,
           },
         }),
