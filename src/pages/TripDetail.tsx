@@ -196,33 +196,48 @@ const TripDetail = () => {
   }, [trip?.destination]);
 
   useEffect(() => {
-    if (mapCoordinates && mapContainerRef.current && !mapRef.current) {
-      // Create custom icon
-      const customIcon = L.divIcon({
-        className: 'custom-marker',
-        html: `<div style="background: linear-gradient(135deg, hsl(17, 93%, 53%) 0%, hsl(17, 93%, 43%) 100%); width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-          <svg style="transform: rotate(45deg); width: 16px; height: 16px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-        </div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-      });
+    // Only proceed if we have coordinates and a container
+    if (!mapCoordinates || !mapContainerRef.current) return;
 
-      mapRef.current = L.map(mapContainerRef.current, {
-        center: mapCoordinates,
-        zoom: 12,
-        zoomControl: true,
-        scrollWheelZoom: false,
-      });
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(mapRef.current);
-
-      L.marker(mapCoordinates, { icon: customIcon }).addTo(mapRef.current);
+    // Clean up previous map instance if exists
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
     }
+
+    // Create custom icon
+    const customIcon = L.divIcon({
+      className: 'custom-marker',
+      html: `<div style="background: linear-gradient(135deg, hsl(17, 93%, 53%) 0%, hsl(17, 93%, 43%) 100%); width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+        <svg style="transform: rotate(45deg); width: 16px; height: 16px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+    });
+
+    // Initialize map
+    const map = L.map(mapContainerRef.current, {
+      center: mapCoordinates,
+      zoom: 12,
+      zoomControl: true,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker(mapCoordinates, { icon: customIcon }).addTo(map);
+
+    mapRef.current = map;
+
+    // Force a resize after mount to ensure proper rendering
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
 
     return () => {
       if (mapRef.current) {
