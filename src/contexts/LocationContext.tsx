@@ -37,7 +37,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       
       setLocationData({
         country: data.country_name || null,
-        state: data.region || null,
+        state: data.region_name || data.region || null,
         city: data.city || null,
         latitude: data.latitude || null,
         longitude: data.longitude || null,
@@ -48,7 +48,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       // Store in localStorage for caching
       localStorage.setItem('userLocation', JSON.stringify({
         country: data.country_name,
-        state: data.region,
+        state: data.region_name || data.region,
         city: data.city,
         latitude: data.latitude,
         longitude: data.longitude,
