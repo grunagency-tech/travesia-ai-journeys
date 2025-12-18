@@ -10,6 +10,7 @@ interface ItineraryHeaderProps {
   endDate?: string;
   travelers?: number;
   price?: string;
+  customImage?: string;
 }
 
 // Pool of travel images for destinations
@@ -59,7 +60,8 @@ const ItineraryHeader = ({
   startDate, 
   endDate, 
   travelers = 1,
-  price 
+  price,
+  customImage
 }: ItineraryHeaderProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -67,7 +69,8 @@ const ItineraryHeader = ({
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const displayDestination = destination || title;
-  const heroImage = getDestinationImage(displayDestination);
+  // Use custom image if provided, otherwise generate based on destination
+  const heroImage = customImage || getDestinationImage(displayDestination);
 
   // Geocode destination
   useEffect(() => {
