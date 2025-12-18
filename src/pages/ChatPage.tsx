@@ -37,7 +37,7 @@ interface Message {
   htmlContent?: string;
 }
 
-const MAX_FREE_TRIPS = 2;
+const MAX_SAVED_TRIPS = 5;
 
 const ChatPage = () => {
   const location = useLocation();
@@ -303,14 +303,15 @@ const ChatPage = () => {
     }
   };
 
-  // When itinerary arrives, check if user needs to login or pay
+  // Auto-save when itinerary arrives and user is logged in
   useEffect(() => {
-    if (htmlContent && !tripSaved && !authLoading && !checkingTripCount) {
-      if (!user) {
-        setShowAuthDialog(true);
-      } else if (tripCount >= MAX_FREE_TRIPS) {
-        setShowPaymentDialog(true);
+    if (htmlContent && !tripSaved && !authLoading && !checkingTripCount && user) {
+      // Check if under limit before auto-saving
+      if (tripCount < MAX_SAVED_TRIPS) {
+        saveTrip();
       }
+    } else if (htmlContent && !tripSaved && !authLoading && !user) {
+      setShowAuthDialog(true);
     }
   }, [htmlContent, user, authLoading, tripSaved, tripCount, checkingTripCount]);
 
@@ -333,24 +334,18 @@ const ChatPage = () => {
     }
   }, [user, pendingMessage, authLoading]);
 
-  const handleSaveAttempt = async () => {
-    if (!user) {
-      setShowAuthDialog(true);
-      return;
-    }
-
-    await checkTripCount();
-    
-    if (tripCount >= MAX_FREE_TRIPS) {
-      setShowPaymentDialog(true);
-      return;
-    }
-
-    saveTrip();
-  };
-
   const saveTrip = async () => {
     if (!user || !htmlContent || tripSaved) return;
+    
+    // Check if already at limit
+    if (tripCount >= MAX_SAVED_TRIPS) {
+      toast({
+        title: "Límite alcanzado",
+        description: `Has alcanzado el límite de ${MAX_SAVED_TRIPS} viajes guardados. Elimina alguno para guardar más.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -625,8 +620,7 @@ const ChatPage = () => {
     setShowSidebar(false);
   };
 
-  const canShowSaveButton = htmlContent && !tripSaved;
-  const needsPayment = user && tripCount >= MAX_FREE_TRIPS && !tripSaved;
+  const canShowSaveButton = false; // Auto-save is now enabled, no manual save button needed
 
   return (
     <div className="h-screen flex">
@@ -653,30 +647,7 @@ const ChatPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Payment Dialog */}
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-primary" />
-              Límite de itinerarios alcanzado
-            </DialogTitle>
-            <DialogDescription className="space-y-3 pt-2">
-              <p>Has alcanzado el límite de <strong>{MAX_FREE_TRIPS} itinerarios gratuitos</strong>.</p>
-              <p>Para guardar más itinerarios y desbloquear funciones premium, actualiza tu cuenta.</p>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button variant="outline" onClick={() => setShowPaymentDialog(false)} disabled={isProcessingPayment}>
-              Ver sin guardar
-            </Button>
-            <Button onClick={handlePayment} disabled={isProcessingPayment} className="gap-2">
-              <CreditCard className="w-4 h-4" />
-              {isProcessingPayment ? "Procesando..." : "Desbloquear Premium"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Payment Dialog removed - no longer needed */}
 
       {/* Sidebar for conversations - Desktop */}
       {user && showDesktopSidebar && (
@@ -761,17 +732,12 @@ const ChatPage = () => {
             </Sheet>
           )}
           
-          {/* Save button - always show when itinerary exists */}
-          {canShowSaveButton && (
-            <Button
-              onClick={handleSaveAttempt}
-              disabled={isSaving || checkingTripCount}
-              size="sm"
-              className="gap-2 bg-primary hover:bg-primary/90"
-            >
-              <Save className="h-4 w-4" />
-              {isSaving ? "Guardando..." : "Guardar"}
-            </Button>
+          {/* Auto-saving indicator */}
+          {isSaving && (
+            <span className="text-sm text-muted-foreground font-medium flex items-center gap-1">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Guardando...
+            </span>
           )}
           {tripSaved && (
             <span className="text-sm text-green-600 font-medium flex items-center gap-1">
@@ -966,8 +932,8 @@ const ChatPage = () => {
         )}
 
         {htmlContent ? (
-          <div className={`w-full h-full bg-white rounded-lg shadow-lg overflow-auto relative ${needsPayment ? 'select-none' : ''}`}>
-            <div className={needsPayment ? 'blur-md pointer-events-none' : ''}>
+          <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-auto relative">
+            <div>
               {/* Itinerary Header with image + map */}
               <ItineraryHeader 
                 title={conversationTitle || "Tu viaje"}
@@ -981,21 +947,6 @@ const ChatPage = () => {
                 <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
               </div>
             </div>
-            {needsPayment && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                <div className="bg-white p-6 rounded-xl shadow-xl text-center max-w-sm">
-                  <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-2">Contenido bloqueado</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Has alcanzado el límite de {MAX_FREE_TRIPS} itinerarios gratuitos
-                  </p>
-                  <Button onClick={handlePayment} disabled={isProcessingPayment} className="w-full gap-2">
-                    <CreditCard className="w-4 h-4" />
-                    {isProcessingPayment ? "Procesando..." : "Desbloquear por $9.99 USD"}
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div className="text-center px-8 relative z-10">
