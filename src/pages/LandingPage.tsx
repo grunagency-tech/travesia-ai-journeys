@@ -86,7 +86,7 @@ const LandingPage = () => {
             </h1>
             
             {/* Subtitle */}
-            <p className="text-lg sm:text-lg md:text-xl text-white/90 mb-0 sm:mb-6 max-w-3xl sm:mx-auto font-light mt-4 sm:mt-0">
+            <p className="text-lg sm:text-lg md:text-xl text-white/90 mb-0 sm:mb-6 max-w-3xl sm:mx-auto font-light mt-4 sm:mt-0 translate-y-[30px] sm:translate-y-0">
               {getTranslation('hero.subtitle', language)}
             </p>
           </div>
