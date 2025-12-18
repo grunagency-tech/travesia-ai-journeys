@@ -312,10 +312,10 @@ const Profile = () => {
                 </div>
                 
                 {/* Location */}
-                {(city || state || country) && (
+                {(state || country) && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-center">{[city, state, country].filter(Boolean).join(', ')}</span>
+                    <span className="text-center">{[state, country].filter(Boolean).join(', ')}</span>
                   </div>
                 )}
                 
