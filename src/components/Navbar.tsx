@@ -205,6 +205,13 @@ export const Navbar = () => {
             {user ? (
               <>
                 <Link 
+                  to="/perfil" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium"
+                >
+                  Mi Perfil
+                </Link>
+                <Link 
                   to="/mis-viajes" 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm font-medium"
