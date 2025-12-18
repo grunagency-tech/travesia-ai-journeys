@@ -131,16 +131,7 @@ const Auth = () => {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t('password')}</Label>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  {t('forgotPassword')}
-                </button>
-              </div>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -149,6 +140,13 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-xs text-primary hover:underline text-left"
+              >
+                {t('forgotPassword')}
+              </button>
             </div>
             <Button 
               type="submit" 
