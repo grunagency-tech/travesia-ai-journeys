@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 interface LocationData {
   country: string | null;
+  state: string | null;
   city: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -18,6 +19,7 @@ const LocationContext = createContext<LocationContextType | undefined>(undefined
 export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const [locationData, setLocationData] = useState<LocationData>({
     country: null,
+    state: null,
     city: null,
     latitude: null,
     longitude: null,
@@ -35,6 +37,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       
       setLocationData({
         country: data.country_name || null,
+        state: data.region || null,
         city: data.city || null,
         latitude: data.latitude || null,
         longitude: data.longitude || null,
@@ -45,6 +48,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       // Store in localStorage for caching
       localStorage.setItem('userLocation', JSON.stringify({
         country: data.country_name,
+        state: data.region,
         city: data.city,
         latitude: data.latitude,
         longitude: data.longitude,
@@ -75,6 +79,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       if (isValid) {
         setLocationData({
           country: parsed.country,
+          state: parsed.state || null,
           city: parsed.city,
           latitude: parsed.latitude,
           longitude: parsed.longitude,
