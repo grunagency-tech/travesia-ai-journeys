@@ -95,7 +95,7 @@ const LandingPage = () => {
           <div className="flex-1 sm:hidden min-h-8" />
           
           {/* Input Section - at bottom on mobile */}
-          <div className="max-w-5xl mx-auto text-left sm:text-center w-full">
+          <div className="max-w-5xl mx-auto text-left sm:text-center w-full -translate-y-[30px] sm:translate-y-0">
             
             {/* Input Box - Mobile Version */}
             <div className="sm:hidden bg-white rounded-3xl shadow-2xl p-4 mb-3 max-w-4xl mx-auto -mt-20">
