@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft, Trash2, Sparkles } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft, Trash2, Sparkles, Hotel, MessageSquare, FileText, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import logoIcon from '@/assets/logo-icon.svg';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,17 @@ interface FlightOption {
   link: string | null;
 }
 
+interface Accommodation {
+  recommendation: string;
+  estimatedCostPerNight: number;
+}
+
+interface TripPreferences {
+  itinerary_html?: string;
+  accommodation?: Accommodation;
+  summary?: string;
+}
+
 interface Trip {
   id: string;
   title: string;
@@ -49,7 +61,7 @@ interface Trip {
   end_date: string;
   budget: number | null;
   travelers: number;
-  preferences: { itinerary_html?: string } | null;
+  preferences: TripPreferences | null;
 }
 
 // Pool of travel images for trip headers
@@ -85,6 +97,7 @@ const TripDetail = () => {
   const [flights, setFlights] = useState<FlightOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState("resumen");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -214,49 +227,47 @@ const TripDetail = () => {
   }
 
   const itineraryHtml = trip.preferences?.itinerary_html;
+  const accommodation = trip.preferences?.accommodation;
+  const tripSummary = trip.preferences?.summary;
   const tripImage = getImageForTrip(trip.id);
 
+  // Calculate trip duration
+  const startDate = new Date(trip.start_date);
+  const endDate = new Date(trip.end_date);
+  const tripDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Header with Image */}
-      <div className="relative">
-        {/* Background Image - Full width from top */}
-        <div className="absolute inset-x-0 top-0 h-[320px] md:h-[380px] overflow-hidden">
-          <img 
-            src={tripImage} 
-            alt={trip.destination}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-background" />
-        </div>
+      {/* Spacer for navbar */}
+      <div className="h-16" />
 
-        {/* Spacer for navbar */}
-        <div className="h-20" />
-
-        {/* Navigation & Actions - Inside container, aligned */}
-        <div className="relative container mx-auto px-4 md:px-8 pt-14">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="max-w-6xl mx-auto">
+          
+          {/* Top Navigation */}
+          <div className="flex items-center justify-between mb-6">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/mis-viajes')}
-              className="bg-white/95 backdrop-blur-sm hover:bg-white text-foreground rounded-full px-5 shadow-lg border border-white/20"
+              className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver
+              Volver a mis viajes
             </Button>
             
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button 
-                  variant="destructive" 
+                  variant="ghost" 
                   size="sm" 
                   disabled={isDeleting}
-                  className="rounded-full px-5 shadow-lg"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Eliminar
+                  Eliminar viaje
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="rounded-2xl">
@@ -277,242 +288,404 @@ const TripDetail = () => {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-        </div>
 
-        {/* Trip Title Card */}
-        <div className="relative container mx-auto px-4 md:px-8 mt-20 md:mt-28 pb-6">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-5xl mx-auto animate-fade-in">
-            {/* Title Section */}
-            <div className="flex items-start gap-4 mb-8">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                <img src={logoIcon} alt="travesIA" className="w-8 h-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="font-urbanist font-extrabold text-2xl md:text-4xl text-foreground leading-tight mb-2">
-                  {trip.title}
-                </h1>
-                <p className="text-muted-foreground text-sm flex items-center gap-1">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  Generado con IA por travesIA
-                </p>
-              </div>
-            </div>
-
-            {/* Trip Info Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4 md:p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-primary" />
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Left Column - Hero Card */}
+            <div className="lg:col-span-2">
+              {/* Hero Image Card */}
+              <div className="relative rounded-2xl overflow-hidden mb-6">
+                {/* Grayscale Image */}
+                <div className="relative h-[280px] md:h-[320px]">
+                  <img 
+                    src={tripImage} 
+                    alt={trip.destination}
+                    className="w-full h-full object-cover grayscale"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                  
+                  {/* Verified Badge */}
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-white/30">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Verificado con IA
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Ruta</span>
-                </div>
-                <p className="font-semibold text-foreground text-sm md:text-base leading-snug">
-                  {trip.origin || 'Por definir'} → {trip.destination}
-                </p>
-              </div>
 
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-4 md:p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-orange-200 rounded-xl flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-orange-600" />
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Fechas</span>
-                </div>
-                <p className="font-semibold text-foreground text-sm md:text-base">
-                  {format(new Date(trip.start_date), 'd MMM', { locale: es })} - {format(new Date(trip.end_date), 'd MMM', { locale: es })}
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4 md:p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-green-200 rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 text-green-600" />
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Viajeros</span>
-                </div>
-                <p className="font-semibold text-foreground text-sm md:text-base">
-                  {trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}
-                </p>
-              </div>
-
-              {trip.budget ? (
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4 md:p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-purple-200 rounded-xl flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-purple-600" />
+                  {/* Title and Info */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h1 className="font-urbanist font-bold text-2xl md:text-3xl text-white mb-4">
+                      Tu viaje a {trip.destination}
+                    </h1>
+                    
+                    {/* Info Badges */}
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
+                        <Calendar className="w-4 h-4" />
+                        {format(startDate, 'd', { locale: es })} - {format(endDate, 'd MMMM yyyy', { locale: es })}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
+                        <MapPin className="w-4 h-4" />
+                        {trip.destination}
+                      </span>
+                      {trip.budget && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
+                          <DollarSign className="w-4 h-4" />
+                          ${trip.budget.toLocaleString()}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Presupuesto</span>
                   </div>
-                  <p className="font-semibold text-foreground text-sm md:text-base">
-                    ${trip.budget.toLocaleString()}
-                  </p>
                 </div>
-              ) : (
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 md:p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Presupuesto</span>
-                  </div>
-                  <p className="font-semibold text-muted-foreground text-sm md:text-base">
-                    Flexible
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>
 
-      {/* Content Section */}
-      <div className="container mx-auto px-4 md:px-8 py-10 md:py-16">
-        <div className="max-w-5xl mx-auto space-y-10">
-          
-          {/* HTML Itinerary from webhook */}
-          {itineraryHtml && (
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-primary to-blue-600 px-6 md:px-10 py-6">
-                <h2 className="font-urbanist font-bold text-xl md:text-2xl text-white flex items-center gap-3">
-                  <Sparkles className="w-6 h-6" />
-                  Tu itinerario completo
-                </h2>
-                <p className="text-white/80 text-sm mt-1">
-                  Planificado especialmente para ti con IA
-                </p>
-              </div>
-              <div className="p-6 md:p-10">
-                <div 
-                  className="prose prose-sm md:prose-base max-w-none prose-headings:font-urbanist prose-headings:font-bold prose-a:text-primary"
-                  dangerouslySetInnerHTML={{ __html: itineraryHtml }} 
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Flights */}
-          {flights.length > 0 && (
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-sky-500 to-cyan-500 px-6 md:px-10 py-6">
-                <h2 className="font-urbanist font-bold text-xl md:text-2xl text-white flex items-center gap-3">
-                  <Plane className="w-6 h-6" />
-                  Opciones de vuelos
-                </h2>
-                <p className="text-white/80 text-sm mt-1">
-                  Las mejores opciones para tu viaje
-                </p>
-              </div>
-              <div className="p-6 md:p-10 space-y-4">
-                {flights.map((flight) => (
-                  <div 
-                    key={flight.id} 
-                    className="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow"
+              {/* Tabs Section */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="w-full justify-start bg-transparent border-b rounded-none h-auto p-0 mb-6">
+                  <TabsTrigger 
+                    value="resumen" 
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
                   >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <p className="font-urbanist font-bold text-lg text-foreground">{flight.airline}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {flight.origin} → {flight.destination}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span>{format(new Date(flight.departure_time), 'PPp', { locale: es })}</span>
-                          </div>
-                          <span className="text-primary">→</span>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span>{format(new Date(flight.arrival_time), 'PPp', { locale: es })}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-3xl font-urbanist font-extrabold text-primary">${flight.price}</p>
-                          <p className="text-xs text-muted-foreground">por persona</p>
-                        </div>
-                        {flight.link && (
-                          <Button className="rounded-full" asChild>
-                            <a href={flight.link} target="_blank" rel="noopener noreferrer">
-                              Ver detalles
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                    Resumen
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="transporte" 
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
+                  >
+                    Transporte
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="alojamiento" 
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
+                  >
+                    Alojamiento
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="comentarios" 
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
+                  >
+                    Comentarios
+                  </TabsTrigger>
+                </TabsList>
 
-          {/* Itinerary Days */}
-          {days.length > 0 && (
-            <div className="space-y-6">
-              <h2 className="font-urbanist font-bold text-2xl text-foreground px-2">
-                Itinerario día a día
-              </h2>
-              {days.map((day) => (
-                <div key={day.id} className="bg-white rounded-3xl shadow-xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-primary/90 to-primary px-6 md:px-10 py-5">
-                    <h3 className="font-urbanist font-bold text-lg md:text-xl text-white">
-                      Día {day.day_number} — {format(new Date(day.date), 'd MMMM yyyy', { locale: es })}
-                    </h3>
-                    {day.summary && (
-                      <p className="text-white/80 text-sm mt-1">{day.summary}</p>
+                {/* Resumen Tab */}
+                <TabsContent value="resumen" className="mt-0">
+                  <div className="space-y-6">
+                    {/* Trip Summary Card */}
+                    <div className="bg-card rounded-2xl border p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-primary" />
+                        </div>
+                        <h3 className="font-urbanist font-bold text-lg">Resumen del viaje</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div className="text-center p-3 bg-muted/50 rounded-xl">
+                          <p className="text-2xl font-bold text-primary">{tripDays}</p>
+                          <p className="text-xs text-muted-foreground">Días</p>
+                        </div>
+                        <div className="text-center p-3 bg-muted/50 rounded-xl">
+                          <p className="text-2xl font-bold text-primary">{trip.travelers}</p>
+                          <p className="text-xs text-muted-foreground">Viajeros</p>
+                        </div>
+                        <div className="text-center p-3 bg-muted/50 rounded-xl">
+                          <p className="text-2xl font-bold text-primary">{days.length}</p>
+                          <p className="text-xs text-muted-foreground">Actividades</p>
+                        </div>
+                        <div className="text-center p-3 bg-muted/50 rounded-xl">
+                          <p className="text-2xl font-bold text-primary">{flights.length}</p>
+                          <p className="text-xs text-muted-foreground">Vuelos</p>
+                        </div>
+                      </div>
+
+                      {tripSummary && (
+                        <p className="text-muted-foreground leading-relaxed">{tripSummary}</p>
+                      )}
+                    </div>
+
+                    {/* HTML Itinerary */}
+                    {itineraryHtml && (
+                      <div className="bg-card rounded-2xl border p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center">
+                            <Sparkles className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-urbanist font-bold text-lg">Itinerario detallado</h3>
+                            <p className="text-xs text-muted-foreground">Generado con IA por travesIA</p>
+                          </div>
+                        </div>
+                        <div 
+                          className="prose prose-sm max-w-none prose-headings:font-urbanist prose-headings:font-bold prose-a:text-primary"
+                          dangerouslySetInnerHTML={{ __html: itineraryHtml }} 
+                        />
+                      </div>
+                    )}
+
+                    {/* Day by Day Itinerary */}
+                    {days.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="font-urbanist font-bold text-lg px-1">Itinerario día a día</h3>
+                        {days.map((day) => (
+                          <div key={day.id} className="bg-card rounded-2xl border overflow-hidden">
+                            <div className="bg-primary/5 px-6 py-4 border-b">
+                              <h4 className="font-urbanist font-bold text-base">
+                                Día {day.day_number} — {format(new Date(day.date), 'd MMMM yyyy', { locale: es })}
+                              </h4>
+                              {day.summary && (
+                                <p className="text-sm text-muted-foreground mt-1">{day.summary}</p>
+                              )}
+                            </div>
+                            <div className="p-6 space-y-4">
+                              {day.activities.map((activity: any, index: number) => (
+                                <div 
+                                  key={index} 
+                                  className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
+                                        {getTimeOfDayLabel(activity.timeOfDay)}
+                                      </span>
+                                      <h5 className="font-urbanist font-semibold text-base">
+                                        {activity.title}
+                                      </h5>
+                                    </div>
+                                    {activity.approxCost && (
+                                      <span className="text-sm font-semibold text-primary">
+                                        ${activity.approxCost}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    {activity.description}
+                                  </p>
+                                  {activity.location && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <MapPin className="w-3 h-3 text-primary" />
+                                      {activity.location}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Empty state */}
+                    {!itineraryHtml && days.length === 0 && (
+                      <div className="bg-card rounded-2xl border p-10 text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center">
+                          <Sparkles className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin resumen disponible</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                          Este viaje aún no tiene un itinerario generado. Puedes crear uno nuevo desde el chat.
+                        </p>
+                      </div>
                     )}
                   </div>
-                  <div className="p-6 md:p-10 space-y-4">
-                    {day.activities.map((activity: any, index: number) => (
-                      <div 
-                        key={index} 
-                        className="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-l-4 border-primary"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-2">
-                              {getTimeOfDayLabel(activity.timeOfDay)}
-                            </span>
-                            <h4 className="font-urbanist font-bold text-lg text-foreground">
-                              {activity.title}
-                            </h4>
-                          </div>
-                          {activity.approxCost && (
-                            <span className="text-lg font-bold text-primary">
-                              ${activity.approxCost}
-                            </span>
-                          )}
+                </TabsContent>
+
+                {/* Transporte Tab */}
+                <TabsContent value="transporte" className="mt-0">
+                  <div className="space-y-4">
+                    {/* Route Info */}
+                    <div className="bg-card rounded-2xl border p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center">
+                          <Plane className="w-5 h-5 text-sky-600" />
                         </div>
-                        <p className="text-muted-foreground leading-relaxed mb-3">
-                          {activity.description}
+                        <h3 className="font-urbanist font-bold text-lg">Ruta del viaje</h3>
+                      </div>
+                      <div className="flex items-center gap-4 text-lg">
+                        <span className="font-semibold">{trip.origin || 'Tu ciudad'}</span>
+                        <Plane className="w-5 h-5 text-primary rotate-90" />
+                        <span className="font-semibold">{trip.destination}</span>
+                      </div>
+                    </div>
+
+                    {/* Flights */}
+                    {flights.length > 0 ? (
+                      <div className="space-y-3">
+                        <h3 className="font-urbanist font-bold text-lg px-1">Opciones de vuelos</h3>
+                        {flights.map((flight) => (
+                          <div 
+                            key={flight.id} 
+                            className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="flex-1">
+                                <p className="font-urbanist font-bold text-base">{flight.airline}</p>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {flight.origin} → {flight.destination}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-primary" />
+                                    <span>{format(new Date(flight.departure_time), 'PPp', { locale: es })}</span>
+                                  </div>
+                                  <span className="text-primary">→</span>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-primary" />
+                                    <span>{format(new Date(flight.arrival_time), 'PPp', { locale: es })}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                  <p className="text-2xl font-urbanist font-bold text-primary">${flight.price}</p>
+                                  <p className="text-xs text-muted-foreground">por persona</p>
+                                </div>
+                                {flight.link && (
+                                  <Button className="rounded-full" size="sm" asChild>
+                                    <a href={flight.link} target="_blank" rel="noopener noreferrer">
+                                      Ver detalles
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-card rounded-2xl border p-10 text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-sky-100 rounded-2xl flex items-center justify-center">
+                          <Plane className="w-8 h-8 text-sky-500" />
+                        </div>
+                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin vuelos registrados</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                          No hay opciones de vuelos disponibles para este viaje.
                         </p>
-                        {activity.location && (
-                          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4 text-primary" />
-                            {activity.location}
-                          </p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Alojamiento Tab */}
+                <TabsContent value="alojamiento" className="mt-0">
+                  <div className="space-y-4">
+                    {accommodation ? (
+                      <div className="bg-card rounded-2xl border p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <Hotel className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <h3 className="font-urbanist font-bold text-lg">Recomendación de alojamiento</h3>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed mb-4">
+                          {accommodation.recommendation}
+                        </p>
+                        {accommodation.estimatedCostPerNight && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl">
+                            <DollarSign className="w-4 h-4 text-amber-600" />
+                            <span className="text-sm font-medium text-amber-700">
+                              Costo estimado: ${accommodation.estimatedCostPerNight} por noche
+                            </span>
+                          </div>
                         )}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="bg-card rounded-2xl border p-10 text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-2xl flex items-center justify-center">
+                          <Hotel className="w-8 h-8 text-amber-500" />
+                        </div>
+                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin información de alojamiento</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                          No hay recomendaciones de alojamiento disponibles para este viaje.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Comentarios Tab */}
+                <TabsContent value="comentarios" className="mt-0">
+                  <div className="bg-card rounded-2xl border p-10 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-violet-100 rounded-2xl flex items-center justify-center">
+                      <MessageSquare className="w-8 h-8 text-violet-500" />
+                    </div>
+                    <h3 className="font-urbanist font-bold text-lg mb-2">Comentarios</h3>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+                      Próximamente podrás agregar notas y comentarios sobre tu viaje.
+                    </p>
+                    <Button variant="outline" className="rounded-full" disabled>
+                      Agregar comentario
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Right Column - Map & Quick Info */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* Map Placeholder */}
+              <div className="bg-card rounded-2xl border overflow-hidden">
+                <div className="h-[300px] bg-muted flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Mapa del viaje
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {trip.origin || 'Tu ciudad'} → {trip.destination}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Empty state if no content */}
-          {!itineraryHtml && days.length === 0 && flights.length === 0 && (
-            <div className="bg-white rounded-3xl shadow-xl p-10 md:p-16 text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-urbanist font-bold text-xl mb-3">Sin itinerario detallado</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Este viaje aún no tiene un itinerario generado. Puedes crear uno nuevo desde el chat.
-              </p>
+
+              {/* Quick Stats */}
+              <div className="bg-card rounded-2xl border p-5">
+                <h3 className="font-urbanist font-bold text-base mb-4">Detalles del viaje</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Destino</span>
+                    <span className="font-medium">{trip.destination}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Duración</span>
+                    <span className="font-medium">{tripDays} días</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Viajeros</span>
+                    <span className="font-medium">{trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}</span>
+                  </div>
+                  {trip.budget && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Presupuesto</span>
+                      <span className="font-medium">${trip.budget.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Inicio</span>
+                    <span className="font-medium">{format(startDate, 'd MMM yyyy', { locale: es })}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Fin</span>
+                    <span className="font-medium">{format(endDate, 'd MMM yyyy', { locale: es })}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* travesIA Badge */}
+              <div className="bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl border border-primary/20 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center">
+                    <img src={logoIcon} alt="travesIA" className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="font-urbanist font-bold text-sm">Generado con travesIA</p>
+                    <p className="text-xs text-muted-foreground">Planificación inteligente</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
