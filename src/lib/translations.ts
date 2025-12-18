@@ -262,6 +262,27 @@ export const translations = {
       PT: 'Viajantes como você que já experimentaram',
       IT: 'Viaggiatori come te che hanno già provato',
     },
+    maria: {
+      ES: '"Planifiqué mi viaje a Cusco en segundos y descubrí lugares únicos."',
+      EN: '"I planned my trip to Cusco in seconds and discovered unique places."',
+      DE: '"Ich habe meine Reise nach Cusco in Sekunden geplant und einzigartige Orte entdeckt."',
+      PT: '"Planejei minha viagem a Cusco em segundos e descobri lugares únicos."',
+      IT: '"Ho pianificato il mio viaggio a Cusco in pochi secondi e ho scoperto luoghi unici."',
+    },
+    jorge: {
+      ES: '"TravesIA me armó mi Eurotrip en segundos. Me ahorro tiempo y dinero."',
+      EN: '"TravesIA put together my Eurotrip in seconds. It saved me time and money."',
+      DE: '"TravesIA hat meinen Eurotrip in Sekunden zusammengestellt. Es hat mir Zeit und Geld gespart."',
+      PT: '"TravesIA montou minha Eurotrip em segundos. Me economizou tempo e dinheiro."',
+      IT: '"TravesIA ha organizzato il mio Eurotrip in pochi secondi. Mi ha fatto risparmiare tempo e denaro."',
+    },
+    valentina: {
+      ES: '"Me encantó tener todo en un solo lugar, sin estrés."',
+      EN: '"I loved having everything in one place, stress-free."',
+      DE: '"Ich liebte es, alles an einem Ort zu haben, stressfrei."',
+      PT: '"Adorei ter tudo em um só lugar, sem estresse."',
+      IT: '"Mi è piaciuto avere tutto in un unico posto, senza stress."',
+    },
   },
   faq: {
     title: {
