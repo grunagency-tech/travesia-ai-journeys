@@ -247,6 +247,10 @@ const ChatPage = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationIdFromState);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [tripDate, setTripDate] = useState<string | null>(null);
+  const [tripEndDate, setTripEndDate] = useState<string | null>(null);
+  const [tripDestination, setTripDestination] = useState<string | null>(null);
+  const [tripTravelers, setTripTravelers] = useState<number>(1);
+  const [tripImage, setTripImage] = useState<string | null>(null);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -691,9 +695,41 @@ const ChatPage = () => {
         if (data.Fecha) {
           setTripDate(data.Fecha);
           console.log("Trip date received:", data.Fecha);
+        } else if (data.fechaInicio) {
+          setTripDate(data.fechaInicio);
+          console.log("Trip start date:", data.fechaInicio);
         } else if (data.itinerario?.[0]?.fecha) {
           setTripDate(data.itinerario[0].fecha);
           console.log("Trip date from itinerary:", data.itinerario[0].fecha);
+        }
+        
+        // Extract end date
+        if (data.fechaFin) {
+          setTripEndDate(data.fechaFin);
+          console.log("Trip end date:", data.fechaFin);
+        } else if (data.itinerario?.length > 0) {
+          const lastDay = data.itinerario[data.itinerario.length - 1];
+          if (lastDay.fecha) {
+            setTripEndDate(lastDay.fecha);
+          }
+        }
+        
+        // Extract destination (for map geocoding) - should be a clean location name
+        if (data.destino) {
+          setTripDestination(data.destino);
+          console.log("Trip destination:", data.destino);
+        }
+        
+        // Extract travelers count
+        if (data.viajeros && typeof data.viajeros === 'number') {
+          setTripTravelers(data.viajeros);
+          console.log("Trip travelers:", data.viajeros);
+        }
+        
+        // Extract custom destination image
+        if (data.imagenDestino) {
+          setTripImage(data.imagenDestino);
+          console.log("Trip image:", data.imagenDestino);
         }
         
         // Check if it's a structured itinerary JSON (has resumen, itinerario, etc.)
@@ -1125,9 +1161,11 @@ const ChatPage = () => {
               {/* Itinerary Header with image + map */}
               <ItineraryHeader 
                 title={conversationTitle || "Tu viaje"}
-                destination={conversationTitle}
+                destination={tripDestination || undefined}
                 startDate={tripDate || undefined}
-                travelers={1}
+                endDate={tripEndDate || undefined}
+                travelers={tripTravelers}
+                customImage={tripImage || undefined}
               />
               
               {/* HTML Content */}
