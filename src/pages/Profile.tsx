@@ -269,8 +269,8 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-8 pt-28">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-32 lg:pt-36">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Left Panel - Profile Info */}
           <Card className="lg:col-span-1 h-fit border-border/50 shadow-sm">
             <CardContent className="p-8">
