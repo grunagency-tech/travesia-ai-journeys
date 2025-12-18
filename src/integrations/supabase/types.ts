@@ -279,6 +279,45 @@ export type Database = {
           },
         ]
       }
+      visited_places: {
+        Row: {
+          city: string | null
+          country: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          place_name: string
+          state: string | null
+          user_id: string
+          visited_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          country: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          place_name: string
+          state?: string | null
+          user_id: string
+          visited_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          place_name?: string
+          state?: string | null
+          user_id?: string
+          visited_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
