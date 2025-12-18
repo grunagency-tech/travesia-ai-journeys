@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import logoIcon from '@/assets/logo-icon.svg';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDestinationImage } from '@/lib/destinationImages';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,29 +65,6 @@ interface Trip {
   preferences: TripPreferences | null;
 }
 
-// Pool of travel images for trip headers
-const tripHeaderImages = [
-  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1500259571355-332da5cb07aa?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&h=400&fit=crop',
-];
-
-const getImageForTrip = (tripId: string) => {
-  let hash = 0;
-  for (let i = 0; i < tripId.length; i++) {
-    const char = tripId.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  const index = Math.abs(hash) % tripHeaderImages.length;
-  return tripHeaderImages[index];
-};
-
 const TripDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
@@ -98,6 +76,8 @@ const TripDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("resumen");
+  const [destinationImage, setDestinationImage] = useState<string>('');
+  const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -109,6 +89,21 @@ const TripDetail = () => {
       loadTripDetails();
     }
   }, [user, authLoading, id, navigate]);
+
+  // Fetch real destination image when trip is loaded
+  useEffect(() => {
+    if (trip?.destination) {
+      setImageLoading(true);
+      getDestinationImage(trip.destination)
+        .then((url) => {
+          setDestinationImage(url);
+          setImageLoading(false);
+        })
+        .catch(() => {
+          setImageLoading(false);
+        });
+    }
+  }, [trip?.destination]);
 
   const loadTripDetails = async () => {
     try {
@@ -229,7 +224,6 @@ const TripDetail = () => {
   const itineraryHtml = trip.preferences?.itinerary_html;
   const accommodation = trip.preferences?.accommodation;
   const tripSummary = trip.preferences?.summary;
-  const tripImage = getImageForTrip(trip.id);
 
   // Calculate trip duration
   const startDate = new Date(trip.start_date);
@@ -298,11 +292,17 @@ const TripDetail = () => {
               <div className="relative rounded-2xl overflow-hidden mb-6">
                 {/* Grayscale Image */}
                 <div className="relative h-[280px] md:h-[320px]">
-                  <img 
-                    src={tripImage} 
-                    alt={trip.destination}
-                    className="w-full h-full object-cover grayscale"
-                  />
+                  {imageLoading ? (
+                    <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <img 
+                      src={destinationImage} 
+                      alt={trip.destination}
+                      className="w-full h-full object-cover grayscale"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                   
                   {/* Verified Badge */}
