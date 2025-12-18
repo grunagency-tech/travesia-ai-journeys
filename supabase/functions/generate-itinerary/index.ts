@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
@@ -29,10 +28,12 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
+    console.log('Received request body:', JSON.stringify(requestBody));
     
     // Validate input
     const validationResult = generateItinerarySchema.safeParse(requestBody);
     if (!validationResult.success) {
+      console.error('Validation failed:', validationResult.error.issues);
       return new Response(
         JSON.stringify({ 
           error: 'Invalid input',
@@ -46,6 +47,7 @@ serve(async (req) => {
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not configured');
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
@@ -54,68 +56,81 @@ serve(async (req) => {
     const end = new Date(endDate);
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    const systemPrompt = `Eres un experto planificador de viajes que crea itinerarios detallados y personalizados. 
-Tu tarea es generar un plan de viaje estructurado en formato JSON.
+    const systemPrompt = `Eres un experto planificador de viajes que crea itinerarios detallados y personalizados en español.
+Tu tarea es generar un plan de viaje completo estructurado en formato JSON.
 
-El JSON debe tener esta estructura exacta:
+El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedades):
 {
-  "trip": {
-    "title": "string - Título atractivo del viaje",
-    "summary": "string - Resumen breve del viaje",
-    "estimatedBudget": number - Presupuesto estimado total
+  "resumen": {
+    "titulo": "string - Título atractivo del viaje",
+    "descripcion": "string - Resumen descriptivo del viaje (2-3 oraciones)",
+    "presupuestoEstimado": number - Presupuesto total estimado en USD,
+    "duracion": number - Número de días,
+    "highlights": ["string - punto destacado 1", "string - punto destacado 2", "string - punto destacado 3"]
   },
-  "days": [
+  "transporte": {
+    "vuelos": [
+      {
+        "aerolinea": "string - nombre de aerolínea sugerida",
+        "origen": "string - ciudad de origen",
+        "destino": "string - ciudad de destino",
+        "fechaSalida": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
+        "fechaLlegada": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
+        "precio": number - precio estimado en USD
+      }
+    ],
+    "transporteLocal": "string - recomendaciones de transporte dentro del destino"
+  },
+  "alojamiento": {
+    "recomendacion": "string - descripción de la recomendación principal",
+    "zona": "string - mejor zona para hospedarse",
+    "costoPorNoche": number - costo promedio por noche en USD,
+    "opciones": ["string - opción 1", "string - opción 2", "string - opción 3"]
+  },
+  "itinerario": [
     {
-      "dayNumber": number,
-      "date": "YYYY-MM-DD",
-      "summary": "string - Resumen del día",
-      "activities": [
+      "dia": number,
+      "fecha": "string - fecha YYYY-MM-DD",
+      "resumenDia": "string - resumen breve del día",
+      "actividades": [
         {
-          "timeOfDay": "morning" | "afternoon" | "evening",
-          "title": "string",
-          "description": "string",
-          "location": "string",
-          "approxCost": number
+          "hora": "morning" | "afternoon" | "evening",
+          "titulo": "string - nombre de la actividad",
+          "descripcion": "string - descripción detallada",
+          "ubicacion": "string - lugar específico",
+          "costoAprox": number - costo aproximado en USD
         }
       ]
     }
   ],
-  "flights": [
-    {
-      "airline": "string",
-      "origin": "string",
-      "destination": "string",
-      "departureTime": "ISO datetime",
-      "arrivalTime": "ISO datetime",
-      "price": number,
-      "isEstimated": boolean
-    }
-  ],
-  "accommodation": {
-    "recommendation": "string",
-    "estimatedCostPerNight": number
+  "comentarios": {
+    "consejos": ["string - consejo útil 1", "string - consejo útil 2"],
+    "advertencias": ["string - advertencia o precaución"],
+    "mejorEpoca": "string - mejor época para visitar este destino"
   }
 }
 
-IMPORTANTE: 
-- Crea exactamente ${days} días de itinerario
-- Sé específico con lugares reales y actividades concretas
-- Los costos deben ser realistas
-- Usa las opciones de vuelos reales si están disponibles
-- Responde SOLO con el JSON, sin texto adicional`;
+REGLAS IMPORTANTES:
+1. Crea exactamente ${days} días de itinerario
+2. Cada día debe tener al menos 3 actividades (mañana, tarde, noche)
+3. Sé específico con nombres de lugares reales, restaurantes, atracciones
+4. Los precios deben ser realistas para ${destination}
+5. Si hay datos de vuelos disponibles, úsalos; si no, sugiere opciones realistas
+6. El presupuesto estimado debe considerar: vuelos, alojamiento, comidas, actividades y transporte local
+7. Responde SOLO con el JSON, sin texto adicional ni markdown`;
 
-    const userPrompt = `Crea un plan de viaje con estos detalles:
-- Descripción del usuario: ${description}
+    const userPrompt = `Crea un plan de viaje completo con estos detalles:
+- Descripción del viajero: ${description}
 - Origen: ${origin}
 - Destino: ${destination}
 - Fechas: ${startDate} a ${endDate} (${days} días)
 - Número de viajeros: ${travelers}
-- Presupuesto: ${budget ? `$${budget}` : 'No especificado'}
+- Presupuesto del usuario: ${budget ? `$${budget} USD` : 'No especificado (sugiere opciones de rango medio)'}
 ${flightData ? `\n- Datos de vuelos disponibles:\n${JSON.stringify(flightData, null, 2)}` : ''}
 
-Genera el itinerario completo en JSON.`;
+Genera el itinerario completo siguiendo EXACTAMENTE la estructura JSON especificada.`;
 
-    console.log('Calling Lovable AI...');
+    console.log('Calling Lovable AI for itinerary generation...');
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -154,7 +169,7 @@ Genera el itinerario completo en JSON.`;
     const data = await response.json();
     const content = data.choices[0].message.content;
     
-    console.log('AI Response:', content);
+    console.log('AI Response received, parsing JSON...');
 
     // Parse the JSON response
     let itinerary;
@@ -163,10 +178,23 @@ Genera el itinerario completo en JSON.`;
       const jsonMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : content;
       itinerary = JSON.parse(jsonStr.trim());
+      console.log('JSON parsed successfully');
     } catch (e) {
       console.error('Failed to parse AI response as JSON:', e);
+      console.error('Raw content:', content);
       throw new Error('Invalid JSON response from AI');
     }
+
+    // Validate that required sections exist
+    const requiredSections = ['resumen', 'transporte', 'alojamiento', 'itinerario', 'comentarios'];
+    for (const section of requiredSections) {
+      if (!itinerary[section]) {
+        console.warn(`Missing section: ${section}, adding empty placeholder`);
+        itinerary[section] = section === 'itinerario' ? [] : {};
+      }
+    }
+
+    console.log('Returning itinerary with sections:', Object.keys(itinerary));
 
     return new Response(
       JSON.stringify({ itinerary }),
