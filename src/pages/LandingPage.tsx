@@ -81,7 +81,7 @@ const LandingPage = () => {
           {/* Title Section - centered vertically on mobile */}
           <div className="max-w-5xl mx-auto text-left sm:text-center flex-shrink-0 mb-auto sm:mb-0 mt-auto sm:mt-0">
             {/* Hero Title */}
-            <h1 className="text-[3rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-2 sm:mb-4 leading-[0.95] sm:leading-tight translate-y-[30px] sm:translate-y-0">
+            <h1 className="text-[3.5rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-urbanist font-extrabold text-white mb-2 sm:mb-4 leading-[0.95] sm:leading-tight translate-y-[30px] sm:translate-y-0">
               {getTranslation('hero.title', language)}
             </h1>
             
