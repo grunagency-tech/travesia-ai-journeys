@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft, Trash2, Sparkles, Hotel, MessageSquare, FileText, CheckCircle2 } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft, Trash2, Sparkles, Hotel, MessageSquare, FileText, CheckCircle2, Lightbulb, AlertTriangle, Sun, Car } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -42,14 +42,70 @@ interface FlightOption {
   link: string | null;
 }
 
-interface Accommodation {
-  recommendation: string;
-  estimatedCostPerNight: number;
+// New JSON structure interfaces
+interface ItineraryResumen {
+  titulo: string;
+  descripcion: string;
+  presupuestoEstimado: number;
+  duracion: number;
+  highlights: string[];
+}
+
+interface ItineraryVuelo {
+  aerolinea: string;
+  origen: string;
+  destino: string;
+  fechaSalida: string;
+  fechaLlegada: string;
+  precio: number;
+}
+
+interface ItineraryTransporte {
+  vuelos: ItineraryVuelo[];
+  transporteLocal: string;
+}
+
+interface ItineraryAlojamiento {
+  recomendacion: string;
+  zona: string;
+  costoPorNoche: number;
+  opciones: string[];
+}
+
+interface ItineraryActividad {
+  hora: 'morning' | 'afternoon' | 'evening';
+  titulo: string;
+  descripcion: string;
+  ubicacion: string;
+  costoAprox: number;
+}
+
+interface ItineraryDia {
+  dia: number;
+  fecha: string;
+  resumenDia: string;
+  actividades: ItineraryActividad[];
+}
+
+interface ItineraryComentarios {
+  consejos: string[];
+  advertencias: string[];
+  mejorEpoca: string;
+}
+
+interface ItineraryData {
+  resumen?: ItineraryResumen;
+  transporte?: ItineraryTransporte;
+  alojamiento?: ItineraryAlojamiento;
+  itinerario?: ItineraryDia[];
+  comentarios?: ItineraryComentarios;
 }
 
 interface TripPreferences {
   itinerary_html?: string;
-  accommodation?: Accommodation;
+  itinerary_data?: ItineraryData;
+  // Legacy fields
+  accommodation?: { recommendation: string; estimatedCostPerNight: number };
   summary?: string;
 }
 
@@ -222,8 +278,18 @@ const TripDetail = () => {
   }
 
   const itineraryHtml = trip.preferences?.itinerary_html;
-  const accommodation = trip.preferences?.accommodation;
-  const tripSummary = trip.preferences?.summary;
+  const itineraryData = trip.preferences?.itinerary_data;
+  
+  // Extract sections from new JSON structure
+  const resumen = itineraryData?.resumen;
+  const transporte = itineraryData?.transporte;
+  const alojamiento = itineraryData?.alojamiento;
+  const itinerarioDias = itineraryData?.itinerario || [];
+  const comentarios = itineraryData?.comentarios;
+  
+  // Legacy fallbacks
+  const legacyAccommodation = trip.preferences?.accommodation;
+  const legacySummary = trip.preferences?.summary;
 
   // Calculate trip duration
   const startDate = new Date(trip.start_date);
@@ -383,7 +449,7 @@ const TripDetail = () => {
                       
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">{tripDays}</p>
+                          <p className="text-2xl font-bold text-primary">{resumen?.duracion || tripDays}</p>
                           <p className="text-xs text-muted-foreground">Días</p>
                         </div>
                         <div className="text-center p-3 bg-muted/50 rounded-xl">
@@ -391,21 +457,47 @@ const TripDetail = () => {
                           <p className="text-xs text-muted-foreground">Viajeros</p>
                         </div>
                         <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">{days.length}</p>
-                          <p className="text-xs text-muted-foreground">Actividades</p>
+                          <p className="text-2xl font-bold text-primary">{itinerarioDias.length || days.length}</p>
+                          <p className="text-xs text-muted-foreground">Días planificados</p>
                         </div>
                         <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">{flights.length}</p>
-                          <p className="text-xs text-muted-foreground">Vuelos</p>
+                          <p className="text-2xl font-bold text-primary">
+                            ${resumen?.presupuestoEstimado?.toLocaleString() || trip.budget?.toLocaleString() || '—'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Presupuesto</p>
                         </div>
                       </div>
 
-                      {tripSummary && (
-                        <p className="text-muted-foreground leading-relaxed">{tripSummary}</p>
+                      {/* Description from new structure */}
+                      {resumen?.descripcion && (
+                        <p className="text-muted-foreground leading-relaxed mb-4">{resumen.descripcion}</p>
+                      )}
+                      
+                      {/* Legacy summary fallback */}
+                      {!resumen?.descripcion && legacySummary && (
+                        <p className="text-muted-foreground leading-relaxed mb-4">{legacySummary}</p>
+                      )}
+
+                      {/* Highlights */}
+                      {resumen?.highlights && resumen.highlights.length > 0 && (
+                        <div className="mt-4 pt-4 border-t">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-primary" />
+                            Puntos destacados
+                          </h4>
+                          <ul className="space-y-2">
+                            {resumen.highlights.map((highlight, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                {highlight}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
                     </div>
 
-                    {/* HTML Itinerary */}
+                    {/* HTML Itinerary (legacy) */}
                     {itineraryHtml && (
                       <div className="bg-card rounded-2xl border p-6">
                         <div className="flex items-center gap-3 mb-4">
@@ -424,8 +516,60 @@ const TripDetail = () => {
                       </div>
                     )}
 
-                    {/* Day by Day Itinerary */}
-                    {days.length > 0 && (
+                    {/* Day by Day Itinerary - New Structure */}
+                    {itinerarioDias.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="font-urbanist font-bold text-lg px-1">Itinerario día a día</h3>
+                        {itinerarioDias.map((dia) => (
+                          <div key={dia.dia} className="bg-card rounded-2xl border overflow-hidden">
+                            <div className="bg-primary/5 px-6 py-4 border-b">
+                              <h4 className="font-urbanist font-bold text-base">
+                                Día {dia.dia} — {format(new Date(dia.fecha), 'd MMMM yyyy', { locale: es })}
+                              </h4>
+                              {dia.resumenDia && (
+                                <p className="text-sm text-muted-foreground mt-1">{dia.resumenDia}</p>
+                              )}
+                            </div>
+                            <div className="p-6 space-y-4">
+                              {dia.actividades.map((actividad, index) => (
+                                <div 
+                                  key={index} 
+                                  className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
+                                        {getTimeOfDayLabel(actividad.hora)}
+                                      </span>
+                                      <h5 className="font-urbanist font-semibold text-base">
+                                        {actividad.titulo}
+                                      </h5>
+                                    </div>
+                                    {actividad.costoAprox > 0 && (
+                                      <span className="text-sm font-semibold text-primary">
+                                        ${actividad.costoAprox}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    {actividad.descripcion}
+                                  </p>
+                                  {actividad.ubicacion && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <MapPin className="w-3 h-3 text-primary" />
+                                      {actividad.ubicacion}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Legacy Day by Day from DB */}
+                    {itinerarioDias.length === 0 && days.length > 0 && (
                       <div className="space-y-4">
                         <h3 className="font-urbanist font-bold text-lg px-1">Itinerario día a día</h3>
                         {days.map((day) => (
@@ -477,7 +621,7 @@ const TripDetail = () => {
                     )}
 
                     {/* Empty state */}
-                    {!itineraryHtml && days.length === 0 && (
+                    {!itineraryHtml && itinerarioDias.length === 0 && days.length === 0 && (
                       <div className="bg-card rounded-2xl border p-10 text-center">
                         <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center">
                           <Sparkles className="w-8 h-8 text-primary" />
@@ -509,8 +653,45 @@ const TripDetail = () => {
                       </div>
                     </div>
 
-                    {/* Flights */}
-                    {flights.length > 0 ? (
+                    {/* Vuelos from new structure */}
+                    {transporte?.vuelos && transporte.vuelos.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="font-urbanist font-bold text-lg px-1">Vuelos sugeridos</h3>
+                        {transporte.vuelos.map((vuelo, idx) => (
+                          <div 
+                            key={idx} 
+                            className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="flex-1">
+                                <p className="font-urbanist font-bold text-base">{vuelo.aerolinea}</p>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {vuelo.origen} → {vuelo.destino}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-primary" />
+                                    <span>{format(new Date(vuelo.fechaSalida), 'PPp', { locale: es })}</span>
+                                  </div>
+                                  <span className="text-primary">→</span>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-primary" />
+                                    <span>{format(new Date(vuelo.fechaLlegada), 'PPp', { locale: es })}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-urbanist font-bold text-primary">${vuelo.precio}</p>
+                                <p className="text-xs text-muted-foreground">estimado</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Legacy Flights from DB */}
+                    {(!transporte?.vuelos || transporte.vuelos.length === 0) && flights.length > 0 && (
                       <div className="space-y-3">
                         <h3 className="font-urbanist font-bold text-lg px-1">Opciones de vuelos</h3>
                         {flights.map((flight) => (
@@ -553,14 +734,32 @@ const TripDetail = () => {
                           </div>
                         ))}
                       </div>
-                    ) : (
+                    )}
+
+                    {/* Transporte Local */}
+                    {transporte?.transporteLocal && (
+                      <div className="bg-card rounded-2xl border p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                            <Car className="w-5 h-5 text-green-600" />
+                          </div>
+                          <h3 className="font-urbanist font-bold text-lg">Transporte local</h3>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {transporte.transporteLocal}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Empty state */}
+                    {(!transporte?.vuelos || transporte.vuelos.length === 0) && flights.length === 0 && !transporte?.transporteLocal && (
                       <div className="bg-card rounded-2xl border p-10 text-center">
                         <div className="w-16 h-16 mx-auto mb-4 bg-sky-100 rounded-2xl flex items-center justify-center">
                           <Plane className="w-8 h-8 text-sky-500" />
                         </div>
-                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin vuelos registrados</h3>
+                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin información de transporte</h3>
                         <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          No hay opciones de vuelos disponibles para este viaje.
+                          No hay información de transporte disponible para este viaje.
                         </p>
                       </div>
                     )}
@@ -570,7 +769,7 @@ const TripDetail = () => {
                 {/* Alojamiento Tab */}
                 <TabsContent value="alojamiento" className="mt-0">
                   <div className="space-y-4">
-                    {accommodation ? (
+                    {(alojamiento || legacyAccommodation) ? (
                       <div className="bg-card rounded-2xl border p-6">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -578,15 +777,42 @@ const TripDetail = () => {
                           </div>
                           <h3 className="font-urbanist font-bold text-lg">Recomendación de alojamiento</h3>
                         </div>
+                        
                         <p className="text-muted-foreground leading-relaxed mb-4">
-                          {accommodation.recommendation}
+                          {alojamiento?.recomendacion || legacyAccommodation?.recommendation}
                         </p>
-                        {accommodation.estimatedCostPerNight && (
-                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl">
+
+                        {/* Zona */}
+                        {alojamiento?.zona && (
+                          <div className="flex items-center gap-2 mb-4 text-sm">
+                            <MapPin className="w-4 h-4 text-amber-600" />
+                            <span className="font-medium">Zona recomendada:</span>
+                            <span className="text-muted-foreground">{alojamiento.zona}</span>
+                          </div>
+                        )}
+
+                        {/* Costo */}
+                        {(alojamiento?.costoPorNoche || legacyAccommodation?.estimatedCostPerNight) && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl mb-4">
                             <DollarSign className="w-4 h-4 text-amber-600" />
                             <span className="text-sm font-medium text-amber-700">
-                              Costo estimado: ${accommodation.estimatedCostPerNight} por noche
+                              Costo estimado: ${alojamiento?.costoPorNoche || legacyAccommodation?.estimatedCostPerNight} por noche
                             </span>
+                          </div>
+                        )}
+
+                        {/* Opciones */}
+                        {alojamiento?.opciones && alojamiento.opciones.length > 0 && (
+                          <div className="mt-4 pt-4 border-t">
+                            <h4 className="font-semibold text-sm mb-3">Opciones sugeridas</h4>
+                            <ul className="space-y-2">
+                              {alojamiento.opciones.map((opcion, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <Hotel className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                                  {opcion}
+                                </li>
+                              ))}
+                            </ul>
                           </div>
                         )}
                       </div>
@@ -606,17 +832,75 @@ const TripDetail = () => {
 
                 {/* Comentarios Tab */}
                 <TabsContent value="comentarios" className="mt-0">
-                  <div className="bg-card rounded-2xl border p-10 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-violet-100 rounded-2xl flex items-center justify-center">
-                      <MessageSquare className="w-8 h-8 text-violet-500" />
-                    </div>
-                    <h3 className="font-urbanist font-bold text-lg mb-2">Comentarios</h3>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
-                      Próximamente podrás agregar notas y comentarios sobre tu viaje.
-                    </p>
-                    <Button variant="outline" className="rounded-full" disabled>
-                      Agregar comentario
-                    </Button>
+                  <div className="space-y-4">
+                    {comentarios && (comentarios.consejos?.length > 0 || comentarios.advertencias?.length > 0 || comentarios.mejorEpoca) ? (
+                      <>
+                        {/* Consejos */}
+                        {comentarios.consejos && comentarios.consejos.length > 0 && (
+                          <div className="bg-card rounded-2xl border p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <Lightbulb className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <h3 className="font-urbanist font-bold text-lg">Consejos útiles</h3>
+                            </div>
+                            <ul className="space-y-3">
+                              {comentarios.consejos.map((consejo, idx) => (
+                                <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
+                                  <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                  {consejo}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Advertencias */}
+                        {comentarios.advertencias && comentarios.advertencias.length > 0 && (
+                          <div className="bg-card rounded-2xl border p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                                <AlertTriangle className="w-5 h-5 text-orange-600" />
+                              </div>
+                              <h3 className="font-urbanist font-bold text-lg">Advertencias</h3>
+                            </div>
+                            <ul className="space-y-3">
+                              {comentarios.advertencias.map((advertencia, idx) => (
+                                <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
+                                  <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                                  {advertencia}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Mejor Época */}
+                        {comentarios.mejorEpoca && (
+                          <div className="bg-card rounded-2xl border p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                                <Sun className="w-5 h-5 text-green-600" />
+                              </div>
+                              <h3 className="font-urbanist font-bold text-lg">Mejor época para visitar</h3>
+                            </div>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {comentarios.mejorEpoca}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="bg-card rounded-2xl border p-10 text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-violet-100 rounded-2xl flex items-center justify-center">
+                          <MessageSquare className="w-8 h-8 text-violet-500" />
+                        </div>
+                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin comentarios aún</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                          No hay consejos o comentarios disponibles para este viaje.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>
