@@ -96,6 +96,9 @@ export const Navbar = () => {
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
                     <span className="inline-block w-6 text-right mr-1">R$</span> BRL
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('PEN')} className="cursor-pointer">
+                    <span className="inline-block w-6 text-right mr-1">S/</span> PEN
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
@@ -164,6 +167,9 @@ export const Navbar = () => {
                   <DropdownMenuItem onClick={() => setCurrency('BRL')} className="cursor-pointer">
                     <span className="inline-block w-6 text-right mr-1">R$</span> BRL
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrency('PEN')} className="cursor-pointer">
+                    <span className="inline-block w-6 text-right mr-1">S/</span> PEN
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
@@ -221,6 +227,7 @@ export const Navbar = () => {
                     <DropdownMenuItem onClick={() => setCurrency('MXN')}><span className="inline-block w-6 text-right mr-1">$</span> MXN</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('ARS')}><span className="inline-block w-6 text-right mr-1">$</span> ARS</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('BRL')}><span className="inline-block w-6 text-right mr-1">R$</span> BRL</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('PEN')}><span className="inline-block w-6 text-right mr-1">S/</span> PEN</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
@@ -291,6 +298,7 @@ export const Navbar = () => {
                     <DropdownMenuItem onClick={() => setCurrency('MXN')}><span className="inline-block w-6 text-right mr-1">$</span> MXN</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('ARS')}><span className="inline-block w-6 text-right mr-1">$</span> ARS</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setCurrency('BRL')}><span className="inline-block w-6 text-right mr-1">R$</span> BRL</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrency('PEN')}><span className="inline-block w-6 text-right mr-1">S/</span> PEN</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
