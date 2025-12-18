@@ -346,64 +346,77 @@ const Profile = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Stats and Map */}
             <Card className="overflow-hidden border-border/50 shadow-sm">
-              <CardContent className="p-0 relative">
-                {/* Stats Overlay */}
-                <div className="absolute top-4 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-xl px-5 py-4 shadow-lg border border-border/50">
-                  <div className="flex gap-8">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">{countriesVisited}</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('countries')}</p>
+              <CardContent className="p-0">
+                <div className="relative">
+                  {/* Stats Overlay */}
+                  <div className="absolute top-4 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-xl px-4 py-3 lg:px-5 lg:py-4 shadow-lg border border-border/50">
+                    <div className="flex gap-6 lg:gap-8">
+                      <div className="text-center">
+                        <p className="text-xl lg:text-2xl font-bold text-foreground">{countriesVisited}</p>
+                        <p className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">{t('countries')}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xl lg:text-2xl font-bold text-foreground">{citiesVisited}</p>
+                        <p className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">{t('citiesAndRegions')}</p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">{citiesVisited}</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('citiesAndRegions')}</p>
-                    </div>
+                  </div>
+                  
+                  {/* Add Places Button - Desktop only */}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="absolute top-4 right-4 z-[1000] bg-background/95 backdrop-blur-sm border-border/50 hidden lg:flex"
+                  >
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {t('addVisitedPlaces')}
+                  </Button>
+
+                  {/* Map */}
+                  <div className="h-[280px] lg:h-[380px] w-full">
+                    {!locationLoading && (
+                      <MapContainer
+                        center={mapCenter}
+                        zoom={latitude && longitude ? 10 : 4}
+                        scrollWheelZoom={false}
+                        style={{ height: '100%', width: '100%' }}
+                        className="z-0"
+                      >
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        {latitude && longitude && (
+                          <Marker position={[latitude, longitude]} icon={customIcon}>
+                            <Popup>
+                              <div className="text-center">
+                                <p className="font-semibold">{t('yourLocation')}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {[city, state, country].filter(Boolean).join(', ')}
+                                </p>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        )}
+                      </MapContainer>
+                    )}
+                    {locationLoading && (
+                      <div className="h-full w-full flex items-center justify-center bg-muted">
+                        <p className="text-muted-foreground">{t('loadingMap')}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
-                {/* Add Places Button */}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="absolute top-4 right-4 z-[1000] bg-background/95 backdrop-blur-sm border-border/50"
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {t('addVisitedPlaces')}
-                </Button>
-
-                {/* Map */}
-                <div className="h-[320px] lg:h-[380px] w-full">
-                  {!locationLoading && (
-                    <MapContainer
-                      center={mapCenter}
-                      zoom={latitude && longitude ? 10 : 4}
-                      scrollWheelZoom={false}
-                      style={{ height: '100%', width: '100%' }}
-                      className="z-0"
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      {latitude && longitude && (
-                        <Marker position={[latitude, longitude]} icon={customIcon}>
-                          <Popup>
-                            <div className="text-center">
-                              <p className="font-semibold">{t('yourLocation')}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {[city, state, country].filter(Boolean).join(', ')}
-                              </p>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      )}
-                    </MapContainer>
-                  )}
-                  {locationLoading && (
-                    <div className="h-full w-full flex items-center justify-center bg-muted">
-                      <p className="text-muted-foreground">{t('loadingMap')}</p>
-                    </div>
-                  )}
+                {/* Add Places Button - Mobile only */}
+                <div className="p-4 lg:hidden border-t border-border/50">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {t('addVisitedPlaces')}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
