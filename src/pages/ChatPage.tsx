@@ -860,19 +860,7 @@ const ChatPage = () => {
       <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gradient-to-b from-gray-50 to-white`}>
         {/* Header with branding */}
         <div className="bg-white shadow-sm p-4 flex items-center gap-3">
-          {/* Left side: Show sidebar button (when hidden) + Back arrow + Logo */}
-          {user && !showDesktopSidebar && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowDesktopSidebar(true)}
-              className="hidden lg:flex shrink-0 hover:bg-gray-100"
-              title="Mostrar historial"
-            >
-              <PanelLeft className="h-5 w-5" />
-            </Button>
-          )}
-          
+          {/* Left side: Back arrow + Logo */}
           <Button
             variant="ghost"
             size="icon"
@@ -1097,6 +1085,19 @@ const ChatPage = () => {
             </p>
           </form>
         </div>
+
+        {/* Floating button to show sidebar - bottom right */}
+        {user && !showDesktopSidebar && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowDesktopSidebar(true)}
+            className="hidden lg:flex fixed bottom-6 right-6 z-50 bg-white shadow-lg hover:bg-gray-50 border-gray-200"
+            title="Mostrar historial"
+          >
+            <PanelLeft className="h-5 w-5" />
+          </Button>
+        )}
       </div>
 
       {/* HTML Content Section */}
