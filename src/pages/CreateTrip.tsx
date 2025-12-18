@@ -10,8 +10,67 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, Calendar, MapPin, Users, DollarSign, Plane } from 'lucide-react';
+import { Loader2, Calendar, MapPin, Users, DollarSign, Plane, Hotel, Car, Lightbulb } from 'lucide-react';
 import { format } from 'date-fns';
+
+// New JSON structure interfaces
+interface ItineraryResumen {
+  titulo: string;
+  descripcion: string;
+  presupuestoEstimado: number;
+  duracion: number;
+  highlights: string[];
+}
+
+interface ItineraryVuelo {
+  aerolinea: string;
+  origen: string;
+  destino: string;
+  fechaSalida: string;
+  fechaLlegada: string;
+  precio: number;
+}
+
+interface ItineraryTransporte {
+  vuelos: ItineraryVuelo[];
+  transporteLocal: string;
+}
+
+interface ItineraryAlojamiento {
+  recomendacion: string;
+  zona: string;
+  costoPorNoche: number;
+  opciones: string[];
+}
+
+interface ItineraryActividad {
+  hora: 'morning' | 'afternoon' | 'evening';
+  titulo: string;
+  descripcion: string;
+  ubicacion: string;
+  costoAprox: number;
+}
+
+interface ItineraryDia {
+  dia: number;
+  fecha: string;
+  resumenDia: string;
+  actividades: ItineraryActividad[];
+}
+
+interface ItineraryComentarios {
+  consejos: string[];
+  advertencias: string[];
+  mejorEpoca: string;
+}
+
+interface ItineraryData {
+  resumen?: ItineraryResumen;
+  transporte?: ItineraryTransporte;
+  alojamiento?: ItineraryAlojamiento;
+  itinerario?: ItineraryDia[];
+  comentarios?: ItineraryComentarios;
+}
 
 const CreateTrip = () => {
   const location = useLocation();
@@ -28,7 +87,7 @@ const CreateTrip = () => {
   const [travelers, setTravelers] = useState(2);
   const [budget, setBudget] = useState('');
   const [loading, setLoading] = useState(false);
-  const [itinerary, setItinerary] = useState<any>(null);
+  const [itinerary, setItinerary] = useState<ItineraryData | null>(null);
   const [savingTrip, setSavingTrip] = useState(false);
 
   const handleGenerate = async () => {
@@ -84,6 +143,7 @@ const CreateTrip = () => {
         throw new Error('No se recibió el itinerario');
       }
 
+      console.log('Itinerary received:', data.itinerary);
       setItinerary(data.itinerary);
       
       // Auto-save the trip after generation
@@ -107,56 +167,64 @@ const CreateTrip = () => {
     }
   };
 
-  const autoSaveTrip = async (itineraryData: any) => {
+  const autoSaveTrip = async (itineraryData: ItineraryData) => {
     if (!user) return;
 
     try {
-      // Save trip
+      // Get title from new structure
+      const title = itineraryData.resumen?.titulo || `Viaje a ${destination}`;
+      
+      // Save trip with new itinerary_data structure
       const { data: trip, error: tripError } = await supabase
         .from('trips')
         .insert({
           user_id: user.id,
-          title: itineraryData.trip.title,
+          title,
           origin,
           destination,
           start_date: startDate,
           end_date: endDate,
-          budget: budget ? parseFloat(budget) : null,
+          budget: itineraryData.resumen?.presupuestoEstimado || (budget ? parseFloat(budget) : null),
           travelers,
-          preferences: { description },
+          preferences: { 
+            description,
+            itinerary_data: itineraryData 
+          },
         })
         .select()
         .single();
 
       if (tripError) throw tripError;
 
-      // Save itinerary days
-      const daysData = itineraryData.days.map((day: any) => ({
-        trip_id: trip.id,
-        day_number: day.dayNumber,
-        date: day.date,
-        summary: day.summary,
-        activities: day.activities,
-      }));
-
-      const { error: daysError } = await supabase
-        .from('itinerary_days')
-        .insert(daysData);
-
-      if (daysError) throw daysError;
-
-      // Save flight options
-      if (itineraryData.flights && itineraryData.flights.length > 0) {
-        const flightsData = itineraryData.flights.map((flight: any) => ({
+      // Save itinerary days from new structure
+      if (itineraryData.itinerario && itineraryData.itinerario.length > 0) {
+        const daysData = itineraryData.itinerario.map((dia) => ({
           trip_id: trip.id,
-          airline: flight.airline,
-          origin: flight.origin,
-          destination: flight.destination,
-          departure_time: flight.departureTime,
-          arrival_time: flight.arrivalTime,
-          price: flight.price,
-          link: flight.link || null,
-          raw_data: flight,
+          day_number: dia.dia,
+          date: dia.fecha,
+          summary: dia.resumenDia,
+          activities: dia.actividades,
+        }));
+
+        const { error: daysError } = await supabase
+          .from('itinerary_days')
+          .insert(daysData);
+
+        if (daysError) throw daysError;
+      }
+
+      // Save flight options from new structure
+      if (itineraryData.transporte?.vuelos && itineraryData.transporte.vuelos.length > 0) {
+        const flightsData = itineraryData.transporte.vuelos.map((vuelo) => ({
+          trip_id: trip.id,
+          airline: vuelo.aerolinea,
+          origin: vuelo.origen,
+          destination: vuelo.destino,
+          departure_time: vuelo.fechaSalida,
+          arrival_time: vuelo.fechaLlegada,
+          price: vuelo.precio,
+          link: null,
+          raw_data: vuelo,
         }));
 
         const { error: flightsError } = await supabase
@@ -165,13 +233,13 @@ const CreateTrip = () => {
 
         if (flightsError) throw flightsError;
       }
+
+      console.log('Trip saved successfully with ID:', trip.id);
     } catch (error: any) {
       console.error('Error auto-saving trip:', error);
       // Don't throw - we already have the itinerary displayed
     }
   };
-
-  // handleSaveTrip removed - trips are now auto-saved after generation
 
   if (authLoading) {
     return (
@@ -352,47 +420,91 @@ const CreateTrip = () => {
               {itinerary && (
                 <Card className="shadow-premium border-0 rounded-3xl overflow-hidden">
                   <div className="bg-gradient-to-br from-primary/5 to-primary-glow/5 p-6 border-b">
-                    <CardTitle className="text-2xl mb-2">{itinerary.trip.title}</CardTitle>
-                    <p className="text-muted-foreground">{itinerary.trip.summary}</p>
+                    <CardTitle className="text-2xl mb-2">{itinerary.resumen?.titulo || `Viaje a ${destination}`}</CardTitle>
+                    <p className="text-muted-foreground">{itinerary.resumen?.descripcion}</p>
                   </div>
                   <CardContent className="space-y-6 p-6">
                     {/* Budget */}
-                    {itinerary.trip.estimatedBudget && (
+                    {itinerary.resumen?.presupuestoEstimado && (
                       <div className="p-6 bg-gradient-to-br from-primary/10 to-primary-glow/10 rounded-2xl border border-primary/20">
                         <p className="text-sm font-medium text-muted-foreground mb-1">Presupuesto estimado</p>
                         <p className="text-3xl font-bold text-primary">
-                          ${itinerary.trip.estimatedBudget}
+                          ${itinerary.resumen.presupuestoEstimado.toLocaleString()}
                         </p>
                       </div>
                     )}
 
-                    {/* Days */}
-                    <div>
-                      <h3 className="font-semibold text-lg mb-4">Itinerario por días</h3>
-                      <div className="space-y-3">
-                        {itinerary.days.slice(0, 2).map((day: any) => (
-                          <div key={day.dayNumber} className="p-5 bg-card border border-border/50 rounded-xl hover:border-primary/30 transition-smooth">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                <span className="text-sm font-bold text-primary">{day.dayNumber}</span>
-                              </div>
-                              <p className="font-semibold">Día {day.dayNumber}</p>
+                    {/* Highlights */}
+                    {itinerary.resumen?.highlights && itinerary.resumen.highlights.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                          <Lightbulb className="w-5 h-5 text-primary" />
+                          Highlights
+                        </h3>
+                        <div className="space-y-2">
+                          {itinerary.resumen.highlights.map((highlight, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <span className="text-primary">•</span>
+                              {highlight}
                             </div>
-                            <p className="text-sm text-muted-foreground mb-2">{day.summary}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {day.activities.length} actividades planificadas
-                            </p>
-                          </div>
-                        ))}
-                        {itinerary.days.length > 2 && (
-                          <div className="text-center py-2">
-                            <p className="text-sm text-muted-foreground">
-                              + {itinerary.days.length - 2} días más incluidos
-                            </p>
-                          </div>
-                        )}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Accommodation */}
+                    {itinerary.alojamiento && (
+                      <div className="p-4 bg-muted/50 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Hotel className="w-4 h-4 text-primary" />
+                          <span className="font-medium">Alojamiento</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{itinerary.alojamiento.recomendacion}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Zona: {itinerary.alojamiento.zona}</p>
+                        <p className="text-sm font-medium text-primary mt-2">${itinerary.alojamiento.costoPorNoche}/noche</p>
+                      </div>
+                    )}
+
+                    {/* Transport */}
+                    {itinerary.transporte?.transporteLocal && (
+                      <div className="p-4 bg-muted/50 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Car className="w-4 h-4 text-primary" />
+                          <span className="font-medium">Transporte local</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{itinerary.transporte.transporteLocal}</p>
+                      </div>
+                    )}
+
+                    {/* Days Preview */}
+                    {itinerary.itinerario && itinerary.itinerario.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-lg mb-4">Itinerario por días</h3>
+                        <div className="space-y-3">
+                          {itinerary.itinerario.slice(0, 2).map((dia) => (
+                            <div key={dia.dia} className="p-5 bg-card border border-border/50 rounded-xl hover:border-primary/30 transition-smooth">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <span className="text-sm font-bold text-primary">{dia.dia}</span>
+                                </div>
+                                <p className="font-semibold">Día {dia.dia}</p>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{dia.resumenDia}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {dia.actividades.length} actividades planificadas
+                              </p>
+                            </div>
+                          ))}
+                          {itinerary.itinerario.length > 2 && (
+                            <div className="text-center py-2">
+                              <p className="text-sm text-muted-foreground">
+                                + {itinerary.itinerario.length - 2} días más incluidos
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Auto-saved message */}
                     <div className="w-full text-center py-4 text-green-600 font-medium flex items-center justify-center gap-2">
