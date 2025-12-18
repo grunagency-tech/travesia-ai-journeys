@@ -431,7 +431,7 @@ const LandingPage = () => {
                 <div className="flex text-primary text-lg sm:text-xl">★★★★★</div>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                "Planifiqué mi viaje a Cusco en segundos y descubrí lugares únicos."
+                {getTranslation('testimonials.maria', language)}
               </p>
             </div>
 
@@ -449,7 +449,7 @@ const LandingPage = () => {
                 <div className="flex text-primary text-lg sm:text-xl">★★★★★</div>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                "TravesIA me armó mi Eurotrip en segundos. Me ahorro tiempo y dinero."
+                {getTranslation('testimonials.jorge', language)}
               </p>
             </div>
 
@@ -467,7 +467,7 @@ const LandingPage = () => {
                 <div className="flex text-primary text-lg sm:text-xl">★★★★★</div>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                "Me encantó tener todo en un solo lugar, sin estrés."
+                {getTranslation('testimonials.valentina', language)}
               </p>
             </div>
           </div>
