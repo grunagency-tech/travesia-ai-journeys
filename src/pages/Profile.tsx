@@ -505,15 +505,18 @@ const Profile = () => {
               <CardContent className="p-0">
                 <div className="relative">
                   {/* Stats Overlay */}
-                  <div className="absolute top-4 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-xl px-4 py-3 lg:px-5 lg:py-4 shadow-lg border border-border/50">
-                    <div className="flex gap-6 lg:gap-8">
-                      <div className="text-center">
-                        <p className="text-xl lg:text-2xl font-bold text-foreground">{uniqueCountries}</p>
-                        <p className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">{t('countries')}</p>
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-4 shadow-lg border border-border/50">
+                    <div className="flex gap-4 sm:gap-6 lg:gap-8">
+                      <div className="text-center min-w-[50px]">
+                        <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">{uniqueCountries}</p>
+                        <p className="text-[9px] sm:text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">{t('countries')}</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-xl lg:text-2xl font-bold text-foreground">{uniqueCities}</p>
-                        <p className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">{t('citiesAndRegions')}</p>
+                      <div className="text-center min-w-[60px]">
+                        <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">{uniqueCities}</p>
+                        <p className="text-[9px] sm:text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">
+                          <span className="hidden sm:inline">{t('citiesAndRegions')}</span>
+                          <span className="sm:hidden">CIUDADES</span>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -715,20 +718,21 @@ const Profile = () => {
 
       {/* Add Place Modal */}
       <Dialog open={isAddPlaceModalOpen} onOpenChange={setIsAddPlaceModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('addVisitedPlaces')}</DialogTitle>
-            <DialogDescription>{t('searchPlaceDesc')}</DialogDescription>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md mx-auto">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-lg">{t('addVisitedPlaces')}</DialogTitle>
+            <DialogDescription className="text-sm">{t('searchPlaceDesc')}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-2">
             <div className="flex gap-2">
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchPlaces()}
+                className="flex-1"
               />
-              <Button onClick={handleSearchPlaces} disabled={isSearching}>
+              <Button onClick={handleSearchPlaces} disabled={isSearching} size="icon" className="shrink-0">
                 {isSearching ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
@@ -739,7 +743,7 @@ const Profile = () => {
             
             {/* Search Results */}
             {searchResults.length > 0 && (
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              <div className="space-y-2 max-h-[250px] sm:max-h-[300px] overflow-y-auto -mx-1 px-1">
                 {searchResults.map((result) => (
                   <button
                     key={result.place_id}
@@ -747,8 +751,8 @@ const Profile = () => {
                     disabled={isAddingPlace}
                     className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50"
                   >
-                    <p className="font-medium text-sm">{result.display_name.split(',')[0]}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
+                    <p className="font-medium text-sm truncate">{result.display_name.split(',')[0]}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 break-words">
                       {result.display_name}
                     </p>
                   </button>
