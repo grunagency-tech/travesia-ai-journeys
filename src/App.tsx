@@ -9,6 +9,7 @@ import { LocationProvider } from "./contexts/LocationContext";
 import Index from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
 import CreateTrip from "./pages/CreateTrip";
 import MyTrips from "./pages/MyTrips";
 import TripDetail from "./pages/TripDetail";
@@ -31,6 +32,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/perfil" element={<Profile />} />
                 <Route path="/crear-viaje" element={<CreateTrip />} />
                 <Route path="/mis-viajes" element={<MyTrips />} />
                 <Route path="/viaje/:id" element={<TripDetail />} />
