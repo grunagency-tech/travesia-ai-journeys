@@ -289,6 +289,7 @@ const ChatPage = () => {
   const [tripDestination, setTripDestination] = useState<string | null>(null);
   const [tripTravelers, setTripTravelers] = useState<number>(1);
   const [tripImage, setTripImage] = useState<string | null>(null);
+  const [itineraryData, setItineraryData] = useState<ItineraryData | null>(null);
 
   const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
 
@@ -583,7 +584,10 @@ const ChatPage = () => {
         start_date: startDate,
         end_date: endDate,
         travelers: 1,
-        preferences: { itinerary_html: htmlContent },
+        preferences: { 
+          itinerary_html: htmlContent,
+          itinerary_data: itineraryData 
+        },
       }).select().single();
 
       if (error) throw error;
@@ -782,6 +786,7 @@ const ChatPage = () => {
           console.log("Found structured itinerary JSON");
           const generatedHtml = generateItineraryHtml(data);
           setHtmlContent(generatedHtml);
+          setItineraryData(data as ItineraryData); // Save the structured data for persistence
           receivedHtml = generatedHtml;
           responseText = data.resumen?.descripcion || receivedTitle || "¡Itinerario generado!";
         }
@@ -859,6 +864,7 @@ const ChatPage = () => {
     // Clear everything and start fresh
     setMessages([]);
     setHtmlContent(null);
+    setItineraryData(null);
     setCurrentConversationId(null);
     setConversationTitle(null);
     setTripDate(null);
