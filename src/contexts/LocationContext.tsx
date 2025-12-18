@@ -32,28 +32,68 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       // Use ipapi.co for IP-based geolocation (free tier)
       const response = await fetch('https://ipapi.co/json/');
       if (!response.ok) throw new Error('Failed to fetch location');
-      
+
       const data = await response.json();
-      
+
+      const lat = data.latitude ?? null;
+      const lon = data.longitude ?? null;
+
+      let resolvedState: string | null =
+        data.region_name || data.region || data.region_code || null;
+
+      // If the provider doesn't return a state but we do have coordinates,
+      // try a lightweight reverse-geocode to derive a region/state.
+      if (!resolvedState && lat && lon) {
+        try {
+          const revRes = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(
+              String(lat)
+            )}&lon=${encodeURIComponent(String(lon))}&zoom=10&addressdetails=1`,
+            { headers: { 'Accept': 'application/json' } }
+          );
+          if (revRes.ok) {
+            const rev = await revRes.json();
+            const addr = rev?.address ?? {};
+            resolvedState =
+              addr.state || addr.region || addr.state_district || addr.county || null;
+          }
+        } catch (e) {
+          console.warn('Reverse geocode failed:', e);
+        }
+      }
+
+      if (!resolvedState) {
+        console.warn('State missing from geolocation provider:', {
+          country: data.country_name,
+          city: data.city,
+          region: data.region,
+          region_name: data.region_name,
+          region_code: data.region_code,
+        });
+      }
+
       setLocationData({
         country: data.country_name || null,
-        state: data.region_name || data.region || null,
+        state: resolvedState,
         city: data.city || null,
-        latitude: data.latitude || null,
-        longitude: data.longitude || null,
+        latitude: lat,
+        longitude: lon,
         loading: false,
         error: null,
       });
-      
+
       // Store in localStorage for caching
-      localStorage.setItem('userLocation', JSON.stringify({
-        country: data.country_name,
-        state: data.region_name || data.region,
-        city: data.city,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        timestamp: Date.now(),
-      }));
+      localStorage.setItem(
+        'userLocation',
+        JSON.stringify({
+          country: data.country_name,
+          state: resolvedState,
+          city: data.city,
+          latitude: lat,
+          longitude: lon,
+          timestamp: Date.now(),
+        })
+      );
     } catch (error) {
       console.error('Error fetching location:', error);
       setLocationData(prev => ({
@@ -75,8 +115,12 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     if (cached) {
       const parsed = JSON.parse(cached);
       const isValid = Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000;
-      
-      if (isValid) {
+
+      // If cache is valid but missing state while having a city, refresh in background
+      // (this avoids being stuck with a partial cached location).
+      const shouldUseCache = isValid && (parsed.state || !parsed.city);
+
+      if (shouldUseCache) {
         setLocationData({
           country: parsed.country,
           state: parsed.state || null,
@@ -89,7 +133,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
     }
-    
+
     fetchLocationFromIP();
   }, []);
 
