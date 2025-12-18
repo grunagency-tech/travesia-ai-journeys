@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,8 @@ import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import logoIcon from '@/assets/logo-icon.svg';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { getDestinationImage } from '@/lib/destinationImages';
 import {
   AlertDialog,
@@ -134,6 +136,10 @@ const TripDetail = () => {
   const [activeTab, setActiveTab] = useState("resumen");
   const [destinationImage, setDestinationImage] = useState<string>('');
   const [imageLoading, setImageLoading] = useState(true);
+  const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null);
+  
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -160,6 +166,71 @@ const TripDetail = () => {
         });
     }
   }, [trip?.destination]);
+
+  // Geocode destination and initialize map
+  const geocodeDestination = async (destination: string): Promise<[number, number] | null> => {
+    try {
+      // Clean destination name for better geocoding
+      const cleanDestination = destination.split(':')[0].split('-')[0].trim();
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanDestination)}&limit=1`
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (trip?.destination) {
+      geocodeDestination(trip.destination).then(coords => {
+        if (coords) {
+          setMapCoordinates(coords);
+        }
+      });
+    }
+  }, [trip?.destination]);
+
+  useEffect(() => {
+    if (mapCoordinates && mapContainerRef.current && !mapRef.current) {
+      // Create custom icon
+      const customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background: linear-gradient(135deg, hsl(17, 93%, 53%) 0%, hsl(17, 93%, 43%) 100%); width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+          <svg style="transform: rotate(45deg); width: 16px; height: 16px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      });
+
+      mapRef.current = L.map(mapContainerRef.current, {
+        center: mapCoordinates,
+        zoom: 12,
+        zoomControl: true,
+        scrollWheelZoom: false,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(mapRef.current);
+
+      L.marker(mapCoordinates, { icon: customIcon }).addTo(mapRef.current);
+    }
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [mapCoordinates]);
 
   const loadTripDetails = async () => {
     try {
@@ -908,19 +979,27 @@ const TripDetail = () => {
 
             {/* Right Column - Map & Quick Info */}
             <div className="lg:col-span-1 space-y-4">
-              {/* Map Placeholder */}
+              {/* Map */}
               <div className="bg-card rounded-2xl border overflow-hidden">
-                <div className="h-[300px] bg-muted flex items-center justify-center">
-                  <div className="text-center p-4">
-                    <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Mapa del viaje
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {trip.origin || 'Tu ciudad'} → {trip.destination}
-                    </p>
+                {mapCoordinates ? (
+                  <div 
+                    ref={mapContainerRef} 
+                    className="h-[300px] w-full"
+                    style={{ zIndex: 0 }}
+                  />
+                ) : (
+                  <div className="h-[300px] bg-muted flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Mapa del viaje
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Cargando ubicación...
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Quick Stats */}
