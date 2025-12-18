@@ -212,6 +212,44 @@ const generateItineraryHtml = (data: ItineraryData): string => {
 
 const MAX_SAVED_TRIPS = 5;
 
+// Extract clean destination name from title (e.g., "París Estratégico: Cultura" -> "París")
+const extractDestinationFromTitle = (title: string): string | null => {
+  // Common city names to look for
+  const knownCities = [
+    'París', 'Paris', 'Roma', 'Rome', 'Londres', 'London', 'Madrid', 'Barcelona',
+    'Nueva York', 'New York', 'Tokyo', 'Tokio', 'Dubai', 'Dubái', 'Amsterdam', 
+    'Ámsterdam', 'Berlin', 'Berlín', 'Viena', 'Vienna', 'Praga', 'Prague',
+    'Lisboa', 'Lisbon', 'Atenas', 'Athens', 'Venecia', 'Venice', 'Florencia',
+    'Florence', 'Milán', 'Milan', 'Bangkok', 'Singapur', 'Singapore', 'Sydney',
+    'Los Ángeles', 'Los Angeles', 'Miami', 'Chicago', 'San Francisco',
+    'Cancún', 'Cancun', 'México', 'Mexico City', 'Buenos Aires', 'Lima',
+    'Bogotá', 'Santiago', 'Cartagena', 'Cusco', 'Río de Janeiro', 'Rio de Janeiro',
+    'São Paulo', 'Sao Paulo', 'Medellín', 'Quito', 'La Habana', 'Havana'
+  ];
+  
+  const titleLower = title.toLowerCase();
+  
+  for (const city of knownCities) {
+    if (titleLower.includes(city.toLowerCase())) {
+      return city;
+    }
+  }
+  
+  // Fallback: try to get first word before common separators
+  const separators = [':', '-', '–', '|', ',', 'estratégico', 'romántico', 'aventura', 'cultural'];
+  for (const sep of separators) {
+    const idx = titleLower.indexOf(sep.toLowerCase());
+    if (idx > 2) {
+      const extracted = title.substring(0, idx).trim();
+      if (extracted.length > 2 && extracted.length < 30) {
+        return extracted;
+      }
+    }
+  }
+  
+  return null;
+};
+
 const ChatPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -718,6 +756,13 @@ const ChatPage = () => {
         if (data.destino) {
           setTripDestination(data.destino);
           console.log("Trip destination:", data.destino);
+        } else if (receivedTitle) {
+          // Try to extract destination from title (e.g., "París Estratégico: ..." -> "París")
+          const extractedDestination = extractDestinationFromTitle(receivedTitle);
+          if (extractedDestination) {
+            setTripDestination(extractedDestination);
+            console.log("Trip destination extracted from title:", extractedDestination);
+          }
         }
         
         // Extract travelers count
