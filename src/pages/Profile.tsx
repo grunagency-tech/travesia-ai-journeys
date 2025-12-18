@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { Icon, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,13 +16,23 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Edit, Share2, MapPin, Camera, Plane, Loader2 } from 'lucide-react';
+import { Edit, Share2, MapPin, Camera, Plane, Loader2, Search, X, Trash2 } from 'lucide-react';
 import logoFull from '@/assets/logo-full.svg';
 
 // Fix for default marker icon
 const customIcon = new Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Visited place marker (different color)
+const visitedIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -37,6 +47,51 @@ interface ProfileData {
   country: string | null;
 }
 
+interface VisitedPlace {
+  id: string;
+  place_name: string;
+  country: string;
+  state: string | null;
+  city: string | null;
+  latitude: number;
+  longitude: number;
+  visited_at: string | null;
+}
+
+interface SearchResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    country?: string;
+  };
+}
+
+// Component to fit map bounds to markers
+const FitBounds = ({ places, userLat, userLng }: { places: VisitedPlace[], userLat: number | null, userLng: number | null }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (places.length > 0) {
+      const bounds = new LatLngBounds([]);
+      places.forEach(place => {
+        bounds.extend([place.latitude, place.longitude]);
+      });
+      if (userLat && userLng) {
+        bounds.extend([userLat, userLng]);
+      }
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [places, map, userLat, userLng]);
+  
+  return null;
+};
+
 const Profile = () => {
   const { user, loading } = useAuth();
   const { language } = useLanguage();
@@ -48,16 +103,26 @@ const Profile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [tripsCount, setTripsCount] = useState(0);
   const [trips, setTrips] = useState<any[]>([]);
-  const [countriesVisited, setCountriesVisited] = useState(0);
-  const [citiesVisited, setCitiesVisited] = useState(0);
+  const [visitedPlaces, setVisitedPlaces] = useState<VisitedPlace[]>([]);
   
   // Edit modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editName, setEditName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  
+  // Add place modal state
+  const [isAddPlaceModalOpen, setIsAddPlaceModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAddingPlace, setIsAddingPlace] = useState(false);
 
   const t = (key: string) => getTranslation(`profile.${key}`, language);
+
+  // Calculate unique countries from visited places
+  const uniqueCountries = new Set(visitedPlaces.map(p => p.country)).size;
+  const uniqueCities = new Set(visitedPlaces.map(p => p.city || p.state).filter(Boolean)).size;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,7 +131,7 @@ const Profile = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const fetchProfileAndTrips = async () => {
+    const fetchData = async () => {
       if (!user) return;
 
       // Fetch profile
@@ -91,16 +156,21 @@ const Profile = () => {
       if (tripsData) {
         setTrips(tripsData);
         setTripsCount(tripsData.length);
-        
-        // Calculate unique countries and cities
-        const uniqueCountries = new Set(tripsData.map(t => t.destination.split(',').pop()?.trim()));
-        const uniqueCities = new Set(tripsData.map(t => t.destination.split(',')[0]?.trim()));
-        setCountriesVisited(uniqueCountries.size);
-        setCitiesVisited(uniqueCities.size);
+      }
+
+      // Fetch visited places
+      const { data: placesData } = await supabase
+        .from('visited_places')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (placesData) {
+        setVisitedPlaces(placesData);
       }
     };
 
-    fetchProfileAndTrips();
+    fetchData();
   }, [user]);
 
   const getInitials = () => {
@@ -158,7 +228,6 @@ const Profile = () => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: 'Error',
@@ -168,7 +237,6 @@ const Profile = () => {
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: 'Error',
@@ -184,19 +252,16 @@ const Profile = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/avatar.${fileExt}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
@@ -220,7 +285,6 @@ const Profile = () => {
     }
 
     setIsUploadingPhoto(false);
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -238,14 +302,106 @@ const Profile = () => {
           url: shareUrl,
         });
       } catch (err) {
-        // User cancelled or error
+        // User cancelled
       }
     } else {
-      // Fallback: copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
       toast({
         title: t('linkCopied'),
         description: t('linkCopiedDesc'),
+      });
+    }
+  };
+
+  // Search for places using Nominatim API
+  const handleSearchPlaces = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setSearchResults([]);
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&addressdetails=1&limit=5`,
+        {
+          headers: {
+            'Accept-Language': language.toLowerCase(),
+          },
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResults(data);
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
+    }
+    
+    setIsSearching(false);
+  };
+
+  const handleAddPlace = async (result: SearchResult) => {
+    if (!user) return;
+    
+    setIsAddingPlace(true);
+    
+    const address = result.address || {};
+    const placeName = result.display_name.split(',')[0];
+    const placeCountry = address.country || result.display_name.split(',').pop()?.trim() || '';
+    const placeState = address.state || null;
+    const placeCity = address.city || address.town || address.village || null;
+    
+    const { data, error } = await supabase
+      .from('visited_places')
+      .insert({
+        user_id: user.id,
+        place_name: placeName,
+        country: placeCountry,
+        state: placeState,
+        city: placeCity,
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon),
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: t('addPlaceError'),
+        variant: 'destructive',
+      });
+    } else if (data) {
+      setVisitedPlaces(prev => [data, ...prev]);
+      toast({
+        title: t('placeAdded'),
+        description: `${placeName}, ${placeCountry}`,
+      });
+      setIsAddPlaceModalOpen(false);
+      setSearchQuery('');
+      setSearchResults([]);
+    }
+    
+    setIsAddingPlace(false);
+  };
+
+  const handleDeletePlace = async (placeId: string) => {
+    const { error } = await supabase
+      .from('visited_places')
+      .delete()
+      .eq('id', placeId);
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: t('deletePlaceError'),
+        variant: 'destructive',
+      });
+    } else {
+      setVisitedPlaces(prev => prev.filter(p => p.id !== placeId));
+      toast({
+        title: t('placeDeleted'),
       });
     }
   };
@@ -263,7 +419,7 @@ const Profile = () => {
 
   const mapCenter: [number, number] = latitude && longitude 
     ? [latitude, longitude] 
-    : [-12.0464, -77.0428]; // Default to Lima, Peru
+    : [-12.0464, -77.0428];
 
   return (
     <div className="min-h-screen bg-background">
@@ -352,11 +508,11 @@ const Profile = () => {
                   <div className="absolute top-4 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-xl px-4 py-3 lg:px-5 lg:py-4 shadow-lg border border-border/50">
                     <div className="flex gap-6 lg:gap-8">
                       <div className="text-center">
-                        <p className="text-xl lg:text-2xl font-bold text-foreground">{countriesVisited}</p>
+                        <p className="text-xl lg:text-2xl font-bold text-foreground">{uniqueCountries}</p>
                         <p className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">{t('countries')}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xl lg:text-2xl font-bold text-foreground">{citiesVisited}</p>
+                        <p className="text-xl lg:text-2xl font-bold text-foreground">{uniqueCities}</p>
                         <p className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-wide">{t('citiesAndRegions')}</p>
                       </div>
                     </div>
@@ -366,6 +522,7 @@ const Profile = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
+                    onClick={() => setIsAddPlaceModalOpen(true)}
                     className="absolute top-4 right-4 z-[1000] bg-background/95 backdrop-blur-sm border-border/50 hidden lg:flex"
                   >
                     <MapPin className="w-4 h-4 mr-2" />
@@ -377,7 +534,7 @@ const Profile = () => {
                     {!locationLoading && (
                       <MapContainer
                         center={mapCenter}
-                        zoom={latitude && longitude ? 10 : 4}
+                        zoom={visitedPlaces.length > 0 ? 3 : (latitude && longitude ? 10 : 4)}
                         scrollWheelZoom={false}
                         style={{ height: '100%', width: '100%' }}
                         className="z-0"
@@ -386,6 +543,8 @@ const Profile = () => {
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
+                        
+                        {/* User's current location */}
                         {latitude && longitude && (
                           <Marker position={[latitude, longitude]} icon={customIcon}>
                             <Popup>
@@ -397,6 +556,35 @@ const Profile = () => {
                               </div>
                             </Popup>
                           </Marker>
+                        )}
+                        
+                        {/* Visited places markers */}
+                        {visitedPlaces.map((place) => (
+                          <Marker 
+                            key={place.id} 
+                            position={[place.latitude, place.longitude]} 
+                            icon={visitedIcon}
+                          >
+                            <Popup>
+                              <div className="text-center min-w-[150px]">
+                                <p className="font-semibold">{place.place_name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {[place.city, place.state, place.country].filter(Boolean).join(', ')}
+                                </p>
+                                <button
+                                  onClick={() => handleDeletePlace(place.id)}
+                                  className="mt-2 text-xs text-destructive hover:underline flex items-center gap-1 mx-auto"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  {t('delete')}
+                                </button>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        ))}
+                        
+                        {visitedPlaces.length > 0 && (
+                          <FitBounds places={visitedPlaces} userLat={latitude} userLng={longitude} />
                         )}
                       </MapContainer>
                     )}
@@ -413,6 +601,7 @@ const Profile = () => {
                   <Button 
                     variant="outline" 
                     className="w-full"
+                    onClick={() => setIsAddPlaceModalOpen(true)}
                   >
                     <MapPin className="w-4 h-4 mr-2" />
                     {t('addVisitedPlaces')}
@@ -520,6 +709,58 @@ const Profile = () => {
                 t('saveChanges')
               )}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Place Modal */}
+      <Dialog open={isAddPlaceModalOpen} onOpenChange={setIsAddPlaceModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('addVisitedPlaces')}</DialogTitle>
+            <DialogDescription>{t('searchPlaceDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex gap-2">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('searchPlaceholder')}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchPlaces()}
+              />
+              <Button onClick={handleSearchPlaces} disabled={isSearching}>
+                {isSearching ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {searchResults.map((result) => (
+                  <button
+                    key={result.place_id}
+                    onClick={() => handleAddPlace(result)}
+                    disabled={isAddingPlace}
+                    className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50"
+                  >
+                    <p className="font-medium text-sm">{result.display_name.split(',')[0]}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {result.display_name}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {searchQuery && searchResults.length === 0 && !isSearching && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                {t('noResultsFound')}
+              </p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
