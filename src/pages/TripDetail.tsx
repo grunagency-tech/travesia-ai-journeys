@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
 import { Loader2, MapPin, Calendar, Users, DollarSign, Plane, Clock, ArrowLeft, Trash2, Sparkles, Hotel, MessageSquare, FileText, CheckCircle2, Lightbulb, AlertTriangle, Sun, Car } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import logoIcon from '@/assets/logo-icon.svg';
@@ -44,55 +44,55 @@ interface FlightOption {
   link: string | null;
 }
 
-// New JSON structure interfaces
+// New JSON structure interfaces (fields are optional because older/newer webhook versions may omit them)
 interface ItineraryResumen {
-  titulo: string;
-  descripcion: string;
-  presupuestoEstimado: number;
-  duracion: number;
-  highlights: string[];
+  titulo?: string;
+  descripcion?: string;
+  presupuestoEstimado?: number;
+  duracion?: number;
+  highlights?: string[];
 }
 
 interface ItineraryVuelo {
-  aerolinea: string;
-  origen: string;
-  destino: string;
-  fechaSalida: string;
-  fechaLlegada: string;
-  precio: number;
+  aerolinea?: string;
+  origen?: string;
+  destino?: string;
+  fechaSalida?: string;
+  fechaLlegada?: string;
+  precio?: number;
 }
 
 interface ItineraryTransporte {
-  vuelos: ItineraryVuelo[];
-  transporteLocal: string;
+  vuelos?: ItineraryVuelo[];
+  transporteLocal?: string;
 }
 
 interface ItineraryAlojamiento {
-  recomendacion: string;
-  zona: string;
-  costoPorNoche: number;
-  opciones: string[];
+  recomendacion?: string;
+  zona?: string;
+  costoPorNoche?: number;
+  opciones?: string[];
 }
 
 interface ItineraryActividad {
-  hora: 'morning' | 'afternoon' | 'evening';
-  titulo: string;
-  descripcion: string;
-  ubicacion: string;
-  costoAprox: number;
+  hora?: string;
+  titulo?: string;
+  descripcion?: string;
+  ubicacion?: string;
+  costoAprox?: number;
 }
 
 interface ItineraryDia {
   dia: number;
-  fecha: string;
-  resumenDia: string;
-  actividades: ItineraryActividad[];
+  fecha?: string;
+  resumenDia?: string;
+  actividades?: ItineraryActividad[];
 }
 
 interface ItineraryComentarios {
-  consejos: string[];
-  advertencias: string[];
-  mejorEpoca: string;
+  consejos?: string[];
+  advertencias?: string[];
+  mejorEpoca?: string;
 }
 
 interface ItineraryData {
@@ -311,7 +311,19 @@ const TripDetail = () => {
     }
   };
 
-  const getTimeOfDayLabel = (timeOfDay: string) => {
+  const formatMaybeDate = (dateStr?: string, formatStr: string = 'd MMMM yyyy') => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (!isValid(d)) return null;
+    return format(d, formatStr, { locale: es });
+  };
+
+  const getTimeOfDayLabel = (timeOfDay?: string) => {
+    if (!timeOfDay) return '';
+
+    // If we receive a time like "14:00" from the webhook
+    if (/^\d{1,2}:\d{2}$/.test(timeOfDay)) return `🕐 ${timeOfDay}`;
+
     const labels: Record<string, string> = {
       morning: '🌅 Mañana',
       afternoon: '☀️ Tarde',
@@ -565,14 +577,14 @@ const TripDetail = () => {
                       )}
 
                       {/* Highlights */}
-                      {resumen?.highlights && resumen.highlights.length > 0 && (
+                      {(resumen?.highlights?.length ?? 0) > 0 && (
                         <div className="mt-4 pt-4 border-t">
                           <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-primary" />
                             Puntos destacados
                           </h4>
                           <ul className="space-y-2">
-                            {resumen.highlights.map((highlight, idx) => (
+                            {(resumen?.highlights ?? []).map((highlight, idx) => (
                               <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
                                 <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                                 {highlight}
@@ -610,44 +622,55 @@ const TripDetail = () => {
                           <div key={dia.dia} className="bg-card rounded-2xl border overflow-hidden">
                             <div className="bg-primary/5 px-6 py-4 border-b">
                               <h4 className="font-urbanist font-bold text-base">
-                                Día {dia.dia} — {format(new Date(dia.fecha), 'd MMMM yyyy', { locale: es })}
+                                Día {dia.dia}
+                                {formatMaybeDate(dia.fecha) && (
+                                  <> — {formatMaybeDate(dia.fecha)}</>
+                                )}
                               </h4>
                               {dia.resumenDia && (
                                 <p className="text-sm text-muted-foreground mt-1">{dia.resumenDia}</p>
                               )}
                             </div>
                             <div className="p-6 space-y-4">
-                              {dia.actividades.map((actividad, index) => (
-                                <div 
-                                  key={index} 
-                                  className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
-                                >
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                      <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
-                                        {getTimeOfDayLabel(actividad.hora)}
-                                      </span>
-                                      <h5 className="font-urbanist font-semibold text-base">
-                                        {actividad.titulo}
-                                      </h5>
+                              {(dia.actividades?.length ?? 0) > 0 ? (
+                                (dia.actividades ?? []).map((actividad, index) => (
+                                  <div 
+                                    key={index} 
+                                    className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
+                                  >
+                                    <div className="flex justify-between items-start mb-2">
+                                      <div>
+                                        {actividad.hora && (
+                                          <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
+                                            {getTimeOfDayLabel(actividad.hora)}
+                                          </span>
+                                        )}
+                                        <h5 className="font-urbanist font-semibold text-base">
+                                          {actividad.titulo || 'Actividad'}
+                                        </h5>
+                                      </div>
+                                      {typeof actividad.costoAprox === 'number' && actividad.costoAprox > 0 && (
+                                        <span className="text-sm font-semibold text-primary">
+                                          ${actividad.costoAprox}
+                                        </span>
+                                      )}
                                     </div>
-                                    {actividad.costoAprox > 0 && (
-                                      <span className="text-sm font-semibold text-primary">
-                                        ${actividad.costoAprox}
-                                      </span>
+                                    {actividad.descripcion && (
+                                      <p className="text-sm text-muted-foreground mb-2">
+                                        {actividad.descripcion}
+                                      </p>
+                                    )}
+                                    {actividad.ubicacion && (
+                                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                        <MapPin className="w-3 h-3 text-primary" />
+                                        {actividad.ubicacion}
+                                      </p>
                                     )}
                                   </div>
-                                  <p className="text-sm text-muted-foreground mb-2">
-                                    {actividad.descripcion}
-                                  </p>
-                                  {actividad.ubicacion && (
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <MapPin className="w-3 h-3 text-primary" />
-                                      {actividad.ubicacion}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
+                                ))
+                              ) : (
+                                <p className="text-sm text-muted-foreground">Sin actividades detalladas para este día.</p>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -662,44 +685,55 @@ const TripDetail = () => {
                           <div key={day.id} className="bg-card rounded-2xl border overflow-hidden">
                             <div className="bg-primary/5 px-6 py-4 border-b">
                               <h4 className="font-urbanist font-bold text-base">
-                                Día {day.day_number} — {format(new Date(day.date), 'd MMMM yyyy', { locale: es })}
+                                Día {day.day_number}
+                                {formatMaybeDate(day.date) && (
+                                  <> — {formatMaybeDate(day.date)}</>
+                                )}
                               </h4>
                               {day.summary && (
                                 <p className="text-sm text-muted-foreground mt-1">{day.summary}</p>
                               )}
                             </div>
                             <div className="p-6 space-y-4">
-                              {day.activities.map((activity: any, index: number) => (
-                                <div 
-                                  key={index} 
-                                  className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
-                                >
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                      <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
-                                        {getTimeOfDayLabel(activity.timeOfDay)}
-                                      </span>
-                                      <h5 className="font-urbanist font-semibold text-base">
-                                        {activity.title}
-                                      </h5>
+                              {(day.activities?.length ?? 0) > 0 ? (
+                                (day.activities ?? []).map((activity: any, index: number) => (
+                                  <div 
+                                    key={index} 
+                                    className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
+                                  >
+                                    <div className="flex justify-between items-start mb-2">
+                                      <div>
+                                        {activity.timeOfDay && (
+                                          <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
+                                            {getTimeOfDayLabel(activity.timeOfDay)}
+                                          </span>
+                                        )}
+                                        <h5 className="font-urbanist font-semibold text-base">
+                                          {activity.title || 'Actividad'}
+                                        </h5>
+                                      </div>
+                                      {activity.approxCost && (
+                                        <span className="text-sm font-semibold text-primary">
+                                          ${activity.approxCost}
+                                        </span>
+                                      )}
                                     </div>
-                                    {activity.approxCost && (
-                                      <span className="text-sm font-semibold text-primary">
-                                        ${activity.approxCost}
-                                      </span>
+                                    {activity.description && (
+                                      <p className="text-sm text-muted-foreground mb-2">
+                                        {activity.description}
+                                      </p>
+                                    )}
+                                    {activity.location && (
+                                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                        <MapPin className="w-3 h-3 text-primary" />
+                                        {activity.location}
+                                      </p>
                                     )}
                                   </div>
-                                  <p className="text-sm text-muted-foreground mb-2">
-                                    {activity.description}
-                                  </p>
-                                  {activity.location && (
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <MapPin className="w-3 h-3 text-primary" />
-                                      {activity.location}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
+                                ))
+                              ) : (
+                                <p className="text-sm text-muted-foreground">Sin actividades detalladas para este día.</p>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -740,39 +774,57 @@ const TripDetail = () => {
                     </div>
 
                     {/* Vuelos from new structure */}
-                    {transporte?.vuelos && transporte.vuelos.length > 0 && (
+                    {(transporte?.vuelos?.length ?? 0) > 0 && (
                       <div className="space-y-3">
                         <h3 className="font-urbanist font-bold text-lg px-1">Vuelos sugeridos</h3>
-                        {transporte.vuelos.map((vuelo, idx) => (
-                          <div 
-                            key={idx} 
-                            className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <p className="font-urbanist font-bold text-base">{vuelo.aerolinea}</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {vuelo.origen} → {vuelo.destino}
-                                </p>
-                                <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4 text-primary" />
-                                    <span>{format(new Date(vuelo.fechaSalida), 'PPp', { locale: es })}</span>
-                                  </div>
-                                  <span className="text-primary">→</span>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4 text-primary" />
-                                    <span>{format(new Date(vuelo.fechaLlegada), 'PPp', { locale: es })}</span>
-                                  </div>
+                        {(transporte?.vuelos ?? []).map((vuelo, idx) => {
+                          const salidaLabel = formatMaybeDate(vuelo.fechaSalida, 'PPp');
+                          const llegadaLabel = formatMaybeDate(vuelo.fechaLlegada, 'PPp');
+                          const routeLabel = vuelo.origen && vuelo.destino
+                            ? `${vuelo.origen} → ${vuelo.destino}`
+                            : `${trip.origin || 'Tu ciudad'} → ${trip.destination}`;
+
+                          return (
+                            <div 
+                              key={idx} 
+                              className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex-1">
+                                  <p className="font-urbanist font-bold text-base">{vuelo.aerolinea || 'Vuelo'}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {routeLabel}
+                                  </p>
+                                  {(salidaLabel || llegadaLabel) && (
+                                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
+                                      {salidaLabel && (
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4 text-primary" />
+                                          <span>{salidaLabel}</span>
+                                        </div>
+                                      )}
+                                      {salidaLabel && llegadaLabel && (
+                                        <span className="text-primary">→</span>
+                                      )}
+                                      {llegadaLabel && (
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4 text-primary" />
+                                          <span>{llegadaLabel}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-2xl font-urbanist font-bold text-primary">${vuelo.precio}</p>
-                                <p className="text-xs text-muted-foreground">estimado</p>
+                                {typeof vuelo.precio === 'number' && (
+                                  <div className="text-right">
+                                    <p className="text-2xl font-urbanist font-bold text-primary">${vuelo.precio}</p>
+                                    <p className="text-xs text-muted-foreground">estimado</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 
@@ -780,45 +832,56 @@ const TripDetail = () => {
                     {(!transporte?.vuelos || transporte.vuelos.length === 0) && flights.length > 0 && (
                       <div className="space-y-3">
                         <h3 className="font-urbanist font-bold text-lg px-1">Opciones de vuelos</h3>
-                        {flights.map((flight) => (
-                          <div 
-                            key={flight.id} 
-                            className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <p className="font-urbanist font-bold text-base">{flight.airline}</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {flight.origin} → {flight.destination}
-                                </p>
-                                <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4 text-primary" />
-                                    <span>{format(new Date(flight.departure_time), 'PPp', { locale: es })}</span>
-                                  </div>
-                                  <span className="text-primary">→</span>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4 text-primary" />
-                                    <span>{format(new Date(flight.arrival_time), 'PPp', { locale: es })}</span>
-                                  </div>
+                        {flights.map((flight) => {
+                          const salidaLabel = formatMaybeDate(flight.departure_time, 'PPp');
+                          const llegadaLabel = formatMaybeDate(flight.arrival_time, 'PPp');
+
+                          return (
+                            <div 
+                              key={flight.id} 
+                              className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex-1">
+                                  <p className="font-urbanist font-bold text-base">{flight.airline}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {flight.origin} → {flight.destination}
+                                  </p>
+                                  {(salidaLabel || llegadaLabel) && (
+                                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
+                                      {salidaLabel && (
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4 text-primary" />
+                                          <span>{salidaLabel}</span>
+                                        </div>
+                                      )}
+                                      {salidaLabel && llegadaLabel && <span className="text-primary">→</span>}
+                                      {llegadaLabel && (
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4 text-primary" />
+                                          <span>{llegadaLabel}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                  <p className="text-2xl font-urbanist font-bold text-primary">${flight.price}</p>
-                                  <p className="text-xs text-muted-foreground">por persona</p>
+                                <div className="flex items-center gap-4">
+                                  <div className="text-right">
+                                    <p className="text-2xl font-urbanist font-bold text-primary">${flight.price}</p>
+                                    <p className="text-xs text-muted-foreground">por persona</p>
+                                  </div>
+                                  {flight.link && (
+                                    <Button className="rounded-full" size="sm" asChild>
+                                      <a href={flight.link} target="_blank" rel="noopener noreferrer">
+                                        Ver detalles
+                                      </a>
+                                    </Button>
+                                  )}
                                 </div>
-                                {flight.link && (
-                                  <Button className="rounded-full" size="sm" asChild>
-                                    <a href={flight.link} target="_blank" rel="noopener noreferrer">
-                                      Ver detalles
-                                    </a>
-                                  </Button>
-                                )}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 
@@ -1041,11 +1104,11 @@ const TripDetail = () => {
                   )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Inicio</span>
-                    <span className="font-medium">{format(startDate, 'd MMM yyyy', { locale: es })}</span>
+                    <span className="font-medium">{formatMaybeDate(trip.start_date, 'd MMM yyyy') || '—'}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Fin</span>
-                    <span className="font-medium">{format(endDate, 'd MMM yyyy', { locale: es })}</span>
+                    <span className="font-medium">{formatMaybeDate(trip.end_date, 'd MMM yyyy') || '—'}</span>
                   </div>
                 </div>
               </div>
