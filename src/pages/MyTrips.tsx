@@ -252,6 +252,10 @@ const MyTrips = () => {
                       <Button 
                         className="w-full rounded-full"
                         variant="default"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/viaje/${trip.id}`);
+                        }}
                       >
                         Ver itinerario
                         <ArrowRight className="w-4 h-4 ml-2" />
