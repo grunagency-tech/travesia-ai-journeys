@@ -40,77 +40,82 @@ interface Message {
 interface ItineraryActivity {
   hora: string;
   titulo: string;
-  descripcion: string;
-  ubicacion: string;
+  descripcion?: string;
+  ubicacion?: string;
   costoAprox: number;
 }
 
 interface ItineraryDay {
   dia: number;
-  fecha: string;
-  resumenDia: string;
+  fecha?: string;
+  resumenDia?: string;
   actividades: ItineraryActivity[];
 }
 
 interface ItineraryData {
+  destino?: string;
   resumen: {
     titulo: string;
-    descripcion: string;
+    descripcion?: string;
     presupuestoEstimado: number;
-    duracion: number;
-    highlights: string[];
+    duracion?: number;
+    highlights?: string[];
   };
-  transporte: {
-    vuelos: Array<{
+  transporte?: {
+    vuelos?: Array<{
       aerolinea: string;
-      origen: string;
-      destino: string;
-      fechaSalida: string;
-      fechaLlegada: string;
+      origen?: string;
+      destino?: string;
+      fechaSalida?: string;
+      fechaLlegada?: string;
       precio: number;
     }>;
-    transporteLocal: string;
+    transporteLocal?: string;
   };
-  alojamiento: {
-    recomendacion: string;
-    zona: string;
-    costoPorNoche: number;
-    opciones: string[];
+  alojamiento?: {
+    recomendacion?: string;
+    zona?: string;
+    costoPorNoche?: number;
+    opciones?: string[];
   };
   itinerario: ItineraryDay[];
-  comentarios: {
-    consejos: string[];
-    advertencias: string[];
-    mejorEpoca: string;
+  comentarios?: {
+    consejos?: string[];
+    advertencias?: string[];
+    mejorEpoca?: string;
   };
 }
 
 const generateItineraryHtml = (data: ItineraryData): string => {
-  const { resumen, transporte, alojamiento, itinerario, comentarios } = data;
+  const { destino, resumen, transporte, alojamiento, itinerario, comentarios } = data;
   
   const getHoraLabel = (hora: string) => {
     switch (hora) {
       case 'morning': return '🌅 Mañana';
       case 'afternoon': return '☀️ Tarde';
       case 'evening': return '🌙 Noche';
-      default: return hora;
+      default: return `🕐 ${hora}`;
     }
   };
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
+
+  const duracionDias = itinerario?.length || resumen.duracion || 0;
 
   return `
     <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 100%; color: #1a1a2e;">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 16px; margin-bottom: 24px;">
         <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700;">${resumen.titulo}</h1>
-        <p style="margin: 0; opacity: 0.9; font-size: 16px;">${resumen.descripcion}</p>
+        ${destino ? `<p style="margin: 0 0 8px 0; opacity: 0.9; font-size: 16px;">📍 ${destino}</p>` : ''}
+        ${resumen.descripcion ? `<p style="margin: 0; opacity: 0.9; font-size: 16px;">${resumen.descripcion}</p>` : ''}
         <div style="display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
-          <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">📅 ${resumen.duracion} días</span>
-          <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">💰 ~$${resumen.presupuestoEstimado?.toLocaleString()} USD</span>
+          ${duracionDias > 0 ? `<span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">📅 ${duracionDias} días</span>` : ''}
+          <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">💰 ~$${resumen.presupuestoEstimado?.toLocaleString()} MXN</span>
         </div>
       </div>
 
@@ -127,12 +132,12 @@ const generateItineraryHtml = (data: ItineraryData): string => {
       <!-- Transporte -->
       ${transporte?.vuelos?.length ? `
         <div style="background: white; border: 1px solid #e0e0e0; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
-          <h3 style="margin: 0 0 16px 0; font-size: 18px;">✈️ Transporte</h3>
+          <h3 style="margin: 0 0 16px 0; font-size: 18px;">✈️ Opciones de vuelo</h3>
           ${transporte.vuelos.map(v => `
-            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
               <div style="font-weight: 600;">${v.aerolinea}</div>
-              <div style="font-size: 14px; color: #666;">${v.origen} → ${v.destino}</div>
-              <div style="font-size: 14px; color: #667eea; margin-top: 4px;">$${v.precio?.toLocaleString()} USD</div>
+              ${v.origen && v.destino ? `<div style="font-size: 14px; color: #666;">${v.origen} → ${v.destino}</div>` : ''}
+              <div style="font-size: 14px; color: #667eea; font-weight: 600;">$${v.precio?.toLocaleString()} MXN</div>
             </div>
           `).join('')}
           ${transporte.transporteLocal ? `<p style="margin: 12px 0 0 0; font-size: 14px; color: #666;">🚇 ${transporte.transporteLocal}</p>` : ''}
@@ -140,12 +145,12 @@ const generateItineraryHtml = (data: ItineraryData): string => {
       ` : ''}
 
       <!-- Alojamiento -->
-      ${alojamiento ? `
+      ${alojamiento && alojamiento.recomendacion ? `
         <div style="background: white; border: 1px solid #e0e0e0; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
           <h3 style="margin: 0 0 16px 0; font-size: 18px;">🏨 Alojamiento</h3>
           <div style="font-weight: 600; font-size: 16px;">${alojamiento.recomendacion}</div>
-          <div style="font-size: 14px; color: #666; margin-top: 4px;">📍 ${alojamiento.zona}</div>
-          <div style="font-size: 14px; color: #667eea; margin-top: 4px;">$${alojamiento.costoPorNoche}/noche</div>
+          ${alojamiento.zona ? `<div style="font-size: 14px; color: #666; margin-top: 4px;">📍 ${alojamiento.zona}</div>` : ''}
+          ${alojamiento.costoPorNoche ? `<div style="font-size: 14px; color: #667eea; margin-top: 4px;">$${alojamiento.costoPorNoche}/noche</div>` : ''}
           ${alojamiento.opciones?.length ? `
             <div style="margin-top: 12px;">
               <span style="font-size: 13px; color: #888;">Otras opciones: ${alojamiento.opciones.join(', ')}</span>
@@ -160,18 +165,18 @@ const generateItineraryHtml = (data: ItineraryData): string => {
         <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px;">
             <div style="font-weight: 700; font-size: 18px;">Día ${day.dia}</div>
-            <div style="font-size: 14px; opacity: 0.9;">${formatDate(day.fecha)}</div>
-            <div style="font-size: 14px; margin-top: 4px; opacity: 0.8;">${day.resumenDia}</div>
+            ${day.fecha ? `<div style="font-size: 14px; opacity: 0.9;">${formatDate(day.fecha)}</div>` : ''}
+            ${day.resumenDia ? `<div style="font-size: 14px; margin-top: 4px; opacity: 0.8;">${day.resumenDia}</div>` : ''}
           </div>
           <div style="padding: 16px;">
             ${day.actividades.map(act => `
               <div style="border-left: 3px solid #667eea; padding-left: 16px; margin-bottom: 16px;">
                 <div style="font-size: 12px; color: #888; margin-bottom: 4px;">${getHoraLabel(act.hora)}</div>
                 <div style="font-weight: 600; font-size: 16px;">${act.titulo}</div>
-                <div style="font-size: 14px; color: #666; margin-top: 4px;">${act.descripcion}</div>
+                ${act.descripcion ? `<div style="font-size: 14px; color: #666; margin-top: 4px;">${act.descripcion}</div>` : ''}
                 <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 13px; color: #888;">
-                  <span>📍 ${act.ubicacion}</span>
-                  ${act.costoAprox > 0 ? `<span>💰 $${act.costoAprox}</span>` : '<span>🆓 Gratis</span>'}
+                  ${act.ubicacion ? `<span>📍 ${act.ubicacion}</span>` : ''}
+                  ${act.costoAprox > 0 ? `<span>💰 $${act.costoAprox} MXN</span>` : '<span>🆓 Gratis</span>'}
                 </div>
               </div>
             `).join('')}
@@ -717,6 +722,11 @@ const ChatPage = () => {
         // Handle if response is an array
         if (Array.isArray(data)) {
           data = data[0];
+        }
+        
+        // Unwrap 'output' if present (webhook format: {"output": {...}})
+        if (data.output) {
+          data = data.output;
         }
         
         console.log("Parsed data:", data);
