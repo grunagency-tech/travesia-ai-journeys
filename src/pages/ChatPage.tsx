@@ -935,20 +935,12 @@ const ChatPage = () => {
 
       {/* Sidebar for conversations - Desktop */}
       {user && showDesktopSidebar && (
-        <div className="hidden lg:flex w-72 border-r border-border bg-gray-50 flex-col relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowDesktopSidebar(false)}
-            className="absolute top-3 right-3 z-10 hover:bg-gray-200"
-            title="Ocultar historial"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-          </Button>
+        <div className="hidden lg:flex w-72 border-r border-border bg-gray-50 flex-col">
           <ConversationList 
             onSelectConversation={handleSelectConversation}
             onNewChat={handleNewChat}
             selectedId={currentConversationId || undefined}
+            onHideSidebar={() => setShowDesktopSidebar(false)}
           />
         </div>
       )}

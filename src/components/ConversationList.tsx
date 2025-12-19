@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MessageCircle, Plus, Clock, MapPin, Trash2 } from 'lucide-react';
+import { MessageCircle, Plus, Clock, MapPin, Trash2, PanelLeftClose } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,9 +29,10 @@ interface ConversationListProps {
   onSelectConversation: (id: string) => void;
   onNewChat: () => void;
   selectedId?: string;
+  onHideSidebar?: () => void;
 }
 
-export const ConversationList = ({ onSelectConversation, onNewChat, selectedId }: ConversationListProps) => {
+export const ConversationList = ({ onSelectConversation, onNewChat, selectedId, onHideSidebar }: ConversationListProps) => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,7 +181,7 @@ export const ConversationList = ({ onSelectConversation, onNewChat, selectedId }
         )}
       </div>
 
-      <div className="p-4 border-t border-border mt-auto">
+      <div className="p-4 border-t border-border mt-auto space-y-2">
         <Button 
           onClick={onNewChat}
           className="w-full gap-2"
@@ -189,6 +190,17 @@ export const ConversationList = ({ onSelectConversation, onNewChat, selectedId }
           <Plus className="w-4 h-4" />
           Nuevo Chat
         </Button>
+        {onHideSidebar && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onHideSidebar}
+            className="w-full justify-center gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+            Ocultar historial
+          </Button>
+        )}
       </div>
 
       {/* Delete confirmation dialog */}
