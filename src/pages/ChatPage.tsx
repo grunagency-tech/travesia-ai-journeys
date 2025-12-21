@@ -946,7 +946,7 @@ const ChatPage = () => {
       )}
 
       {/* Chat Section - 35% width */}
-      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-[35%] flex-col bg-gradient-to-b from-gray-50 to-white`}>
+      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-[30%] flex-col bg-gradient-to-b from-gray-50 to-white flex-shrink-0`}>
         {/* Header with branding */}
         <div className="bg-white shadow-sm p-4 flex items-center gap-3">
           {/* Left side: Back arrow + Logo */}
@@ -1190,7 +1190,7 @@ const ChatPage = () => {
       </div>
 
       {/* Itinerary Section - 65% width */}
-      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:w-[65%] bg-primary items-center justify-center p-6 relative overflow-hidden`}>
+      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:flex-1 bg-primary items-center justify-center p-6 relative overflow-hidden`}>
         {/* Decorative background elements */}
         <div className="absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
         <div className="absolute bottom-20 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-xl" />
