@@ -1073,10 +1073,10 @@ const ChatPage = () => {
                     {t('joinDescription')}
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                  <div className="flex flex-col gap-2 justify-center items-center w-full">
                     <Button 
                       onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}
-                      className="bg-primary text-white hover:bg-primary/90 font-bold px-5 py-2 h-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 text-sm"
+                      className="bg-primary text-white hover:bg-primary/90 font-bold px-5 py-2 h-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 text-sm w-full max-w-[200px]"
                     >
                       <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                       {t('createFreeAccount')}
@@ -1084,7 +1084,7 @@ const ChatPage = () => {
                     <Button 
                       onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
                       variant="outline"
-                      className="text-foreground hover:bg-slate-50 font-medium px-4 py-2 h-10 rounded-full border-slate-200 hover:border-primary/30 transition-all duration-300 text-sm"
+                      className="text-foreground hover:bg-slate-50 font-medium px-4 py-2 h-10 rounded-full border-slate-200 hover:border-primary/30 transition-all duration-300 text-sm w-full max-w-[200px]"
                     >
                       {t('alreadyHaveAccount')}
                     </Button>
