@@ -946,7 +946,7 @@ const ChatPage = () => {
       )}
 
       {/* Chat Section - 35% width */}
-      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-[30%] flex-col bg-gradient-to-b from-gray-50 to-white flex-shrink-0`}>
+      <div className={`${showContentOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-[40%] flex-col bg-gradient-to-b from-gray-50 to-white flex-shrink-0`}>
         {/* Header with branding */}
         <div className="bg-white shadow-sm p-4 flex items-center gap-3">
           {/* Left side: Back arrow + Logo */}

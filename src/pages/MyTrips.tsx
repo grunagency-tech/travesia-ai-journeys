@@ -7,8 +7,8 @@ import { Navbar } from '@/components/Navbar';
 import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS, de, pt, it } from 'date-fns/locale';
-import { getTravelImage } from '@/lib/travelImages';
-import logoIcon from '@/assets/logo-icon.svg';
+import { getImageByDestination } from '@/lib/travelImages';
+import travelGlobeIcon from '@/assets/travel-globe-icon.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 
@@ -78,7 +78,7 @@ const MyTrips = () => {
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-              <img src={logoIcon} alt="travesIA" className="w-10 h-10 animate-pulse" />
+              <img src={travelGlobeIcon} alt="travesIA" className="w-10 h-10 animate-pulse" />
             </div>
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
             <p className="text-muted-foreground text-sm">{t('loading')}</p>
@@ -111,7 +111,7 @@ const MyTrips = () => {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
               <div className="flex items-start gap-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <img src={logoIcon} alt="travesIA" className="w-8 h-8" />
+                  <img src={travelGlobeIcon} alt="travesIA" className="w-8 h-8" />
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
@@ -178,7 +178,7 @@ const MyTrips = () => {
                     {/* Image Section */}
                     <div className="relative w-full md:w-2/5 h-48 md:h-auto md:min-h-[240px]">
                       <img 
-                        src={getTravelImage(trip.id)}
+                        src={getImageByDestination(trip.destination)}
                         alt={trip.destination}
                         className="absolute inset-0 w-full h-full object-cover"
                       />
