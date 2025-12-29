@@ -967,6 +967,13 @@ export const translations = {
       PT: 'Central de Ajuda',
       IT: 'Centro Assistenza',
     },
+    adminPanel: {
+      ES: 'Panel de Admin',
+      EN: 'Admin Panel',
+      DE: 'Admin-Bereich',
+      PT: 'Painel Admin',
+      IT: 'Pannello Admin',
+    },
     signOut: {
       ES: 'Cerrar Sesión',
       EN: 'Sign Out',
