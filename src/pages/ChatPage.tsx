@@ -1169,7 +1169,7 @@ const ChatPage = () => {
             </div>
             
             {/* Disclaimer message */}
-            <p className="text-[10px] text-center text-muted-foreground mt-1">
+            <p className="text-xs text-center text-muted-foreground mt-2">
               {t('disclaimer')}
             </p>
           </form>
