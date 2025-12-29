@@ -1,23 +1,25 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Currency = 'USD' | 'EUR' | 'MXN' | 'ARS' | 'BRL' | 'PEN';
+type Currency = 'USD' | 'PEN' | 'MXN' | 'EUR';
 
 interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   currencySymbol: string;
+  currencyOptions: Currency[];
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 const currencySymbols: Record<Currency, string> = {
   USD: '$',
-  EUR: '€',
-  MXN: '$',
-  ARS: '$',
-  BRL: 'R$',
   PEN: 'S/',
+  MXN: '$',
+  EUR: '€',
 };
+
+// Ordered list of currencies
+const currencyOptions: Currency[] = ['USD', 'PEN', 'MXN', 'EUR'];
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [currency, setCurrencyState] = useState<Currency>(() => {
@@ -33,7 +35,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const currencySymbol = currencySymbols[currency];
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, currencySymbol }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, currencySymbol, currencyOptions }}>
       {children}
     </CurrencyContext.Provider>
   );

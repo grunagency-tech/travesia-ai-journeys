@@ -152,18 +152,13 @@ const TripDetail = () => {
     }
   }, [user, authLoading, id, navigate]);
 
-  // Fetch real destination image when trip is loaded
+  // Fetch destination image when trip is loaded
   useEffect(() => {
     if (trip?.destination) {
       setImageLoading(true);
-      getDestinationImage(trip.destination)
-        .then((url) => {
-          setDestinationImage(url);
-          setImageLoading(false);
-        })
-        .catch(() => {
-          setImageLoading(false);
-        });
+      const url = getDestinationImage(trip.destination);
+      setDestinationImage(url);
+      setImageLoading(false);
     }
   }, [trip?.destination]);
 
