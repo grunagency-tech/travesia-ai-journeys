@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getDestinationImage } from '@/lib/destinationImages';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -602,9 +603,10 @@ const TripDetail = () => {
                             <p className="text-xs text-muted-foreground">Generado con IA por travesIA</p>
                           </div>
                         </div>
+                        {/* Sanitized HTML to prevent XSS */}
                         <div 
                           className="prose prose-sm max-w-none prose-headings:font-urbanist prose-headings:font-bold prose-a:text-primary"
-                          dangerouslySetInnerHTML={{ __html: itineraryHtml }} 
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(itineraryHtml) }} 
                         />
                       </div>
                     )}

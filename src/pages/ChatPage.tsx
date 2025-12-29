@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { ConversationList } from "@/components/ConversationList";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import logoFull from "@/assets/logo-full.svg";
 import logoIcon from "@/assets/logo-icon.svg";
 import {
@@ -1219,9 +1220,9 @@ const ChatPage = () => {
                 customImage={tripImage || undefined}
               />
               
-              {/* HTML Content */}
+              {/* HTML Content - Sanitized to prevent XSS */}
               <div className="p-6 pt-0">
-                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} />
               </div>
             </div>
           </div>
