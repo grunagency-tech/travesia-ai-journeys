@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,8 @@ import {
   Shield,
   Calendar,
   Mail,
-  Globe
+  Globe,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +28,23 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+} from 'recharts';
 
 interface Profile {
   id: string;
@@ -53,22 +69,14 @@ interface Trip {
   profiles?: { email: string; name: string | null } | null;
 }
 
-interface Conversation {
-  id: string;
-  user_id: string;
-  title: string | null;
-  destination: string | null;
-  created_at: string;
-  last_message_at: string | null;
-  profiles?: { email: string; name: string | null } | null;
-}
-
 interface Stats {
   totalUsers: number;
   totalTrips: number;
   totalConversations: number;
   tripsThisMonth: number;
 }
+
+const COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'];
 
 export default function AdminPanel() {
   const { user, loading: authLoading } = useAuth();
@@ -80,7 +88,6 @@ export default function AdminPanel() {
   const [checkingRole, setCheckingRole] = useState(true);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalTrips: 0,
@@ -88,6 +95,72 @@ export default function AdminPanel() {
     tripsThisMonth: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
+
+  // Calculate chart data
+  const chartData = useMemo(() => {
+    const now = new Date();
+    const sixMonthsAgo = subMonths(now, 5);
+    const months = eachMonthOfInterval({ start: startOfMonth(sixMonthsAgo), end: endOfMonth(now) });
+
+    // Users by month
+    const usersByMonth = months.map((month) => {
+      const monthStart = startOfMonth(month);
+      const monthEnd = endOfMonth(month);
+      const count = profiles.filter((p) => {
+        const createdAt = new Date(p.created_at);
+        return createdAt >= monthStart && createdAt <= monthEnd;
+      }).length;
+      return {
+        month: format(month, 'MMM', { locale: dateLocale }),
+        usuarios: count,
+      };
+    });
+
+    // Trips by month
+    const tripsByMonth = months.map((month) => {
+      const monthStart = startOfMonth(month);
+      const monthEnd = endOfMonth(month);
+      const count = trips.filter((t) => {
+        const createdAt = new Date(t.created_at);
+        return createdAt >= monthStart && createdAt <= monthEnd;
+      }).length;
+      return {
+        month: format(month, 'MMM', { locale: dateLocale }),
+        viajes: count,
+      };
+    });
+
+    // Combined data for line chart
+    const combinedByMonth = months.map((month, index) => ({
+      month: format(month, 'MMM', { locale: dateLocale }),
+      usuarios: usersByMonth[index].usuarios,
+      viajes: tripsByMonth[index].viajes,
+    }));
+
+    // Top destinations
+    const destinationCounts: Record<string, number> = {};
+    trips.forEach((trip) => {
+      const dest = trip.destination;
+      destinationCounts[dest] = (destinationCounts[dest] || 0) + 1;
+    });
+    const topDestinations = Object.entries(destinationCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, value]) => ({ name, value }));
+
+    // Users by country
+    const countryCounts: Record<string, number> = {};
+    profiles.forEach((profile) => {
+      const country = profile.country || 'Sin país';
+      countryCounts[country] = (countryCounts[country] || 0) + 1;
+    });
+    const usersByCountry = Object.entries(countryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, value]) => ({ name, value }));
+
+    return { usersByMonth, tripsByMonth, combinedByMonth, topDestinations, usersByCountry };
+  }, [profiles, trips, dateLocale]);
 
   // Check if user is admin
   useEffect(() => {
@@ -138,11 +211,10 @@ export default function AdminPanel() {
           .select('*, profiles:user_id(email, name)')
           .order('created_at', { ascending: false });
 
-        // Fetch conversations with user info
-        const { data: conversationsData } = await supabase
+        // Fetch conversations count
+        const { count: conversationsCount } = await supabase
           .from('conversations')
-          .select('*, profiles:user_id(email, name)')
-          .order('created_at', { ascending: false });
+          .select('*', { count: 'exact', head: true });
 
         // Calculate stats
         const now = new Date();
@@ -153,11 +225,10 @@ export default function AdminPanel() {
 
         setProfiles(profilesData || []);
         setTrips(tripsData || []);
-        setConversations(conversationsData || []);
         setStats({
           totalUsers: profilesData?.length || 0,
           totalTrips: tripsData?.length || 0,
-          totalConversations: conversationsData?.length || 0,
+          totalConversations: conversationsCount || 0,
           tripsThisMonth,
         });
       } catch (error) {
@@ -274,9 +345,164 @@ export default function AdminPanel() {
           </Card>
         </div>
 
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Growth Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Crecimiento Mensual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingData ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={chartData.combinedByMonth}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="usuarios" stroke="#2563eb" strokeWidth={2} dot={{ fill: '#2563eb' }} />
+                    <Line type="monotone" dataKey="viajes" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Top Destinations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Map className="h-5 w-5 text-primary" />
+                Destinos Populares
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingData ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : chartData.topDestinations.length === 0 ? (
+                <div className="flex items-center justify-center py-16 text-muted-foreground">
+                  No hay datos de destinos
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={chartData.topDestinations} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={11} width={100} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Bar dataKey="value" fill="#2563eb" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Users by Country */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                Usuarios por País
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingData ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : chartData.usersByCountry.length === 0 ? (
+                <div className="flex items-center justify-center py-16 text-muted-foreground">
+                  No hay datos de países
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.usersByCountry}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {chartData.usersByCountry.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Trips by Month Bar Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Viajes por Mes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingData ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={chartData.tripsByMonth}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Bar dataKey="viajes" fill="#f97316" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Data Tabs */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuarios
@@ -284,10 +510,6 @@ export default function AdminPanel() {
             <TabsTrigger value="trips" className="flex items-center gap-2">
               <Map className="h-4 w-4" />
               Viajes
-            </TabsTrigger>
-            <TabsTrigger value="conversations" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Conversaciones
             </TabsTrigger>
           </TabsList>
 
@@ -415,76 +637,6 @@ export default function AdminPanel() {
                               <TableCell>{trip.travelers}</TableCell>
                               <TableCell>
                                 {trip.budget ? `$${trip.budget.toLocaleString()}` : '-'}
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Conversations Tab */}
-          <TabsContent value="conversations">
-            <Card>
-              <CardHeader>
-                <CardTitle>Todas las Conversaciones</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingData ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Título</TableHead>
-                          <TableHead>Usuario</TableHead>
-                          <TableHead>Destino</TableHead>
-                          <TableHead>Creada</TableHead>
-                          <TableHead>Último Mensaje</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {conversations.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground">
-                              No hay conversaciones registradas
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          conversations.map((conv) => (
-                            <TableRow key={conv.id}>
-                              <TableCell className="font-medium">
-                                {conv.title || 'Sin título'}
-                              </TableCell>
-                              <TableCell>
-                                <div className="text-sm">
-                                  <div>{conv.profiles?.name || 'Sin nombre'}</div>
-                                  <div className="text-muted-foreground text-xs">
-                                    {conv.profiles?.email}
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {conv.destination ? (
-                                  <Badge variant="secondary">{conv.destination}</Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">-</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {format(new Date(conv.created_at), 'dd MMM yyyy HH:mm', { locale: dateLocale })}
-                              </TableCell>
-                              <TableCell>
-                                {conv.last_message_at
-                                  ? format(new Date(conv.last_message_at), 'dd MMM yyyy HH:mm', { locale: dateLocale })
-                                  : '-'}
                               </TableCell>
                             </TableRow>
                           ))
