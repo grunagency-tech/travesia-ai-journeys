@@ -1055,44 +1055,42 @@ const ChatPage = () => {
             
             {/* Register Banner - blocks sending more messages */}
             {showRegisterBanner && !user && (
-              <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-3xl py-10 px-8 text-center shadow-2xl border border-slate-100">
+              <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-2xl py-6 px-4 text-center shadow-xl border border-slate-100 mx-2">
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                <div className="absolute top-1/2 left-1/4 w-3 h-3 bg-primary/20 rounded-full" />
-                <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-primary/15 rounded-full" />
+                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                 
                 <div className="relative z-10">
                   {/* Logo icon */}
-                  <div className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-primary/10 to-blue-100 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-primary/10">
-                    <img src={logoIcon} alt="travesIA" className="w-12 h-12" />
+                  <div className="w-14 h-14 mx-auto mb-3 bg-gradient-to-br from-primary/10 to-blue-100 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-md border border-primary/10">
+                    <img src={logoIcon} alt="travesIA" className="w-8 h-8" />
                   </div>
                   
-                  <h3 className="font-urbanist font-extrabold text-2xl sm:text-3xl mb-3 text-foreground flex items-center justify-center gap-2 flex-wrap">
-                    {t('joinTravesia').replace('travesIA!', '')} <img src={logoFull} alt="travesIA" className="h-7 sm:h-8 inline-block" />!
+                  <h3 className="font-urbanist font-extrabold text-lg sm:text-xl mb-2 text-foreground flex items-center justify-center gap-1.5 flex-wrap">
+                    {t('joinTravesia').replace('travesIA!', '')} <img src={logoFull} alt="travesIA" className="h-5 sm:h-6 inline-block" />!
                   </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-sm mx-auto leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-5 max-w-xs mx-auto leading-relaxed">
                     {t('joinDescription')}
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
                     <Button 
                       onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}
-                      className="bg-primary text-white hover:bg-primary/90 font-bold px-8 py-3 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      className="bg-primary text-white hover:bg-primary/90 font-bold px-5 py-2 h-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 text-sm"
                     >
-                      <Sparkles className="w-4 h-4 mr-2" />
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                       {t('createFreeAccount')}
                     </Button>
                     <Button 
                       onClick={() => navigate('/auth', { state: { returnTo: '/chat' } })}
                       variant="outline"
-                      className="text-foreground hover:bg-slate-50 font-medium px-6 py-3 h-12 rounded-full border-slate-200 hover:border-primary/30 transition-all duration-300"
+                      className="text-foreground hover:bg-slate-50 font-medium px-4 py-2 h-10 rounded-full border-slate-200 hover:border-primary/30 transition-all duration-300 text-sm"
                     >
                       {t('alreadyHaveAccount')}
                     </Button>
                   </div>
                   
-                  <p className="text-xs text-muted-foreground mt-6">
+                  <p className="text-[10px] text-muted-foreground mt-4">
                     ✨ {t('freeFeatures')}
                   </p>
                 </div>
