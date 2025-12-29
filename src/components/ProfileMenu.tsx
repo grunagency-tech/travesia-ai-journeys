@@ -1,5 +1,7 @@
-import { User, HelpCircle, LogOut, Plane } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { User, HelpCircle, LogOut, Plane, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
@@ -17,7 +19,34 @@ export const ProfileMenu = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const t = (key: string) => getTranslation(`profileMenu.${key}`, language);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkAdmin = async () => {
+      if (!user) {
+        if (!cancelled) setIsAdmin(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!cancelled) setIsAdmin(!!data);
+    };
+
+    checkAdmin();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,7 +65,7 @@ export const ProfileMenu = () => {
       <DropdownMenuTrigger asChild>
         <button className="w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
           <Avatar className="w-10 h-10">
-            <AvatarImage src={user?.user_metadata?.avatar_url} />
+            <AvatarImage src={user?.user_metadata?.avatar_url} alt="Foto de perfil" />
             <AvatarFallback className="bg-secondary text-foreground/60 text-sm font-medium">
               {getInitials()}
             </AvatarFallback>
@@ -65,6 +94,17 @@ export const ProfileMenu = () => {
           <HelpCircle className="mr-3 h-4 w-4 text-foreground/60" />
           <span className="text-sm font-medium">{t('helpCenter')}</span>
         </DropdownMenuItem>
+
+        {isAdmin && (
+          <DropdownMenuItem
+            onClick={() => navigate('/admin')}
+            className="cursor-pointer rounded-lg px-4 py-3 hover:bg-secondary/50 focus:bg-secondary/50"
+          >
+            <Shield className="mr-3 h-4 w-4 text-foreground/60" />
+            <span className="text-sm font-medium">{t('adminPanel')}</span>
+          </DropdownMenuItem>
+        )}
+
         <DropdownMenuSeparator className="my-2 bg-border" />
         <DropdownMenuItem 
           onClick={handleSignOut}
