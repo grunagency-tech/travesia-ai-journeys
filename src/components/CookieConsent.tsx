@@ -164,8 +164,10 @@ export function CookieConsent() {
     <>
       {/* Cookie Banner */}
       <div 
-        className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-fade-in"
-        style={{ animationDelay: '0.2s' }}
+        className="fixed bottom-0 left-0 right-0 z-50 p-4 transform transition-all duration-700 ease-out"
+        style={{
+          animation: 'slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        }}
       >
         <div className="max-w-4xl mx-auto">
           <div className="bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-5 md:p-6">
