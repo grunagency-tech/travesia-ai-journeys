@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Calendar, ChevronDown, ChevronUp, Eye, Plus, Plane, Hotel, 
-  Car, MapPin, Clock, Sun, Cloud, CloudRain, Thermometer
+  Car, MapPin, Clock, Sun, Cloud, CloudRain, Thermometer, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -230,12 +230,25 @@ const TabItinerario = ({
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium text-foreground">{activity.titulo}</h4>
-                            {activity.hora && (
-                              <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {getTimeLabel(activity.hora)}
-                              </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {activity.hora && (
+                                <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {getTimeLabel(activity.hora)}
+                                </span>
+                              )}
+                              {activity.link && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-xs px-2"
+                                  onClick={() => window.open(activity.link, '_blank')}
+                                >
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  Reservar
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           {activity.descripcion && (
                             <p className="text-sm text-muted-foreground mb-2">{activity.descripcion}</p>
@@ -247,9 +260,15 @@ const TabItinerario = ({
                                 {activity.ubicacion}
                               </span>
                             )}
+                            {activity.duracion && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {activity.duracion}
+                              </span>
+                            )}
                             <span className={`font-medium ${activity.costoAprox && activity.costoAprox > 0 ? 'text-foreground' : 'text-green-600'}`}>
                               {activity.costoAprox && activity.costoAprox > 0 
-                                ? `$${activity.costoAprox.toLocaleString()} MXN` 
+                                ? `$${activity.costoAprox.toLocaleString()} USD` 
                                 : 'Gratis'}
                             </span>
                           </div>

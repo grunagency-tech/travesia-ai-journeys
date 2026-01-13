@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Compass, Clock, DollarSign, Plus, Filter, Tag, Search } from "lucide-react";
+import { Compass, Clock, DollarSign, Plus, Filter, Tag, Search, ExternalLink, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -168,28 +168,60 @@ const TabActividades = ({
                     <div className="p-4">
                       <h4 className="font-semibold mb-1">{activity.nombre}</h4>
                       {activity.descripcion && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                           {activity.descripcion}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          {activity.duracion && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              {activity.duracion}
-                            </span>
-                          )}
-                          <span className={`flex items-center gap-1 ${activity.precio && activity.precio > 0 ? '' : 'text-green-600'}`}>
-                            <DollarSign className="w-4 h-4" />
-                            {activity.precio && activity.precio > 0 
-                              ? `$${activity.precio.toLocaleString()}` 
-                              : 'Gratis'}
+                      {/* Location & Hours */}
+                      <div className="space-y-1 mb-3">
+                        {activity.ubicacion && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {activity.ubicacion}
+                          </p>
+                        )}
+                        {activity.horarios && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {activity.horarios}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                        {activity.duracion && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {activity.duracion}
                           </span>
-                        </div>
-                        
-                        <Button size="sm" onClick={() => handleAddClick(activity)}>
+                        )}
+                        <span className={`flex items-center gap-1 ${activity.precio && activity.precio > 0 ? '' : 'text-green-600'}`}>
+                          <DollarSign className="w-4 h-4" />
+                          {activity.precio && activity.precio > 0 
+                            ? `$${activity.precio.toLocaleString()}` 
+                            : 'Gratis'}
+                        </span>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2">
+                        {activity.link && (
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            className="flex-1"
+                            onClick={() => window.open(activity.link, '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Reservar
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant={activity.link ? "outline" : "default"}
+                          onClick={() => handleAddClick(activity)}
+                        >
                           <Plus className="w-4 h-4 mr-1" />
                           Agregar
                         </Button>
