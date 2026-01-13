@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft } from "lucide-react";
 import ItineraryHeader from "@/components/ItineraryHeader";
+import ItineraryPanel from "@/components/ItineraryPanel";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -1187,7 +1188,17 @@ const ChatPage = () => {
           </Button>
         )}
 
-        {htmlContent ? (
+        {itineraryData ? (
+          <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-hidden">
+            <ItineraryPanel 
+              data={itineraryData}
+              startDate={tripDate || undefined}
+              endDate={tripEndDate || undefined}
+              travelers={tripTravelers}
+              customImage={tripImage || undefined}
+            />
+          </div>
+        ) : htmlContent ? (
           <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-auto relative">
             <div>
               {/* Itinerary Header with image + map */}
