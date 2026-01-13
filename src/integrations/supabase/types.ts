@@ -52,6 +52,33 @@ export type Database = {
           },
         ]
       }
+      destination_images: {
+        Row: {
+          city_name: string
+          city_name_en: string | null
+          country: string
+          created_at: string
+          id: string
+          image_url: string
+        }
+        Insert: {
+          city_name: string
+          city_name_en?: string | null
+          country: string
+          created_at?: string
+          id?: string
+          image_url: string
+        }
+        Update: {
+          city_name?: string
+          city_name_en?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+        }
+        Relationships: []
+      }
       flight_options: {
         Row: {
           airline: string
