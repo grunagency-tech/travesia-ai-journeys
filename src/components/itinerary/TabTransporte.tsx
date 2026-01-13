@@ -98,21 +98,33 @@ const TabTransporte = ({
                     )}
 
                     {/* Price & Action */}
-                    <div className="text-right">
+                    <div className="text-right min-w-[140px]">
                       {flight.precio && (
                         <p className="text-xl font-bold text-primary">
                           ${flight.precio.toLocaleString()}
-                          <span className="text-xs font-normal text-muted-foreground ml-1">MXN</span>
+                          <span className="text-xs font-normal text-muted-foreground ml-1">USD</span>
                         </p>
                       )}
-                      <Button 
-                        size="sm" 
-                        className="mt-2"
-                        onClick={() => onAddFlight?.(flight)}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Agregar
-                      </Button>
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        {flight.link && (
+                          <Button 
+                            size="sm"
+                            variant="default"
+                            onClick={() => window.open(flight.link, '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Reservar
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant={flight.link ? "outline" : "default"}
+                          onClick={() => onAddFlight?.(flight)}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Agregar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -156,9 +168,17 @@ const TabTransporte = ({
                       {flight.precio && (
                         <p className="font-semibold text-primary">${flight.precio.toLocaleString()}</p>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => onAddFlight?.(flight)}>
-                        Agregar
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {flight.link && (
+                          <Button size="sm" onClick={() => window.open(flight.link, '_blank')}>
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Reservar
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => onAddFlight?.(flight)}>
+                          Agregar
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -203,13 +223,25 @@ const TabTransporte = ({
                         <p className="text-xs text-muted-foreground mt-1">📍 {car.puntoRecogida}</p>
                       )}
                     </div>
-                    <div className="text-right">
+                    <div className="text-right min-w-[130px]">
                       {car.precio && (
                         <p className="font-bold text-green-600">${car.precio.toLocaleString()}/día</p>
                       )}
-                      <Button size="sm" className="mt-2" variant="outline" onClick={() => onAddCar?.(car)}>
-                        Agregar
-                      </Button>
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        {car.link && (
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            onClick={() => window.open(car.link, '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Reservar
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => onAddCar?.(car)}>
+                          Agregar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

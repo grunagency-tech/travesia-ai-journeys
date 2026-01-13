@@ -66,6 +66,7 @@ export interface CarRentalOption {
   puntoRecogida?: string;
   fechaInicio?: string;
   fechaFin?: string;
+  link?: string;
 }
 
 export interface ActivityOption {
