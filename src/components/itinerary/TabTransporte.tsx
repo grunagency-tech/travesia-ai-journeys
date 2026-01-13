@@ -1,16 +1,23 @@
 import { useState } from "react";
-import { Plane, Clock, Star, ArrowRight, Car, ChevronDown, Plus, ExternalLink } from "lucide-react";
+import { Plane, Clock, Star, ArrowRight, Car, ChevronDown, Plus, ExternalLink, Bus, Train, CreditCard, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FlightOption, CarRentalOption } from "./types";
+import { FlightOption, CarRentalOption, TransportOption } from "./types";
+
+interface LocalTransportData {
+  descripcion?: string;
+  opciones?: TransportOption[];
+  consejos?: string[];
+  tarjetasTransporte?: string;
+}
 
 interface TabTransporteProps {
   flights?: FlightOption[];
   carRentalRecommended?: boolean;
   carOptions?: CarRentalOption[];
-  localTransport?: string;
+  localTransport?: string | LocalTransportData;
   onAddFlight?: (flight: FlightOption) => void;
   onAddCar?: (car: CarRentalOption) => void;
 }
@@ -226,9 +233,93 @@ const TabTransporte = ({
 
       {/* Local Transport Info */}
       {localTransport && (
-        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-          <h4 className="font-medium text-blue-900 mb-2">🚇 Transporte local</h4>
-          <p className="text-sm text-blue-700">{localTransport}</p>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg flex items-center gap-2">
+            <Bus className="w-5 h-5 text-blue-600" />
+            Transporte local
+          </h3>
+
+          {typeof localTransport === 'string' ? (
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <p className="text-sm text-blue-700">{localTransport}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Description */}
+              {localTransport.descripcion && (
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                  <p className="text-sm text-blue-700">{localTransport.descripcion}</p>
+                </div>
+              )}
+
+              {/* Transport Options */}
+              {localTransport.opciones && localTransport.opciones.length > 0 && (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {localTransport.opciones.map((option, idx) => (
+                    <Card key={idx} className={option.recomendado ? 'border-green-200 bg-green-50/50' : ''}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            option.tipo.toLowerCase().includes('metro') ? 'bg-blue-100' :
+                            option.tipo.toLowerCase().includes('bus') ? 'bg-green-100' :
+                            option.tipo.toLowerCase().includes('taxi') || option.tipo.toLowerCase().includes('uber') ? 'bg-yellow-100' :
+                            option.tipo.toLowerCase().includes('tren') ? 'bg-purple-100' : 'bg-muted'
+                          }`}>
+                            {option.tipo.toLowerCase().includes('metro') ? <Train className="w-5 h-5 text-blue-600" /> :
+                             option.tipo.toLowerCase().includes('tren') ? <Train className="w-5 h-5 text-purple-600" /> :
+                             <Bus className="w-5 h-5 text-green-600" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold">{option.tipo}</h4>
+                              {option.recomendado && (
+                                <Badge className="bg-green-100 text-green-700 text-xs">Recomendado</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">{option.descripcion}</p>
+                            {option.costoAproximado && (
+                              <p className="text-sm font-medium text-primary mt-2">
+                                💰 {option.costoAproximado}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Transport Cards */}
+              {localTransport.tarjetasTransporte && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
+                  <h4 className="font-medium text-purple-900 flex items-center gap-2 mb-2">
+                    <CreditCard className="w-4 h-4" />
+                    Tarjetas de transporte
+                  </h4>
+                  <p className="text-sm text-purple-700">{localTransport.tarjetasTransporte}</p>
+                </div>
+              )}
+
+              {/* Tips */}
+              {localTransport.consejos && localTransport.consejos.length > 0 && (
+                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                  <h4 className="font-medium text-amber-900 flex items-center gap-2 mb-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Consejos de transporte
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {localTransport.consejos.map((consejo, idx) => (
+                      <li key={idx} className="text-sm text-amber-700 flex items-start gap-2">
+                        <span className="text-amber-500">•</span>
+                        {consejo}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

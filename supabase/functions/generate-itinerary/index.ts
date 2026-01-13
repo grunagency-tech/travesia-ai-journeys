@@ -70,58 +70,148 @@ El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedade
     "descripcion": "string - Resumen descriptivo del viaje (2-3 oraciones)",
     "presupuestoEstimado": number - Presupuesto total estimado en USD,
     "duracion": number - Número de días,
-    "highlights": ["string - punto destacado 1", "string - punto destacado 2", "string - punto destacado 3"]
+    "highlights": ["string - punto destacado 1", "string - punto destacado 2", "string - punto destacado 3", "string - punto destacado 4", "string - punto destacado 5"]
   },
   "transporte": {
     "vuelos": [
       {
-        "aerolinea": "string - nombre de aerolínea sugerida",
+        "aerolinea": "string - nombre de aerolínea real que opera esa ruta",
         "origen": "string - ciudad de origen",
         "destino": "string - ciudad de destino",
         "fechaSalida": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
         "fechaLlegada": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
+        "duracion": "string - duración del vuelo (ej: 2h 30m)",
+        "escalas": number - número de escalas (0 para directo),
         "precio": number - precio estimado en USD
       }
     ],
-    "transporteLocal": "string - recomendaciones de transporte dentro del destino"
+    "transporteLocal": {
+      "descripcion": "string - descripción general del sistema de transporte",
+      "opciones": [
+        {
+          "tipo": "string - Metro/Bus/Taxi/Uber/Tren/etc",
+          "descripcion": "string - cómo funciona y dónde usarlo",
+          "costoAproximado": "string - rango de precios típico",
+          "recomendado": boolean - si es recomendado para turistas
+        }
+      ],
+      "consejos": ["string - consejo práctico 1", "string - consejo práctico 2", "string - consejo práctico 3"],
+      "tarjetasTransporte": "string - tarjetas o pases de transporte recomendados (ej: Oyster Card, MetroCard, etc)"
+    },
+    "alquilerCocheRecomendado": boolean - si se recomienda alquilar coche,
+    "opcionesCoche": [
+      {
+        "empresa": "string - nombre de empresa de alquiler",
+        "tipoVehiculo": "string - tipo de vehículo",
+        "precio": number - precio por día en USD,
+        "puntoRecogida": "string - ubicación de recogida"
+      }
+    ]
   },
   "alojamiento": {
-    "recomendacion": "string - descripción de la recomendación principal",
-    "zona": "string - mejor zona para hospedarse",
+    "recomendacion": "string - descripción detallada de la recomendación principal",
+    "zona": "string - mejor zona para hospedarse con explicación de por qué",
     "costoPorNoche": number - costo promedio por noche en USD,
-    "opciones": ["string - opción 1", "string - opción 2", "string - opción 3"]
+    "opciones": [
+      {
+        "nombre": "string - nombre del hotel/hostal",
+        "tipo": "string - Hotel/Hostal/Apartamento/B&B",
+        "ubicacion": "string - dirección o zona",
+        "precioPorNoche": number - precio por noche en USD,
+        "calificacion": number - calificación de 1 a 5,
+        "descripcion": "string - breve descripción",
+        "amenities": ["string - WiFi", "string - Desayuno", "string - Piscina"]
+      }
+    ]
   },
+  "actividades": [
+    {
+      "nombre": "string - nombre de la actividad/atracción",
+      "descripcion": "string - descripción detallada",
+      "duracion": "string - tiempo estimado (ej: 2-3 horas)",
+      "precio": number - precio en USD (0 si es gratis),
+      "tipo": "string - Cultural/Gastronomía/Aventura/Naturaleza/Compras/Entretenimiento",
+      "ubicacion": "string - dirección o zona",
+      "horarios": "string - horarios de apertura típicos",
+      "link": "string - URL oficial o de reservas (TripAdvisor, GetYourGuide, Viator, sitio oficial)"
+    }
+  ],
   "itinerario": [
     {
       "dia": number,
       "fecha": "string - fecha YYYY-MM-DD",
       "resumenDia": "string - resumen breve del día",
+      "clima": "string - clima esperado para esa fecha",
       "actividades": [
         {
-          "hora": "morning" | "afternoon" | "evening",
+          "hora": "string - hora específica (ej: 09:00)",
           "titulo": "string - nombre de la actividad",
-          "descripcion": "string - descripción detallada",
-          "ubicacion": "string - lugar específico",
-          "costoAprox": number - costo aproximado en USD
+          "descripcion": "string - descripción detallada de qué hacer",
+          "ubicacion": "string - dirección específica",
+          "duracion": "string - duración estimada",
+          "costoAprox": number - costo aproximado en USD,
+          "tipo": "string - tipo de actividad",
+          "link": "string - URL para reservar o más info"
         }
       ]
     }
   ],
   "comentarios": {
-    "consejos": ["string - consejo útil 1", "string - consejo útil 2"],
-    "advertencias": ["string - advertencia o precaución"],
-    "mejorEpoca": "string - mejor época para visitar este destino"
+    "consejos": ["string - consejo útil 1", "string - consejo útil 2", "string - consejo útil 3", "string - consejo útil 4"],
+    "advertencias": ["string - advertencia o precaución 1", "string - advertencia 2"],
+    "mejorEpoca": "string - mejor época para visitar este destino con explicación"
+  },
+  "infoLocal": {
+    "clima": {
+      "temperatura": "string - rango de temperaturas típicas para las fechas del viaje",
+      "descripcion": "string - descripción del clima esperado",
+      "mejorEpoca": "string - mejor época del año para visitar"
+    },
+    "transporteLocal": {
+      "descripcion": "string - resumen del sistema de transporte público",
+      "opciones": ["string - opción 1 con descripción", "string - opción 2 con descripción"],
+      "consejos": ["string - consejo 1", "string - consejo 2", "string - consejo 3"]
+    },
+    "cultura": {
+      "idioma": "string - idioma oficial y otros idiomas hablados",
+      "moneda": "string - moneda oficial con símbolo",
+      "propinas": "string - costumbres de propinas detalladas",
+      "costumbres": ["string - costumbre local 1", "string - costumbre local 2", "string - costumbre local 3", "string - costumbre local 4"],
+      "vestimenta": "string - código de vestimenta recomendado",
+      "saludos": "string - cómo saludar apropiadamente",
+      "comidaTradicional": ["string - plato típico 1 con descripción", "string - plato típico 2 con descripción", "string - plato típico 3 con descripción"],
+      "festividades": "string - festividades o eventos durante las fechas del viaje si aplica"
+    },
+    "conversionMoneda": {
+      "monedaLocal": "string - código de moneda (ej: EUR, GBP, JPY)",
+      "tipoCambio": number - tipo de cambio aproximado respecto a USD,
+      "monedaOrigen": "USD"
+    },
+    "consejosAhorro": ["string - consejo para ahorrar 1", "string - consejo para ahorrar 2", "string - consejo para ahorrar 3"],
+    "seguridad": {
+      "nivelSeguridad": "string - Alto/Medio/Bajo",
+      "zonasEvitar": ["string - zona a evitar 1"],
+      "consejos": ["string - consejo de seguridad 1", "string - consejo de seguridad 2"]
+    },
+    "contactosUtiles": {
+      "emergencias": "string - número de emergencias",
+      "embajada": "string - info de embajada si aplica",
+      "policiaTuristica": "string - número de policía turística si existe"
+    }
   }
 }
 
 REGLAS IMPORTANTES:
 1. Crea exactamente ${days} días de itinerario
-2. Cada día debe tener al menos 3 actividades (mañana, tarde, noche)
-3. Sé específico con nombres de lugares reales, restaurantes, atracciones
-4. Los precios deben ser realistas para ${destination}
-5. Si hay datos de vuelos disponibles, úsalos; si no, sugiere opciones realistas
+2. Cada día debe tener al menos 4-5 actividades con horarios específicos (09:00, 12:30, etc)
+3. Sé MUY específico con nombres de lugares REALES, restaurantes, atracciones
+4. Los precios deben ser realistas y actualizados para ${destination}
+5. Si hay datos de vuelos disponibles, úsalos; si no, sugiere aerolíneas REALES que operan esa ruta
 6. El presupuesto estimado debe considerar: vuelos, alojamiento, comidas, actividades y transporte local
-7. Responde SOLO con el JSON, sin texto adicional ni markdown`;
+7. Incluye URLs REALES de sitios como TripAdvisor, GetYourGuide, Viator, Booking, o sitios oficiales de las atracciones
+8. La info cultural debe ser PRECISA y respetuosa - costumbres reales del destino
+9. Incluye información de transporte público REAL con precios aproximados actuales
+10. Responde SOLO con el JSON, sin texto adicional ni markdown`;
 
     const userPrompt = `Crea un plan de viaje completo con estos detalles:
 - Descripción del viajero: ${description}
