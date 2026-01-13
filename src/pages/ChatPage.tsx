@@ -297,7 +297,8 @@ const ChatPage = () => {
   const [tripImage, setTripImage] = useState<string | null>(null);
   const [itineraryData, setItineraryData] = useState<ItineraryData | null>(null);
 
-  const WEBHOOK_URL = "https://youtube-n8n.c5mnsm.easypanel.host/webhook/711a4b1d-3d85-4831-9cc2-5ce273881cd2";
+  // Edge function URL for TravesIA chat
+  const CHAT_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/travesia-chat`;
 
   const { isRecording, isProcessing, toggleRecording } = useVoiceRecorder({
     onTranscription: (text) => {
@@ -653,7 +654,7 @@ const ChatPage = () => {
 
     const currentUserMessages = userMessageCountRef.current;
     
-    // If this would be 2nd message and user not logged in, block webhook
+    // If this would be 2nd message and user not logged in, block
     if (currentUserMessages >= 1 && !user && !isFromPending) {
       setPendingMessage(messageText);
       setInputValue("");
@@ -686,19 +687,21 @@ const ChatPage = () => {
     }
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
+      // Build message history for context
+      const messageHistory = [...messages, userMessage].map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const response = await fetch(CHAT_FUNCTION_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        mode: "cors",
         body: JSON.stringify({
-          message: messageText,
-          timestamp: new Date().toISOString(),
-          user_id: user?.id || null,
-          currency: currency,
-          conversationId: convId || null,
-          location: {
+          messages: messageHistory,
+          userLocation: {
             country: country || null,
             state: state || null,
             city: city || null,
@@ -707,125 +710,98 @@ const ChatPage = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to send message: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 429) {
+          throw new Error("Demasiadas solicitudes. Intenta en unos momentos.");
+        }
+        if (response.status === 402) {
+          throw new Error("Servicio temporalmente no disponible.");
+        }
+        throw new Error(errorData.error || `Error: ${response.status}`);
       }
 
-      const responseBody = await response.text();
-      console.log("Webhook raw response:", responseBody);
-      
-      let responseText = "";
+      const data = await response.json();
+      console.log("TravesIA response:", data);
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      let responseText = data.text || "";
       let receivedHtml: string | undefined;
-      let receivedTitle: string | undefined;
-      
-      try {
-        let data = JSON.parse(responseBody);
-        
-        // Handle if response is an array
-        if (Array.isArray(data)) {
-          data = data[0];
-        }
-        
-        // Unwrap 'output' if present (webhook format: {"output": {...}})
-        if (data.output) {
-          data = data.output;
-        }
-        
-        console.log("Parsed data:", data);
-        
-        // Extract title from webhook response (support both 'title' and 'titulo')
-        if (data.title) {
-          receivedTitle = data.title.trim();
-          setConversationTitle(receivedTitle);
-        } else if (data.titulo) {
-          receivedTitle = data.titulo.trim();
-          setConversationTitle(receivedTitle);
-        } else if (data.resumen?.titulo) {
-          receivedTitle = data.resumen.titulo.trim();
-          setConversationTitle(receivedTitle);
-        }
-        
-        // Extract date from webhook response (Fecha field or from itinerary)
-        if (data.Fecha) {
-          setTripDate(data.Fecha);
-          console.log("Trip date received:", data.Fecha);
-        } else if (data.fechaInicio) {
-          setTripDate(data.fechaInicio);
-          console.log("Trip start date:", data.fechaInicio);
-        } else if (data.itinerario?.[0]?.fecha) {
-          setTripDate(data.itinerario[0].fecha);
-          console.log("Trip date from itinerary:", data.itinerario[0].fecha);
-        }
-        
-        // Extract end date
-        if (data.fechaFin) {
-          setTripEndDate(data.fechaFin);
-          console.log("Trip end date:", data.fechaFin);
-        } else if (data.itinerario?.length > 0) {
-          const lastDay = data.itinerario[data.itinerario.length - 1];
-          if (lastDay.fecha) {
-            setTripEndDate(lastDay.fecha);
+
+      // Handle status complete - generate itinerary
+      if (data.status === "complete") {
+        try {
+          // Parse the trip data from text field
+          const tripData = typeof data.text === "string" ? JSON.parse(data.text) : data.text;
+          console.log("Trip data complete:", tripData);
+
+          // Set trip metadata
+          if (tripData.destino) {
+            setTripDestination(tripData.destino);
+            setConversationTitle(`Viaje a ${tripData.destino}`);
           }
-        }
-        
-        // Extract destination (for map geocoding) - should be a clean location name
-        if (data.destino) {
-          setTripDestination(data.destino);
-          console.log("Trip destination:", data.destino);
-        } else if (receivedTitle) {
-          // Try to extract destination from title (e.g., "París Estratégico: ..." -> "París")
-          const extractedDestination = extractDestinationFromTitle(receivedTitle);
-          if (extractedDestination) {
-            setTripDestination(extractedDestination);
-            console.log("Trip destination extracted from title:", extractedDestination);
+          if (tripData.fechaSalida) {
+            setTripDate(tripData.fechaSalida);
           }
+          if (tripData.fechaRegreso) {
+            setTripEndDate(tripData.fechaRegreso);
+          }
+          if (tripData.pasajeros) {
+            setTripTravelers(tripData.pasajeros);
+          }
+
+          // Show generating message
+          const generatingMessage: Message = {
+            role: "assistant",
+            content: "¡Perfecto! Tengo toda la información. Generando tu itinerario personalizado...",
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, generatingMessage]);
+
+          // Call generate-itinerary function
+          const { data: session } = await supabase.auth.getSession();
+          const itineraryResponse = await supabase.functions.invoke("generate-itinerary", {
+            body: {
+              description: tripData.estiloViaje || "viaje cultural",
+              origin: tripData.origen,
+              destination: tripData.destino,
+              startDate: tripData.fechaSalida,
+              endDate: tripData.fechaRegreso,
+              travelers: tripData.pasajeros || 1,
+              budget: tripData.presupuesto || null,
+            },
+          });
+
+          if (itineraryResponse.error) {
+            throw new Error(itineraryResponse.error.message || "Error generando itinerario");
+          }
+
+          const itinerary = itineraryResponse.data?.itinerary;
+          if (itinerary) {
+            console.log("Generated itinerary:", itinerary);
+            const generatedHtml = generateItineraryHtml(itinerary);
+            setHtmlContent(generatedHtml);
+            setItineraryData(itinerary as ItineraryData);
+            receivedHtml = generatedHtml;
+            responseText = itinerary.resumen?.descripcion || "¡Tu itinerario está listo!";
+            
+            // Update conversation title with itinerary title
+            if (itinerary.resumen?.titulo) {
+              setConversationTitle(itinerary.resumen.titulo);
+              if (convId) {
+                await updateConversationTitle(convId, itinerary.resumen.titulo, tripData.destino);
+              }
+            }
+          }
+        } catch (parseError) {
+          console.error("Error processing complete status:", parseError);
+          responseText = "Hubo un error al generar el itinerario. Por favor, intenta de nuevo.";
         }
-        
-        // Extract travelers count
-        if (data.viajeros && typeof data.viajeros === 'number') {
-          setTripTravelers(data.viajeros);
-          console.log("Trip travelers:", data.viajeros);
-        }
-        
-        // Extract custom destination image
-        if (data.imagenDestino) {
-          setTripImage(data.imagenDestino);
-          console.log("Trip image:", data.imagenDestino);
-        }
-        
-        // Check if it's a structured itinerary JSON (has resumen, itinerario, etc.)
-        if (data.resumen && data.itinerario && Array.isArray(data.itinerario)) {
-          console.log("Found structured itinerary JSON");
-          const generatedHtml = generateItineraryHtml(data);
-          setHtmlContent(generatedHtml);
-          setItineraryData(data as ItineraryData); // Save the structured data for persistence
-          receivedHtml = generatedHtml;
-          responseText = data.resumen?.descripcion || receivedTitle || "¡Itinerario generado!";
-        }
-        // Check for HTML content
-        else if (data.html) {
-          console.log("Found HTML content, length:", data.html.length);
-          setHtmlContent(data.html);
-          receivedHtml = data.html;
-          responseText = data.message || data.text || receivedTitle || "Itinerario generado.";
-        } else if (data.message) {
-          responseText = data.message;
-        } else if (data.text) {
-          responseText = data.text;
-        } else if (data.type === 'html_panel' && !data.html) {
-          // Edge case: type indicates HTML but no html field
-          responseText = "Respuesta recibida pero sin contenido HTML.";
-        } else {
-          responseText = "Mensaje recibido correctamente.";
-        }
-      } catch (parseError) {
-        console.log("JSON parse failed:", parseError);
-        if (responseBody && responseBody.trim().startsWith('<')) {
-          setHtmlContent(responseBody);
-          receivedHtml = responseBody;
-          responseText = "Itinerario generado.";
-        } else {
-          responseText = responseBody || "Mensaje recibido correctamente.";
-        }
+      } else {
+        // Status incomplete - just show the text response
+        responseText = data.text || "¿En qué puedo ayudarte?";
       }
 
       const assistantMessage: Message = {
@@ -835,17 +811,21 @@ const ChatPage = () => {
         htmlContent: receivedHtml,
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => {
+        // If we showed a "generating" message, replace it
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg?.content.includes("Generando tu itinerario")) {
+          return [...prev.slice(0, -1), assistantMessage];
+        }
+        return [...prev, assistantMessage];
+      });
 
       // Save assistant message to DB
       if (convId) {
         await saveMessage(convId, "assistant", responseText, receivedHtml);
         
-        // Update conversation title if received from webhook
-        if (receivedTitle) {
-          await updateConversationTitle(convId, receivedTitle);
-        } else if (!conversationTitle && messages.length === 0) {
-          // Use first user message as fallback title
+        // Update conversation title if not set
+        if (!conversationTitle && messages.length === 0) {
           const shortTitle = messageText.length > 50 
             ? messageText.substring(0, 50) + '...' 
             : messageText;

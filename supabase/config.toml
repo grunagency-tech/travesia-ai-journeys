@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.verify-reset-token]
 verify_jwt = false
+
+[functions.travesia-chat]
+verify_jwt = false
