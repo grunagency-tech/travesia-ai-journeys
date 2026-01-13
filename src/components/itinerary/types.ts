@@ -52,6 +52,8 @@ export interface AccommodationOption {
   fechaCheckOut?: string;
   etiquetas?: string[];
   link?: string;
+  distanciaCentro?: number;
+  amenities?: string[];
 }
 
 export interface CarRentalOption {
