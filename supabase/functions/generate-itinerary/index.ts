@@ -82,7 +82,8 @@ El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedade
         "fechaLlegada": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
         "duracion": "string - duración del vuelo (ej: 2h 30m)",
         "escalas": number - número de escalas (0 para directo),
-        "precio": number - precio estimado en USD
+        "precio": number - precio estimado en USD,
+        "link": "string - URL de búsqueda de vuelos: https://www.kayak.com/flights/{ORIGEN}-{DESTINO}/{FECHA_SALIDA} o https://www.google.com/travel/flights?q=flights+from+{ORIGEN}+to+{DESTINO}+on+{FECHA}"
       }
     ],
     "transporteLocal": {
@@ -104,7 +105,8 @@ El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedade
         "empresa": "string - nombre de empresa de alquiler",
         "tipoVehiculo": "string - tipo de vehículo",
         "precio": number - precio por día en USD,
-        "puntoRecogida": "string - ubicación de recogida"
+        "puntoRecogida": "string - ubicación de recogida",
+        "link": "string - URL de reserva: https://www.kayak.com/cars/{DESTINO}/{FECHA_INICIO}/{FECHA_FIN} o sitio oficial de la empresa"
       }
     ]
   },
@@ -114,13 +116,14 @@ El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedade
     "costoPorNoche": number - costo promedio por noche en USD,
     "opciones": [
       {
-        "nombre": "string - nombre del hotel/hostal",
+        "nombre": "string - nombre del hotel/hostal REAL que existe",
         "tipo": "string - Hotel/Hostal/Apartamento/B&B",
         "ubicacion": "string - dirección o zona",
         "precioPorNoche": number - precio por noche en USD,
         "calificacion": number - calificación de 1 a 5,
         "descripcion": "string - breve descripción",
-        "amenities": ["string - WiFi", "string - Desayuno", "string - Piscina"]
+        "amenities": ["string - WiFi", "string - Desayuno", "string - Piscina"],
+        "link": "string - URL de reserva: https://www.booking.com/searchresults.html?ss={NOMBRE_HOTEL_ENCODED}+{CIUDAD} o https://www.hostelworld.com/search?search_keywords={NOMBRE}&arrival={FECHA}&departure={FECHA}&guests=1"
       }
     ]
   },
