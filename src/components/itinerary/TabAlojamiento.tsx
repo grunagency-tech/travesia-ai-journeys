@@ -114,7 +114,7 @@ const TabAlojamiento = ({
                       </div>
 
                       {/* Price & Actions */}
-                      <div className="text-right min-w-[120px]">
+                      <div className="text-right min-w-[140px]">
                         {hotel.precioPorNoche && (
                           <div className="mb-2">
                             <p className="text-xl font-bold text-primary">
@@ -128,13 +128,26 @@ const TabAlojamiento = ({
                             Total: ${hotel.precioTotal.toLocaleString()}
                           </p>
                         )}
-                        <Button 
-                          size="sm"
-                          onClick={() => onAddAccommodation?.(hotel)}
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Agregar
-                        </Button>
+                        <div className="flex flex-col gap-1.5">
+                          {hotel.link && (
+                            <Button 
+                              size="sm"
+                              variant="default"
+                              onClick={() => window.open(hotel.link, '_blank')}
+                            >
+                              <ExternalLink className="w-4 h-4 mr-1" />
+                              Reservar
+                            </Button>
+                          )}
+                          <Button 
+                            size="sm"
+                            variant={hotel.link ? "outline" : "default"}
+                            onClick={() => onAddAccommodation?.(hotel)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Agregar
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
