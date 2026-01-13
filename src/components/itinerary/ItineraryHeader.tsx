@@ -6,7 +6,7 @@ import { getDestinationImage } from "@/lib/destinationImages";
 
 interface ItineraryHeaderProps {
   title: string;
-  destination: string;
+  destination?: string;
   origin?: string;
   startDate?: string;
   endDate?: string;
@@ -60,7 +60,8 @@ const ItineraryHeader = ({
   const [destCoords, setDestCoords] = useState<[number, number] | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const heroImage = customImage || getDestinationImage(destination);
+  const displayDestination = destination || 'Destino';
+  const heroImage = customImage || getDestinationImage(displayDestination);
 
   // Geocode origin and destination
   useEffect(() => {
@@ -154,7 +155,7 @@ const ItineraryHeader = ({
         <div className="relative flex-1 min-h-[200px] lg:min-h-[240px]">
           <img
             src={heroImage}
-            alt={destination}
+            alt={displayDestination}
             className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImageLoaded(true)}
           />
@@ -169,7 +170,7 @@ const ItineraryHeader = ({
             <div className="mb-3">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full">
                 <MapPin className="w-4 h-4" />
-                {destination}
+                {displayDestination}
               </span>
             </div>
             
@@ -234,7 +235,7 @@ const ItineraryHeader = ({
                 <span className="opacity-75">{origin}</span>
                 <span className="opacity-50">→</span>
                 <div className="w-2 h-2 rounded-full bg-primary" />
-                <span>{destination}</span>
+                <span>{displayDestination}</span>
               </div>
             </div>
           )}
