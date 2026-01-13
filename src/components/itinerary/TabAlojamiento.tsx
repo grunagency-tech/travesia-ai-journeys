@@ -7,7 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { AccommodationOption } from "./types";
 
 interface TabAlojamientoProps {
-  options?: AccommodationOption[];
+  options?: AccommodationOption[] | string[];
   recommendation?: string;
   recommendedZone?: string;
   costPerNight?: number;
@@ -23,8 +23,20 @@ const TabAlojamiento = ({
 }: TabAlojamientoProps) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
-  const topOptions = options.slice(0, 3);
-  const remainingOptions = options.slice(3);
+  // Normalize options to AccommodationOption[]
+  const normalizedOptions: AccommodationOption[] = options.map((opt, idx) => {
+    if (typeof opt === 'string') {
+      return {
+        nombre: opt,
+        ubicacion: recommendedZone,
+        precioPorNoche: costPerNight,
+      };
+    }
+    return opt;
+  });
+
+  const topOptions = normalizedOptions.slice(0, 3);
+  const remainingOptions = normalizedOptions.slice(3);
 
   // If no structured options, create one from the recommendation
   const displayOptions = topOptions.length > 0 ? topOptions : (recommendation ? [{

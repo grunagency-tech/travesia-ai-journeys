@@ -9,6 +9,7 @@ export interface ItineraryActivity {
   tipo?: string;
   duracion?: string;
   imagen?: string;
+  link?: string;
 }
 
 export interface ItineraryDay {
@@ -77,6 +78,15 @@ export interface ActivityOption {
   etiquetas?: string[];
   tipo?: string;
   link?: string;
+  ubicacion?: string;
+  horarios?: string;
+}
+
+export interface TransportOption {
+  tipo: string;
+  descripcion: string;
+  costoAproximado?: string;
+  recomendado?: boolean;
 }
 
 export interface LocalInfoData {
@@ -87,14 +97,19 @@ export interface LocalInfoData {
   };
   transporteLocal?: {
     descripcion?: string;
-    opciones?: string[];
+    opciones?: string[] | TransportOption[];
     consejos?: string[];
+    tarjetasTransporte?: string;
   };
   cultura?: {
     idioma?: string;
     moneda?: string;
     propinas?: string;
     costumbres?: string[];
+    vestimenta?: string;
+    saludos?: string;
+    comidaTradicional?: string[];
+    festividades?: string;
   };
   conversionMoneda?: {
     monedaLocal?: string;
@@ -102,6 +117,16 @@ export interface LocalInfoData {
     monedaOrigen?: string;
   };
   consejosAhorro?: string[];
+  seguridad?: {
+    nivelSeguridad?: string;
+    zonasEvitar?: string[];
+    consejos?: string[];
+  };
+  contactosUtiles?: {
+    emergencias?: string;
+    embajada?: string;
+    policiaTuristica?: string;
+  };
 }
 
 export interface ItineraryData {
@@ -116,7 +141,12 @@ export interface ItineraryData {
   };
   transporte?: {
     vuelos?: FlightOption[];
-    transporteLocal?: string;
+    transporteLocal?: string | {
+      descripcion?: string;
+      opciones?: TransportOption[];
+      consejos?: string[];
+      tarjetasTransporte?: string;
+    };
     alquilerCocheRecomendado?: boolean;
     opcionesCoche?: CarRentalOption[];
   };
@@ -124,7 +154,8 @@ export interface ItineraryData {
     recomendacion?: string;
     zona?: string;
     costoPorNoche?: number;
-    opciones?: AccommodationOption[];
+    opciones?: AccommodationOption[] | string[];
+    descripcion?: string;
   };
   actividades?: ActivityOption[];
   itinerario?: ItineraryDay[];
