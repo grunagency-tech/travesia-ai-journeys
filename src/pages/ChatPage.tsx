@@ -39,54 +39,8 @@ interface Message {
   htmlContent?: string;
 }
 
-interface ItineraryActivity {
-  hora: string;
-  titulo: string;
-  descripcion?: string;
-  ubicacion?: string;
-  costoAprox: number;
-}
-
-interface ItineraryDay {
-  dia: number;
-  fecha?: string;
-  resumenDia?: string;
-  actividades: ItineraryActivity[];
-}
-
-interface ItineraryData {
-  destino?: string;
-  resumen: {
-    titulo: string;
-    descripcion?: string;
-    presupuestoEstimado: number;
-    duracion?: number;
-    highlights?: string[];
-  };
-  transporte?: {
-    vuelos?: Array<{
-      aerolinea: string;
-      origen?: string;
-      destino?: string;
-      fechaSalida?: string;
-      fechaLlegada?: string;
-      precio: number;
-    }>;
-    transporteLocal?: string;
-  };
-  alojamiento?: {
-    recomendacion?: string;
-    zona?: string;
-    costoPorNoche?: number;
-    opciones?: string[];
-  };
-  itinerario: ItineraryDay[];
-  comentarios?: {
-    consejos?: string[];
-    advertencias?: string[];
-    mejorEpoca?: string;
-  };
-}
+// Using types from the itinerary components
+import { ItineraryData } from "@/components/itinerary/types";
 
 const generateItineraryHtml = (data: ItineraryData): string => {
   const { destino, resumen, transporte, alojamiento, itinerario, comentarios } = data;
@@ -653,15 +607,14 @@ const ChatPage = () => {
   const sendMessage = async (messageText: string, isFromPending = false) => {
     if (!messageText.trim() || isLoading) return;
 
-    const currentUserMessages = userMessageCountRef.current;
-    
-    // If this would be 2nd message and user not logged in, block
-    if (currentUserMessages >= 1 && !user && !isFromPending) {
-      setPendingMessage(messageText);
-      setInputValue("");
-      setShowRegisterBanner(true);
-      return;
-    }
+    // TEMPORARILY DISABLED for testing - registration gate
+    // const currentUserMessages = userMessageCountRef.current;
+    // if (currentUserMessages >= 1 && !user && !isFromPending) {
+    //   setPendingMessage(messageText);
+    //   setInputValue("");
+    //   setShowRegisterBanner(true);
+    //   return;
+    // }
 
     // Create conversation if user is logged in and no conversation exists
     let convId = currentConversationId;
