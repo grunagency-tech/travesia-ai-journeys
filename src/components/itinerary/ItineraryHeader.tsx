@@ -26,37 +26,75 @@ const normalizeText = (text: string): string => {
     .trim();
 };
 
+// Extract city name from destination string (e.g., "Lisboa, Portugal" -> "Lisboa")
+const extractCityName = (destination: string): string => {
+  // Remove common suffixes like country names
+  const parts = destination.split(/[,\-–]/);
+  return parts[0].trim();
+};
+
 // Search for destination image in database
 const getDestinationImageFromDB = async (destination: string): Promise<string | null> => {
   try {
-    const normalized = normalizeText(destination);
+    // Extract just the city name for better matching
+    const cityName = extractCityName(destination);
+    const normalizedCity = normalizeText(cityName);
+    const normalizedFull = normalizeText(destination);
     
-    // Try exact match first (city_name)
+    console.log('Searching for destination image:', { destination, cityName, normalizedCity });
+    
+    // Try exact match with extracted city name first
     const { data: exactMatch } = await supabase
       .from('destination_images')
-      .select('image_url')
-      .or(`city_name.ilike.%${destination}%,city_name_en.ilike.%${destination}%`)
+      .select('image_url, city_name, city_name_en')
+      .or(`city_name.ilike.${cityName},city_name_en.ilike.${cityName}`)
       .limit(1)
       .maybeSingle();
     
-    if (exactMatch?.image_url) return exactMatch.image_url;
-    
-    // Try with normalized search
-    const { data: fuzzyMatch } = await supabase
-      .from('destination_images')
-      .select('image_url, city_name, city_name_en')
-      .limit(100);
-    
-    if (fuzzyMatch) {
-      const match = fuzzyMatch.find(item => 
-        normalizeText(item.city_name || '').includes(normalized) ||
-        normalizeText(item.city_name_en || '').includes(normalized) ||
-        normalized.includes(normalizeText(item.city_name || '')) ||
-        normalized.includes(normalizeText(item.city_name_en || ''))
-      );
-      if (match?.image_url) return match.image_url;
+    if (exactMatch?.image_url) {
+      console.log('Found exact match:', exactMatch.city_name);
+      return exactMatch.image_url;
     }
     
+    // Try partial match with city name
+    const { data: partialMatch } = await supabase
+      .from('destination_images')
+      .select('image_url, city_name, city_name_en')
+      .or(`city_name.ilike.%${cityName}%,city_name_en.ilike.%${cityName}%`)
+      .limit(1)
+      .maybeSingle();
+    
+    if (partialMatch?.image_url) {
+      console.log('Found partial match:', partialMatch.city_name);
+      return partialMatch.image_url;
+    }
+    
+    // Fallback: fetch all and do fuzzy match
+    const { data: allImages } = await supabase
+      .from('destination_images')
+      .select('image_url, city_name, city_name_en')
+      .limit(200);
+    
+    if (allImages) {
+      const match = allImages.find(item => {
+        const itemCity = normalizeText(item.city_name || '');
+        const itemCityEn = normalizeText(item.city_name_en || '');
+        return itemCity === normalizedCity || 
+               itemCityEn === normalizedCity ||
+               itemCity.includes(normalizedCity) ||
+               itemCityEn.includes(normalizedCity) ||
+               normalizedCity.includes(itemCity) ||
+               normalizedCity.includes(itemCityEn) ||
+               normalizedFull.includes(itemCity) ||
+               normalizedFull.includes(itemCityEn);
+      });
+      if (match?.image_url) {
+        console.log('Found fuzzy match:', match.city_name);
+        return match.image_url;
+      }
+    }
+    
+    console.log('No destination image found for:', destination);
     return null;
   } catch (error) {
     console.error('Error fetching destination image:', error);
@@ -66,16 +104,18 @@ const getDestinationImageFromDB = async (destination: string): Promise<string | 
 
 const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
   try {
-    // Clean location - take just the city name for better geocoding
-    const cleanLocation = location.split(',')[0].trim();
+    // Use the full location string for better geocoding accuracy
+    console.log('Geocoding location:', location);
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanLocation)}&limit=1`,
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`,
       { headers: { 'User-Agent': 'TravesIA/1.0' } }
     );
     const data = await response.json();
     if (data && data.length > 0) {
+      console.log('Geocode result:', { lat: data[0].lat, lon: data[0].lon, display: data[0].display_name });
       return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
     }
+    console.log('No geocode result for:', location);
   } catch (error) {
     console.error('Geocoding error:', error);
   }
