@@ -710,15 +710,25 @@ const ChatPage = () => {
             setTripTravelers(tripData.pasajeros);
           }
 
-          // Show generating message
+          // Show generating message based on detected language
+          const detectedLanguage = tripData.language || "es";
+          const generatingMessages: Record<string, string> = {
+            es: "¡Perfecto! Tengo toda la información. Generando tu itinerario personalizado...",
+            en: "Perfect! I have all the information. Generating your personalized itinerary...",
+            fr: "Parfait! J'ai toutes les informations. Génération de votre itinéraire personnalisé...",
+            de: "Perfekt! Ich habe alle Informationen. Erstelle deine personalisierte Reiseroute...",
+            pt: "Perfeito! Tenho todas as informações. Gerando seu itinerário personalizado...",
+            it: "Perfetto! Ho tutte le informazioni. Generazione del tuo itinerario personalizzato...",
+          };
+          
           const generatingMessage: Message = {
             role: "assistant",
-            content: "¡Perfecto! Tengo toda la información. Generando tu itinerario personalizado...",
+            content: generatingMessages[detectedLanguage] || generatingMessages.es,
             timestamp: new Date(),
           };
           setMessages((prev) => [...prev, generatingMessage]);
 
-          // Call generate-itinerary function
+          // Call generate-itinerary function with language
           const { data: session } = await supabase.auth.getSession();
           const itineraryResponse = await supabase.functions.invoke("generate-itinerary", {
             body: {
@@ -729,6 +739,7 @@ const ChatPage = () => {
               endDate: tripData.fechaRegreso,
               travelers: tripData.pasajeros || 1,
               budget: tripData.presupuesto || null,
+              language: detectedLanguage,
             },
           });
 
