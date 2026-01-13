@@ -4,7 +4,7 @@ project_id = "lzpsauwrdhpeaiotqwmy"
 verify_jwt = false
 
 [functions.generate-itinerary]
-verify_jwt = true
+verify_jwt = false
 
 [functions.search-flights]
 verify_jwt = true
