@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { MapPin, Calendar, Users, DollarSign, Clock } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { supabase } from "@/integrations/supabase/client";
 import { getDestinationImage } from "@/lib/destinationImages";
 
 interface ItineraryHeaderProps {
@@ -16,8 +17,56 @@ interface ItineraryHeaderProps {
   customImage?: string;
 }
 
+// Normalize text for matching (remove accents, lowercase)
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+};
+
+// Search for destination image in database
+const getDestinationImageFromDB = async (destination: string): Promise<string | null> => {
+  try {
+    const normalized = normalizeText(destination);
+    
+    // Try exact match first (city_name)
+    const { data: exactMatch } = await supabase
+      .from('destination_images')
+      .select('image_url')
+      .or(`city_name.ilike.%${destination}%,city_name_en.ilike.%${destination}%`)
+      .limit(1)
+      .maybeSingle();
+    
+    if (exactMatch?.image_url) return exactMatch.image_url;
+    
+    // Try with normalized search
+    const { data: fuzzyMatch } = await supabase
+      .from('destination_images')
+      .select('image_url, city_name, city_name_en')
+      .limit(100);
+    
+    if (fuzzyMatch) {
+      const match = fuzzyMatch.find(item => 
+        normalizeText(item.city_name || '').includes(normalized) ||
+        normalizeText(item.city_name_en || '').includes(normalized) ||
+        normalized.includes(normalizeText(item.city_name || '')) ||
+        normalized.includes(normalizeText(item.city_name_en || ''))
+      );
+      if (match?.image_url) return match.image_url;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching destination image:', error);
+    return null;
+  }
+};
+
 const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
   try {
+    // Clean location - take just the city name for better geocoding
     const cleanLocation = location.split(',')[0].trim();
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanLocation)}&limit=1`,
@@ -59,9 +108,29 @@ const ItineraryHeader = ({
   const [originCoords, setOriginCoords] = useState<[number, number] | null>(null);
   const [destCoords, setDestCoords] = useState<[number, number] | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [heroImage, setHeroImage] = useState<string>('');
 
   const displayDestination = destination || 'Destino';
-  const heroImage = customImage || getDestinationImage(displayDestination);
+
+  // Fetch destination image from DB or fallback
+  useEffect(() => {
+    const fetchImage = async () => {
+      if (customImage) {
+        setHeroImage(customImage);
+        return;
+      }
+      
+      const dbImage = await getDestinationImageFromDB(displayDestination);
+      if (dbImage) {
+        setHeroImage(dbImage);
+      } else {
+        // Fallback to local images
+        setHeroImage(getDestinationImage(displayDestination));
+      }
+    };
+    
+    fetchImage();
+  }, [displayDestination, customImage]);
 
   // Geocode origin and destination
   useEffect(() => {
