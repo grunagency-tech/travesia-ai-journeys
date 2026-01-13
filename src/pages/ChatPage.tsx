@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft } from "lucide-react";
-import ItineraryHeader from "@/components/ItineraryHeader";
+import { ItineraryHeader } from "@/components/itinerary";
 import ItineraryPanel from "@/components/ItineraryPanel";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,7 +45,8 @@ import { ItineraryData } from "@/components/itinerary/types";
 const generateItineraryHtml = (data: ItineraryData): string => {
   const { destino, resumen, transporte, alojamiento, itinerario, comentarios } = data;
   
-  const getHoraLabel = (hora: string) => {
+  const getHoraLabel = (hora?: string) => {
+    if (!hora) return '';
     switch (hora) {
       case 'morning': return '🌅 Mañana';
       case 'afternoon': return '☀️ Tarde';
@@ -60,23 +61,24 @@ const generateItineraryHtml = (data: ItineraryData): string => {
     return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const duracionDias = itinerario?.length || resumen.duracion || 0;
+  const duracionDias = itinerario?.length || resumen?.duracion || 0;
+  const titulo = resumen?.titulo || `Viaje a ${destino || 'tu destino'}`;
 
   return `
     <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 100%; color: #1a1a2e;">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 16px; margin-bottom: 24px;">
-        <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700;">${resumen.titulo}</h1>
+        <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700;">${titulo}</h1>
         ${destino ? `<p style="margin: 0 0 8px 0; opacity: 0.9; font-size: 16px;">📍 ${destino}</p>` : ''}
-        ${resumen.descripcion ? `<p style="margin: 0; opacity: 0.9; font-size: 16px;">${resumen.descripcion}</p>` : ''}
+        ${resumen?.descripcion ? `<p style="margin: 0; opacity: 0.9; font-size: 16px;">${resumen.descripcion}</p>` : ''}
         <div style="display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
           ${duracionDias > 0 ? `<span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">📅 ${duracionDias} días</span>` : ''}
-          <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">💰 ~$${resumen.presupuestoEstimado?.toLocaleString()} MXN</span>
+          ${resumen?.presupuestoEstimado ? `<span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px;">💰 ~$${resumen.presupuestoEstimado.toLocaleString()} MXN</span>` : ''}
         </div>
       </div>
 
       <!-- Highlights -->
-      ${resumen.highlights?.length ? `
+      ${resumen?.highlights?.length ? `
         <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
           <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #667eea;">✨ Highlights del viaje</h3>
           <ul style="margin: 0; padding-left: 20px;">
@@ -93,7 +95,7 @@ const generateItineraryHtml = (data: ItineraryData): string => {
             <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
               <div style="font-weight: 600;">${v.aerolinea}</div>
               ${v.origen && v.destino ? `<div style="font-size: 14px; color: #666;">${v.origen} → ${v.destino}</div>` : ''}
-              <div style="font-size: 14px; color: #667eea; font-weight: 600;">$${v.precio?.toLocaleString()} MXN</div>
+              ${v.precio ? `<div style="font-size: 14px; color: #667eea; font-weight: 600;">$${v.precio.toLocaleString()} MXN</div>` : ''}
             </div>
           `).join('')}
           ${transporte.transporteLocal ? `<p style="margin: 12px 0 0 0; font-size: 14px; color: #666;">🚇 ${transporte.transporteLocal}</p>` : ''}
@@ -101,7 +103,7 @@ const generateItineraryHtml = (data: ItineraryData): string => {
       ` : ''}
 
       <!-- Alojamiento -->
-      ${alojamiento && alojamiento.recomendacion ? `
+      ${alojamiento?.recomendacion ? `
         <div style="background: white; border: 1px solid #e0e0e0; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
           <h3 style="margin: 0 0 16px 0; font-size: 18px;">🏨 Alojamiento</h3>
           <div style="font-weight: 600; font-size: 16px;">${alojamiento.recomendacion}</div>
@@ -109,36 +111,38 @@ const generateItineraryHtml = (data: ItineraryData): string => {
           ${alojamiento.costoPorNoche ? `<div style="font-size: 14px; color: #667eea; margin-top: 4px;">$${alojamiento.costoPorNoche}/noche</div>` : ''}
           ${alojamiento.opciones?.length ? `
             <div style="margin-top: 12px;">
-              <span style="font-size: 13px; color: #888;">Otras opciones: ${alojamiento.opciones.join(', ')}</span>
+              <span style="font-size: 13px; color: #888;">Otras opciones: ${alojamiento.opciones.map(o => typeof o === 'string' ? o : o.nombre).join(', ')}</span>
             </div>
           ` : ''}
         </div>
       ` : ''}
 
       <!-- Itinerario -->
-      <h2 style="font-size: 22px; margin: 32px 0 16px 0;">📋 Itinerario día a día</h2>
-      ${itinerario.map(day => `
-        <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px;">
-            <div style="font-weight: 700; font-size: 18px;">Día ${day.dia}</div>
-            ${day.fecha ? `<div style="font-size: 14px; opacity: 0.9;">${formatDate(day.fecha)}</div>` : ''}
-            ${day.resumenDia ? `<div style="font-size: 14px; margin-top: 4px; opacity: 0.8;">${day.resumenDia}</div>` : ''}
-          </div>
-          <div style="padding: 16px;">
-            ${day.actividades.map(act => `
-              <div style="border-left: 3px solid #667eea; padding-left: 16px; margin-bottom: 16px;">
-                <div style="font-size: 12px; color: #888; margin-bottom: 4px;">${getHoraLabel(act.hora)}</div>
-                <div style="font-weight: 600; font-size: 16px;">${act.titulo}</div>
-                ${act.descripcion ? `<div style="font-size: 14px; color: #666; margin-top: 4px;">${act.descripcion}</div>` : ''}
-                <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 13px; color: #888;">
-                  ${act.ubicacion ? `<span>📍 ${act.ubicacion}</span>` : ''}
-                  ${act.costoAprox > 0 ? `<span>💰 $${act.costoAprox} MXN</span>` : '<span>🆓 Gratis</span>'}
+      ${itinerario?.length ? `
+        <h2 style="font-size: 22px; margin: 32px 0 16px 0;">📋 Itinerario día a día</h2>
+        ${itinerario.map(day => `
+          <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px;">
+              <div style="font-weight: 700; font-size: 18px;">Día ${day.dia}</div>
+              ${day.fecha ? `<div style="font-size: 14px; opacity: 0.9;">${formatDate(day.fecha)}</div>` : ''}
+              ${day.resumenDia ? `<div style="font-size: 14px; margin-top: 4px; opacity: 0.8;">${day.resumenDia}</div>` : ''}
+            </div>
+            <div style="padding: 16px;">
+              ${day.actividades?.map(act => `
+                <div style="border-left: 3px solid #667eea; padding-left: 16px; margin-bottom: 16px;">
+                  <div style="font-size: 12px; color: #888; margin-bottom: 4px;">${getHoraLabel(act.hora)}</div>
+                  <div style="font-weight: 600; font-size: 16px;">${act.titulo || ''}</div>
+                  ${act.descripcion ? `<div style="font-size: 14px; color: #666; margin-top: 4px;">${act.descripcion}</div>` : ''}
+                  <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 13px; color: #888;">
+                    ${act.ubicacion ? `<span>📍 ${act.ubicacion}</span>` : ''}
+                    ${act.costoAprox && act.costoAprox > 0 ? `<span>💰 $${act.costoAprox} MXN</span>` : '<span>🆓 Gratis</span>'}
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `).join('') || '<p style="color: #888;">Sin actividades programadas</p>'}
+            </div>
           </div>
-        </div>
-      `).join('')}
+        `).join('')}
+      ` : ''}
 
       <!-- Comentarios -->
       ${comentarios ? `
