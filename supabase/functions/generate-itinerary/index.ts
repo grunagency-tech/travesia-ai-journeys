@@ -75,15 +75,15 @@ El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedade
   "transporte": {
     "vuelos": [
       {
-        "aerolinea": "string - nombre de aerolínea real que opera esa ruta",
-        "origen": "string - ciudad de origen",
-        "destino": "string - ciudad de destino",
+        "aerolinea": "string - nombre de aerolínea real que opera esa ruta (ej: American Airlines, Delta, United)",
+        "origen": "string - código IATA del aeropuerto (ej: MEX, LAX, JFK)",
+        "destino": "string - código IATA del aeropuerto destino (ej: LAS, CDG, LHR)",
         "fechaSalida": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
         "fechaLlegada": "string - fecha ISO (YYYY-MM-DDTHH:mm:ss)",
         "duracion": "string - duración del vuelo (ej: 2h 30m)",
         "escalas": number - número de escalas (0 para directo),
         "precio": number - precio estimado en USD,
-        "link": "string - URL de búsqueda de vuelos: https://www.kayak.com/flights/{ORIGEN}-{DESTINO}/{FECHA_SALIDA} o https://www.google.com/travel/flights?q=flights+from+{ORIGEN}+to+{DESTINO}+on+{FECHA}"
+        "link": "string - OBLIGATORIO: URL funcional de Google Flights con formato: https://www.google.com/travel/flights?q=flights%20from%20ORIGEN%20to%20DESTINO%20on%20FECHA. Ejemplo: https://www.google.com/travel/flights?q=flights%20from%20MEX%20to%20LAS%20on%202026-07-24"
       }
     ],
     "transporteLocal": {
@@ -116,14 +116,14 @@ El JSON DEBE tener esta estructura EXACTA (respeta los nombres de las propiedade
     "costoPorNoche": number - costo promedio por noche en USD,
     "opciones": [
       {
-        "nombre": "string - nombre del hotel/hostal REAL que existe",
+        "nombre": "string - nombre del hotel/hostal REAL que existe (ej: The Venetian Resort, Caesars Palace, Hotel RIU Plaza)",
         "tipo": "string - Hotel/Hostal/Apartamento/B&B",
         "ubicacion": "string - dirección o zona",
         "precioPorNoche": number - precio por noche en USD,
         "calificacion": number - calificación de 1 a 5,
-        "descripcion": "string - breve descripción",
+        "descripcion": "string - breve descripción del hotel",
         "amenities": ["string - WiFi", "string - Desayuno", "string - Piscina"],
-        "link": "string - URL de reserva: https://www.booking.com/searchresults.html?ss={NOMBRE_HOTEL_ENCODED}+{CIUDAD} o https://www.hostelworld.com/search?search_keywords={NOMBRE}&arrival={FECHA}&departure={FECHA}&guests=1"
+        "link": "string - OBLIGATORIO: URL funcional de Booking.com con formato: https://www.booking.com/searchresults.html?ss=NOMBRE+DEL+HOTEL+CIUDAD (reemplazar espacios con +). Ejemplo: https://www.booking.com/searchresults.html?ss=The+Venetian+Resort+Las+Vegas"
       }
     ]
   },
