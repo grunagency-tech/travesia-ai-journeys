@@ -1137,27 +1137,28 @@ const ChatPage = () => {
         )}
       </div>
 
-      {/* Itinerary Section - 65% width */}
-      <div className={`${showContentOnMobile ? 'flex' : 'hidden md:flex'} w-full md:flex-1 bg-primary items-center justify-center p-6 relative overflow-hidden`}>
-        {/* Decorative background elements */}
-        <div className="absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
-        <div className="absolute bottom-20 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-xl" />
-        <div className="absolute top-1/3 left-1/4 w-2 h-2 bg-white/20 rounded-full" />
-        <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-white/15 rounded-full" />
+      {/* Itinerary Section - Full screen on mobile, 65% on desktop */}
+      <div className={`${showContentOnMobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} w-full md:relative md:flex-1 bg-background md:bg-primary items-stretch md:items-center justify-center md:p-6 overflow-hidden`}>
+        {/* Decorative background elements - only on desktop */}
+        <div className="hidden md:block absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
+        <div className="hidden md:block absolute bottom-20 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-xl" />
+        <div className="hidden md:block absolute top-1/3 left-1/4 w-2 h-2 bg-white/20 rounded-full" />
+        <div className="hidden md:block absolute bottom-1/3 right-1/4 w-3 h-3 bg-white/15 rounded-full" />
         
+        {/* Mobile close button - floating */}
         {showContentOnMobile && (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="icon"
             onClick={() => setShowContentOnMobile(false)}
-            className="md:hidden absolute top-4 left-4 z-10 bg-white/20 hover:bg-white/30 text-white"
+            className="md:hidden fixed top-4 right-4 z-[60] bg-black/60 hover:bg-black/80 text-white shadow-lg backdrop-blur-sm rounded-full h-10 w-10"
           >
             <X className="h-5 w-5" />
           </Button>
         )}
 
         {itineraryData ? (
-          <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="w-full h-full bg-background md:bg-white md:rounded-lg md:shadow-lg overflow-hidden">
             <ItineraryPanel 
               data={itineraryData}
               startDate={tripDate || undefined}
@@ -1167,7 +1168,7 @@ const ChatPage = () => {
             />
           </div>
         ) : htmlContent ? (
-          <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-auto relative">
+          <div className="w-full h-full bg-background md:bg-white md:rounded-lg md:shadow-lg overflow-auto relative">
             <div>
               {/* Itinerary Header with image + map */}
               <ItineraryHeader 
@@ -1180,13 +1181,13 @@ const ChatPage = () => {
               />
               
               {/* HTML Content - Sanitized to prevent XSS */}
-              <div className="p-6 pt-0">
+              <div className="p-4 md:p-6 pt-0">
                 <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} />
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center px-8 relative z-10">
+          <div className="text-center px-8 relative z-10 flex flex-col items-center justify-center h-full bg-primary md:bg-transparent">
             <div className="mb-8 relative">
               <div className="w-28 h-28 mx-auto bg-orange-500 rounded-3xl flex items-center justify-center shadow-2xl">
                 <img src={logoIcon} alt="travesIA" className="w-16 h-16 animate-pulse brightness-0 invert" />
