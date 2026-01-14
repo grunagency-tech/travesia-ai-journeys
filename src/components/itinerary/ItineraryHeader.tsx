@@ -26,74 +26,124 @@ const normalizeText = (text: string): string => {
     .trim();
 };
 
+// Clean a location string for matching/searching
+const cleanLocationToken = (text: string): string => {
+  return text
+    .replace(/\(.*?\)/g, " ")
+    .replace(/[|•]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    // remove common prepositions that often appear when we infer destination from titles
+    .replace(/^((viaje|trip)\s+)?(a|en|to|in)\s+/i, "");
+};
+
 // Extract city name from destination string (e.g., "Lisboa, Portugal" -> "Lisboa")
 const extractCityName = (destination: string): string => {
-  // Remove common suffixes like country names
-  const parts = destination.split(/[,\-–]/);
-  return parts[0].trim();
+  const cleaned = cleanLocationToken(
+    destination
+      .replace(/[^\p{L}\p{N}\s,–\-:]/gu, " ")
+      .replace(/\s+/g, " ")
+  );
+
+  const parts = cleaned.split(/[,:\-–]/);
+  return cleanLocationToken(parts[0] || cleaned);
 };
+
+const postgrestQuote = (value: string) => `"${value.replace(/"/g, "\\\"")}"`;
 
 // Search for destination image in database
 const getDestinationImageFromDB = async (destination: string): Promise<string | null> => {
   try {
     // Extract just the city name for better matching
     const cityName = extractCityName(destination);
+    if (!cityName) return null;
+
     const normalizedCity = normalizeText(cityName);
     const normalizedFull = normalizeText(destination);
-    
-    console.log('Searching for destination image:', { destination, cityName, normalizedCity });
-    
-    // Try exact match with extracted city name first
-    const { data: exactMatch } = await supabase
+
+    // Try to also infer a country token (helps for inputs like "Lisboa Portugal")
+    const countryToken = cleanLocationToken(destination.split(',').slice(1).join(',')).slice(0, 60);
+
+    console.log('Searching for destination image:', { destination, cityName, countryToken });
+
+    // 1) Case-insensitive exact match (best result)
+    const { data: exactMatch, error: exactError } = await supabase
       .from('destination_images')
       .select('image_url, city_name, city_name_en')
-      .or(`city_name.ilike.${cityName},city_name_en.ilike.${cityName}`)
+      .or(
+        `city_name.ilike.${postgrestQuote(cityName)},city_name_en.ilike.${postgrestQuote(cityName)}`
+      )
       .limit(1)
       .maybeSingle();
-    
+
+    if (exactError) console.warn('Exact match query error:', exactError);
+
     if (exactMatch?.image_url) {
       console.log('Found exact match:', exactMatch.city_name);
       return exactMatch.image_url;
     }
-    
-    // Try partial match with city name
-    const { data: partialMatch } = await supabase
+
+    // 2) Partial match (works when destination comes inside a longer string)
+    const pattern = `%${cityName}%`;
+    const { data: partialMatch, error: partialError } = await supabase
       .from('destination_images')
       .select('image_url, city_name, city_name_en')
-      .or(`city_name.ilike.%${cityName}%,city_name_en.ilike.%${cityName}%`)
+      .or(
+        `city_name.ilike.${postgrestQuote(pattern)},city_name_en.ilike.${postgrestQuote(pattern)}`
+      )
       .limit(1)
       .maybeSingle();
-    
+
+    if (partialError) console.warn('Partial match query error:', partialError);
+
     if (partialMatch?.image_url) {
       console.log('Found partial match:', partialMatch.city_name);
       return partialMatch.image_url;
     }
-    
-    // Fallback: fetch all and do fuzzy match
+
+    // 3) Country fallback (if provided)
+    if (countryToken) {
+      const countryPattern = `%${countryToken}%`;
+      const { data: countryMatch } = await supabase
+        .from('destination_images')
+        .select('image_url, city_name, city_name_en')
+        .or(`country.ilike.${postgrestQuote(countryPattern)}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (countryMatch?.image_url) {
+        console.log('Found country match:', countryMatch.city_name);
+        return countryMatch.image_url;
+      }
+    }
+
+    // 4) Fallback: fetch some and do fuzzy match
     const { data: allImages } = await supabase
       .from('destination_images')
       .select('image_url, city_name, city_name_en')
-      .limit(200);
-    
+      .limit(300);
+
     if (allImages) {
-      const match = allImages.find(item => {
+      const match = allImages.find((item) => {
         const itemCity = normalizeText(item.city_name || '');
         const itemCityEn = normalizeText(item.city_name_en || '');
-        return itemCity === normalizedCity || 
-               itemCityEn === normalizedCity ||
-               itemCity.includes(normalizedCity) ||
-               itemCityEn.includes(normalizedCity) ||
-               normalizedCity.includes(itemCity) ||
-               normalizedCity.includes(itemCityEn) ||
-               normalizedFull.includes(itemCity) ||
-               normalizedFull.includes(itemCityEn);
+        return (
+          itemCity === normalizedCity ||
+          itemCityEn === normalizedCity ||
+          itemCity.includes(normalizedCity) ||
+          itemCityEn.includes(normalizedCity) ||
+          normalizedCity.includes(itemCity) ||
+          normalizedCity.includes(itemCityEn) ||
+          normalizedFull.includes(itemCity) ||
+          normalizedFull.includes(itemCityEn)
+        );
       });
       if (match?.image_url) {
         console.log('Found fuzzy match:', match.city_name);
         return match.image_url;
       }
     }
-    
+
     console.log('No destination image found for:', destination);
     return null;
   } catch (error) {

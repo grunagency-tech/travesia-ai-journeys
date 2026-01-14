@@ -9,6 +9,7 @@ import cancunImg from '@/assets/destinations/cancun.jpg';
 import dubaiImg from '@/assets/destinations/dubai.jpg';
 import peruImg from '@/assets/destinations/peru.jpg';
 import sydneyImg from '@/assets/destinations/sydney.jpg';
+import lisboaImg from '@/assets/destinations/lisboa.jpg';
 
 // Map of destination keywords to images
 const destinationMap: Record<string, string> = {
@@ -65,6 +66,11 @@ const destinationMap: Record<string, string> = {
   'england': londresImg,
   'inglaterra': londresImg,
   
+  // Portugal
+  'lisboa': lisboaImg,
+  'lisbon': lisboaImg,
+  'portugal': lisboaImg,
+
   // Mexico
   'cancún': cancunImg,
   'cancun': cancunImg,
@@ -104,6 +110,7 @@ const fallbackImages = [
   nuevaYorkImg,
   barcelonaImg,
   londresImg,
+  lisboaImg,
   cancunImg,
   dubaiImg,
   peruImg,

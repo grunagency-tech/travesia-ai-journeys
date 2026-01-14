@@ -19,7 +19,24 @@ const ItineraryPanel = ({
   travelers = 1,
   customImage 
 }: ItineraryPanelProps) => {
-  const destination = data.destino || data.resumen?.titulo?.split(' ').slice(-2).join(' ') || 'Destino';
+  const inferDestination = (): string => {
+    if (data.destino) return data.destino;
+
+    const titleRaw = data.resumen?.titulo ?? "";
+    const cleaned = titleRaw
+      .replace(/\(.*?\)/g, " ")
+      .replace(/[^\p{L}\p{N}\s,–\-:]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Try to capture the text after "a/en/to/in" (e.g. "Tu viaje a Lisboa" -> "Lisboa")
+    const afterPrep = cleaned.match(/(?:\b(a|en|to|in)\b)\s+(.+)/i)?.[2];
+    const base = (afterPrep ?? cleaned).split(/[,:–\-]/)[0]?.trim();
+
+    return base || "Destino";
+  };
+
+  const destination = inferDestination();
   const title = data.resumen?.titulo || `Tu viaje a ${destination}`;
   const budget = data.resumen?.presupuestoEstimado;
   const duration = data.itinerario?.length || data.resumen?.duracion;
