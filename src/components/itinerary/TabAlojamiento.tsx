@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Hotel, Star, MapPin, ChevronDown, Plus, ExternalLink, Tag } from "lucide-react";
+import { Hotel, Star, MapPin, ChevronDown, Plus, ExternalLink, Wifi, Car, Utensils, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AccommodationOption } from "./types";
+import { getHotelImage } from "@/lib/getPlaceholderImage";
 
 interface TabAlojamientoProps {
   options?: AccommodationOption[] | string[];
@@ -14,6 +15,14 @@ interface TabAlojamientoProps {
   onAddAccommodation?: (accommodation: AccommodationOption) => void;
 }
 
+// Amenity icons mapping
+const amenityIcons: Record<string, React.ReactNode> = {
+  wifi: <Wifi className="w-3 h-3" />,
+  parking: <Car className="w-3 h-3" />,
+  restaurant: <Utensils className="w-3 h-3" />,
+  gym: <Dumbbell className="w-3 h-3" />,
+};
+
 const TabAlojamiento = ({
   options = [],
   recommendation,
@@ -22,6 +31,17 @@ const TabAlojamiento = ({
   onAddAccommodation
 }: TabAlojamientoProps) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+
+  const toggleCard = (idx: number) => {
+    const newExpanded = new Set(expandedCards);
+    if (newExpanded.has(idx)) {
+      newExpanded.delete(idx);
+    } else {
+      newExpanded.add(idx);
+    }
+    setExpandedCards(newExpanded);
+  };
 
   // Normalize options to AccommodationOption[]
   const normalizedOptions: AccommodationOption[] = options.map((opt, idx) => {
@@ -45,6 +65,11 @@ const TabAlojamiento = ({
     precioPorNoche: costPerNight,
   }] : []);
 
+  const getImageForHotel = (hotel: AccommodationOption, idx: number): string => {
+    if (hotel.imagen) return hotel.imagen;
+    return getHotelImage(hotel.nombre, idx);
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -54,107 +79,143 @@ const TabAlojamiento = ({
 
       {displayOptions.length > 0 ? (
         <div className="space-y-4">
-          {displayOptions.map((hotel, idx) => (
-            <Card key={idx} className="overflow-hidden hover:shadow-md transition-shadow">
-              <CardContent className="p-0">
-                <div className="flex flex-col md:flex-row">
-                  {/* Image */}
-                  <div className="w-full md:w-48 h-40 md:h-auto bg-muted relative">
-                    {hotel.imagen ? (
+          {displayOptions.map((hotel, idx) => {
+            const isExpanded = expandedCards.has(idx);
+            
+            return (
+              <Card key={idx} className="overflow-hidden hover:shadow-md transition-shadow">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row">
+                    {/* Image */}
+                    <div className="w-full md:w-48 h-44 md:h-auto bg-muted relative overflow-hidden">
                       <img 
-                        src={hotel.imagen} 
+                        src={getImageForHotel(hotel, idx)} 
                         alt={hotel.nombre}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={(e) => {
+                          // Fallback to gradient if image fails
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-200">
+                      <div className="hidden w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-200 absolute inset-0">
                         <Hotel className="w-12 h-12 text-purple-400" />
                       </div>
-                    )}
-                    {hotel.tipo && (
-                      <Badge className="absolute top-2 left-2 bg-black/60 text-white text-xs">
-                        {hotel.tipo}
-                      </Badge>
-                    )}
-                  </div>
+                      {hotel.tipo && (
+                        <Badge className="absolute top-2 left-2 bg-black/60 text-white text-xs">
+                          {hotel.tipo}
+                        </Badge>
+                      )}
+                    </div>
 
-                  {/* Content */}
-                  <div className="flex-1 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        {/* Name & Rating */}
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-lg">{hotel.nombre}</h4>
-                          {hotel.calificacion && (
-                            <div className="flex items-center gap-1 text-yellow-500">
-                              <Star className="w-4 h-4 fill-current" />
-                              <span className="text-sm font-medium">{hotel.calificacion}</span>
+                    {/* Content */}
+                    <div className="flex-1 p-4">
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div className="flex-1">
+                          {/* Name & Rating */}
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 className="font-semibold text-lg">{hotel.nombre}</h4>
+                            {hotel.calificacion && (
+                              <div className="flex items-center gap-1 text-yellow-500">
+                                <Star className="w-4 h-4 fill-current" />
+                                <span className="text-sm font-medium">{hotel.calificacion}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Location */}
+                          {hotel.ubicacion && (
+                            <p className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
+                              <MapPin className="w-4 h-4 flex-shrink-0" />
+                              <span className={isExpanded ? '' : 'line-clamp-1'}>{hotel.ubicacion}</span>
+                            </p>
+                          )}
+
+                          {/* Amenities - show when expanded */}
+                          {hotel.amenities && hotel.amenities.length > 0 && isExpanded && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {hotel.amenities.map((amenity, aidx) => (
+                                <span key={aidx} className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                                  {amenityIcons[amenity.toLowerCase()] || null}
+                                  {amenity}
+                                </span>
+                              ))}
                             </div>
                           )}
+
+                          {/* Tags */}
+                          {hotel.etiquetas && hotel.etiquetas.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {hotel.etiquetas.slice(0, isExpanded ? undefined : 3).map((tag, tagIdx) => (
+                                <Badge key={tagIdx} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {!isExpanded && hotel.etiquetas.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{hotel.etiquetas.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Expand/Collapse button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => toggleCard(idx)}
+                          >
+                            <ChevronDown className={`w-4 h-4 mr-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            {isExpanded ? 'Ver menos' : 'Ver más'}
+                          </Button>
                         </div>
 
-                        {/* Location */}
-                        {hotel.ubicacion && (
-                          <p className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
-                            <MapPin className="w-4 h-4" />
-                            {hotel.ubicacion}
-                          </p>
-                        )}
-
-                        {/* Tags */}
-                        {hotel.etiquetas && hotel.etiquetas.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mb-3">
-                            {hotel.etiquetas.map((tag, tagIdx) => (
-                              <Badge key={tagIdx} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Price & Actions */}
-                      <div className="text-right min-w-[140px]">
-                        {hotel.precioPorNoche && (
-                          <div className="mb-2">
-                            <p className="text-xl font-bold text-primary">
-                              ${hotel.precioPorNoche.toLocaleString()}
+                        {/* Price & Actions */}
+                        <div className="text-left md:text-right min-w-[140px]">
+                          {hotel.precioPorNoche && (
+                            <div className="mb-2">
+                              <p className="text-xl font-bold text-primary">
+                                ${hotel.precioPorNoche.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-muted-foreground">por noche</p>
+                            </div>
+                          )}
+                          {hotel.precioTotal && isExpanded && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Total: ${hotel.precioTotal.toLocaleString()}
                             </p>
-                            <p className="text-xs text-muted-foreground">por noche</p>
-                          </div>
-                        )}
-                        {hotel.precioTotal && (
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Total: ${hotel.precioTotal.toLocaleString()}
-                          </p>
-                        )}
-                        <div className="flex flex-col gap-1.5">
-                          {hotel.link && (
+                          )}
+                          <div className="flex flex-row md:flex-col gap-1.5">
+                            {hotel.link && (
+                              <Button 
+                                size="sm"
+                                variant="default"
+                                className="flex-1 md:flex-none"
+                                onClick={() => window.open(hotel.link, '_blank')}
+                              >
+                                <ExternalLink className="w-4 h-4 mr-1" />
+                                Reservar
+                              </Button>
+                            )}
                             <Button 
                               size="sm"
-                              variant="default"
-                              onClick={() => window.open(hotel.link, '_blank')}
+                              variant={hotel.link ? "outline" : "default"}
+                              className="flex-1 md:flex-none"
+                              onClick={() => onAddAccommodation?.(hotel)}
                             >
-                              <ExternalLink className="w-4 h-4 mr-1" />
-                              Reservar
+                              <Plus className="w-4 h-4 mr-1" />
+                              Agregar
                             </Button>
-                          )}
-                          <Button 
-                            size="sm"
-                            variant={hotel.link ? "outline" : "default"}
-                            onClick={() => onAddAccommodation?.(hotel)}
-                          >
-                            <Plus className="w-4 h-4 mr-1" />
-                            Agregar
-                          </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-xl">
@@ -177,25 +238,27 @@ const TabAlojamiento = ({
             {remainingOptions.map((hotel, idx) => (
               <Card key={idx}>
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden">
-                        {hotel.imagen ? (
-                          <img src={hotel.imagen} alt={hotel.nombre} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Hotel className="w-6 h-6 text-muted-foreground" />
-                          </div>
-                        )}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                        <img 
+                          src={getImageForHotel(hotel, idx + 3)} 
+                          alt={hotel.nombre} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '';
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
                       </div>
-                      <div>
-                        <p className="font-medium">{hotel.nombre}</p>
-                        <p className="text-sm text-muted-foreground">{hotel.ubicacion}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{hotel.nombre}</p>
+                        <p className="text-sm text-muted-foreground truncate">{hotel.ubicacion}</p>
                       </div>
                     </div>
-                    <div className="text-right flex flex-col items-end gap-1.5">
+                    <div className="text-right flex flex-col items-end gap-1.5 flex-shrink-0">
                       {hotel.precioPorNoche && (
-                        <p className="font-semibold text-primary">${hotel.precioPorNoche.toLocaleString()}/noche</p>
+                        <p className="font-semibold text-primary whitespace-nowrap">${hotel.precioPorNoche.toLocaleString()}/noche</p>
                       )}
                       {hotel.link && (
                         <Button size="sm" variant="default" onClick={() => window.open(hotel.link, '_blank')}>
@@ -203,10 +266,6 @@ const TabAlojamiento = ({
                           Reservar
                         </Button>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => onAddAccommodation?.(hotel)}>
-                        <Plus className="w-3 h-3 mr-1" />
-                        Agregar
-                      </Button>
                     </div>
                   </div>
                 </CardContent>

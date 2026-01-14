@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Compass, Clock, DollarSign, Plus, Filter, Tag, Search, ExternalLink, MapPin, Calendar } from "lucide-react";
+import { Compass, Clock, DollarSign, Plus, Filter, Search, ExternalLink, MapPin, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ActivityOption } from "./types";
+import { getActivityImage } from "@/lib/getPlaceholderImage";
 
 interface TabActividadesProps {
   activities?: ActivityOption[];
@@ -27,6 +28,17 @@ const TabActividades = ({
   const [selectedActivity, setSelectedActivity] = useState<ActivityOption | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [selectedTime, setSelectedTime] = useState<string>("morning");
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+
+  const toggleCard = (idx: number) => {
+    const newExpanded = new Set(expandedCards);
+    if (newExpanded.has(idx)) {
+      newExpanded.delete(idx);
+    } else {
+      newExpanded.add(idx);
+    }
+    setExpandedCards(newExpanded);
+  };
 
   // Get unique types for filter
   const activityTypes = useMemo(() => {
@@ -66,6 +78,11 @@ const TabActividades = ({
     }
     setAddDialogOpen(false);
     setSelectedActivity(null);
+  };
+
+  const getImageForActivity = (activity: ActivityOption, idx: number): string => {
+    if (activity.imagen) return activity.imagen;
+    return getActivityImage(activity.nombre, activity.tipo, idx);
   };
 
   // If no structured activities, show highlights instead
@@ -141,106 +158,131 @@ const TabActividades = ({
           {/* Activities Grid */}
           {filteredActivities.length > 0 ? (
             <div className="grid md:grid-cols-2 gap-4">
-              {filteredActivities.map((activity, idx) => (
-                <Card key={idx} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <CardContent className="p-0">
-                    {/* Image */}
-                    <div className="h-40 bg-muted relative">
-                      {activity.imagen ? (
+              {filteredActivities.map((activity, idx) => {
+                const isExpanded = expandedCards.has(idx);
+                
+                return (
+                  <Card key={idx} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <CardContent className="p-0">
+                      {/* Image */}
+                      <div className="h-44 bg-muted relative overflow-hidden">
                         <img 
-                          src={activity.imagen} 
+                          src={getImageForActivity(activity, idx)} 
                           alt={activity.nombre}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200">
+                        <div className="hidden w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 absolute inset-0">
                           <Compass className="w-12 h-12 text-orange-400" />
                         </div>
-                      )}
-                      {activity.tipo && (
-                        <Badge className="absolute top-2 left-2 bg-black/60 text-white text-xs">
-                          {activity.tipo}
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4">
-                      <h4 className="font-semibold mb-1">{activity.nombre}</h4>
-                      {activity.descripcion && (
-                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                          {activity.descripcion}
-                        </p>
-                      )}
-
-                      {/* Location & Hours */}
-                      <div className="space-y-1 mb-3">
-                        {activity.ubicacion && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {activity.ubicacion}
-                          </p>
-                        )}
-                        {activity.horarios && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {activity.horarios}
-                          </p>
+                        {activity.tipo && (
+                          <Badge className="absolute top-2 left-2 bg-black/60 text-white text-xs">
+                            {activity.tipo}
+                          </Badge>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                        {activity.duracion && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {activity.duracion}
+                      {/* Content */}
+                      <div className="p-4">
+                        <h4 className="font-semibold mb-1">{activity.nombre}</h4>
+                        
+                        {activity.descripcion && (
+                          <div className="mb-2">
+                            <p className={`text-sm text-muted-foreground ${isExpanded ? '' : 'line-clamp-2'}`}>
+                              {activity.descripcion}
+                            </p>
+                            {activity.descripcion.length > 100 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-6 px-1 text-primary hover:text-primary/80 -ml-1"
+                                onClick={() => toggleCard(idx)}
+                              >
+                                <ChevronDown className={`w-3 h-3 mr-0.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                {isExpanded ? 'Ver menos' : 'Ver más'}
+                              </Button>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Location & Hours - show more when expanded */}
+                        <div className={`space-y-1 mb-3 ${isExpanded ? '' : 'max-h-12 overflow-hidden'}`}>
+                          {activity.ubicacion && (
+                            <p className="text-xs text-muted-foreground flex items-start gap-1">
+                              <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              <span className={isExpanded ? '' : 'line-clamp-1'}>{activity.ubicacion}</span>
+                            </p>
+                          )}
+                          {activity.horarios && (
+                            <p className="text-xs text-muted-foreground flex items-start gap-1">
+                              <Calendar className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              <span className={isExpanded ? '' : 'line-clamp-1'}>{activity.horarios}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                          {activity.duracion && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {activity.duracion}
+                            </span>
+                          )}
+                          <span className={`flex items-center gap-1 ${activity.precio && activity.precio > 0 ? '' : 'text-green-600'}`}>
+                            <DollarSign className="w-4 h-4" />
+                            {activity.precio && activity.precio > 0 
+                              ? `$${activity.precio.toLocaleString()}` 
+                              : 'Gratis'}
                           </span>
-                        )}
-                        <span className={`flex items-center gap-1 ${activity.precio && activity.precio > 0 ? '' : 'text-green-600'}`}>
-                          <DollarSign className="w-4 h-4" />
-                          {activity.precio && activity.precio > 0 
-                            ? `$${activity.precio.toLocaleString()}` 
-                            : 'Gratis'}
-                        </span>
-                      </div>
+                        </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-2">
-                        {activity.link && (
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2">
+                          {activity.link && (
+                            <Button 
+                              size="sm" 
+                              variant="default"
+                              className="flex-1"
+                              onClick={() => window.open(activity.link, '_blank')}
+                            >
+                              <ExternalLink className="w-4 h-4 mr-1" />
+                              Reservar
+                            </Button>
+                          )}
                           <Button 
                             size="sm" 
-                            variant="default"
+                            variant={activity.link ? "outline" : "default"}
                             className="flex-1"
-                            onClick={() => window.open(activity.link, '_blank')}
+                            onClick={() => handleAddClick(activity)}
                           >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Reservar
+                            <Plus className="w-4 h-4 mr-1" />
+                            Agregar
                           </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          variant={activity.link ? "outline" : "default"}
-                          onClick={() => handleAddClick(activity)}
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Agregar
-                        </Button>
-                      </div>
-
-                      {/* Tags */}
-                      {activity.etiquetas && activity.etiquetas.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {activity.etiquetas.slice(0, 3).map((tag, tagIdx) => (
-                            <Badge key={tagIdx} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+
+                        {/* Tags - show more when expanded */}
+                        {activity.etiquetas && activity.etiquetas.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {activity.etiquetas.slice(0, isExpanded ? undefined : 3).map((tag, tagIdx) => (
+                              <Badge key={tagIdx} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                            {!isExpanded && activity.etiquetas.length > 3 && (
+                              <Badge variant="outline" className="text-xs text-muted-foreground">
+                                +{activity.etiquetas.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-xl">
@@ -255,7 +297,7 @@ const TabActividades = ({
           <p className="text-sm text-muted-foreground">Actividades destacadas del viaje:</p>
           {highlights.map((highlight, idx) => (
             <div key={idx} className="bg-card rounded-xl border p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
                 {idx + 1}
               </div>
               <p className="flex-1">{highlight}</p>
