@@ -252,6 +252,7 @@ const ChatPage = () => {
   const [tripDate, setTripDate] = useState<string | null>(null);
   const [tripEndDate, setTripEndDate] = useState<string | null>(null);
   const [tripDestination, setTripDestination] = useState<string | null>(null);
+  const [tripOrigin, setTripOrigin] = useState<string | null>(null);
   const [tripTravelers, setTripTravelers] = useState<number>(1);
   const [tripImage, setTripImage] = useState<string | null>(null);
   const [itineraryData, setItineraryData] = useState<ItineraryData | null>(null);
@@ -700,6 +701,9 @@ const ChatPage = () => {
             setTripDestination(tripData.destino);
             setConversationTitle(`Viaje a ${tripData.destino}`);
           }
+          if (tripData.origen) {
+            setTripOrigin(tripData.origen);
+          }
           if (tripData.fechaSalida) {
             setTripDate(tripData.fechaSalida);
           }
@@ -710,15 +714,15 @@ const ChatPage = () => {
             setTripTravelers(tripData.pasajeros);
           }
 
-          // Show generating message based on detected language
+          // Show generating message based on detected language - mention it may take a few minutes
           const detectedLanguage = tripData.language || "es";
           const generatingMessages: Record<string, string> = {
-            es: "¡Perfecto! Tengo toda la información. Generando tu itinerario personalizado...",
-            en: "Perfect! I have all the information. Generating your personalized itinerary...",
-            fr: "Parfait! J'ai toutes les informations. Génération de votre itinéraire personnalisé...",
-            de: "Perfekt! Ich habe alle Informationen. Erstelle deine personalisierte Reiseroute...",
-            pt: "Perfeito! Tenho todas as informações. Gerando seu itinerário personalizado...",
-            it: "Perfetto! Ho tutte le informazioni. Generazione del tuo itinerario personalizzato...",
+            es: "¡Perfecto! Tengo toda la información. Estoy preparando tu itinerario personalizado. Esto puede tomar 1-2 minutos, pero valdrá la pena... ✨",
+            en: "Perfect! I have all the information. I'm preparing your personalized itinerary. This may take 1-2 minutes, but it will be worth it... ✨",
+            fr: "Parfait! J'ai toutes les informations. Je prépare votre itinéraire personnalisé. Cela peut prendre 1-2 minutes, mais ça en vaudra la peine... ✨",
+            de: "Perfekt! Ich habe alle Informationen. Ich bereite deine personalisierte Reiseroute vor. Das kann 1-2 Minuten dauern, aber es wird sich lohnen... ✨",
+            pt: "Perfeito! Tenho todas as informações. Estou preparando seu itinerário personalizado. Isso pode levar 1-2 minutos, mas vai valer a pena... ✨",
+            it: "Perfetto! Ho tutte le informazioni. Sto preparando il tuo itinerario personalizzato. Potrebbe richiedere 1-2 minuti, ma ne varrà la pena... ✨",
           };
           
           const generatingMessage: Message = {
@@ -1161,6 +1165,7 @@ const ChatPage = () => {
           <div className="w-full h-full bg-background md:bg-white md:rounded-lg md:shadow-lg overflow-hidden">
             <ItineraryPanel 
               data={itineraryData}
+              origin={tripOrigin || undefined}
               startDate={tripDate || undefined}
               endDate={tripEndDate || undefined}
               travelers={tripTravelers}
@@ -1174,6 +1179,7 @@ const ChatPage = () => {
               <ItineraryHeader 
                 title={conversationTitle || "Tu viaje"}
                 destination={tripDestination || undefined}
+                origin={tripOrigin || undefined}
                 startDate={tripDate || undefined}
                 endDate={tripEndDate || undefined}
                 travelers={tripTravelers}
