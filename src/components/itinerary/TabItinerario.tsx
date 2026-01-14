@@ -67,93 +67,93 @@ const TabItinerario = ({
   const categories = ['Vuelos', 'Alojamiento', 'Actividades', 'Coche'];
   
   return (
-    <div className="space-y-4">
-      {/* Action Bar */}
-      <div className="bg-card rounded-xl border p-4">
-        <div className="flex flex-wrap gap-2">
+    <div className="space-y-3 md:space-y-4">
+      {/* Action Bar - horizontal scroll on mobile */}
+      <div className="bg-card md:rounded-xl md:border p-3 md:p-4 -mx-3 md:mx-0 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2 min-w-max">
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-full border-primary text-primary hover:bg-primary/5"
+            className="rounded-full border-primary text-primary hover:bg-primary/5 text-xs md:text-sm px-3 md:px-4"
             onClick={() => setShowQuickView(true)}
           >
-            <Eye className="w-4 h-4 mr-1.5" />
+            <Eye className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-1.5" />
             Vista rápida
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-full"
+            className="rounded-full text-xs md:text-sm px-3 md:px-4"
             onClick={onAddFlight}
           >
-            <Plane className="w-4 h-4 mr-1.5" />
-            Agregar vuelo
+            <Plane className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-1.5" />
+            <span className="hidden md:inline">Agregar</span> vuelo
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-full"
+            className="rounded-full text-xs md:text-sm px-3 md:px-4"
             onClick={onAddAccommodation}
           >
-            <Hotel className="w-4 h-4 mr-1.5" />
-            Agregar alojamiento
+            <Hotel className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-1.5" />
+            <span className="hidden md:inline">Agregar</span> hotel
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-full"
+            className="rounded-full text-xs md:text-sm px-3 md:px-4"
             onClick={onAddCar}
           >
-            <Car className="w-4 h-4 mr-1.5" />
-            Agregar coche
+            <Car className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-1.5" />
+            <span className="hidden md:inline">Agregar</span> coche
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-full"
+            className="rounded-full text-xs md:text-sm px-3 md:px-4"
             onClick={onAddActivity}
           >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Agregar actividad
+            <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-1.5" />
+            <span className="hidden md:inline">Agregar</span> actividad
           </Button>
         </div>
       </div>
 
       {/* Days Accordion */}
       {days && days.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {days.map((day) => (
             <Collapsible
               key={day.dia}
               open={openDays.includes(day.dia)}
               onOpenChange={() => toggleDay(day.dia)}
             >
-              <div className="bg-card rounded-xl border overflow-hidden shadow-sm">
+              <div className="bg-card rounded-xl md:border overflow-hidden shadow-sm">
                 <CollapsibleTrigger className="w-full">
-                  <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      {/* Day Number */}
-                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-                        <span className="text-xs text-primary font-medium uppercase">Día</span>
-                        <span className="text-xl font-bold text-primary">{day.dia}</span>
+                  <div className="flex items-center justify-between p-3 md:p-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      {/* Day Number - smaller on mobile */}
+                      <div className="w-11 h-11 md:w-14 md:h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
+                        <span className="text-[10px] md:text-xs text-primary font-medium uppercase">Día</span>
+                        <span className="text-lg md:text-xl font-bold text-primary">{day.dia}</span>
                       </div>
                       
                       {/* Day Info */}
-                      <div className="text-left">
-                        <p className="font-semibold text-foreground">
+                      <div className="text-left min-w-0">
+                        <p className="font-semibold text-foreground text-sm md:text-base truncate">
                           {formatFullDate(day.fecha) || `Día ${day.dia}`}
                         </p>
-                        <div className="flex items-center gap-3 mt-1">
+                        <div className="flex items-center gap-2 md:gap-3 mt-0.5 md:mt-1 flex-wrap">
                           {day.ciudad && (
-                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
                               <MapPin className="w-3 h-3" />
                               {day.ciudad}
                             </span>
                           )}
                           {day.clima && (
-                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
                               {getWeatherIcon(day.clima)}
-                              {day.clima}
+                              <span className="hidden md:inline">{day.clima}</span>
                             </span>
                           )}
                         </div>
@@ -161,23 +161,23 @@ const TabItinerario = ({
                     </div>
                     
                     {/* Expand indicator */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                       {day.actividades && (
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                          {day.actividades.length} actividades
+                        <span className="text-[10px] md:text-xs text-muted-foreground bg-muted px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
+                          {day.actividades.length} <span className="hidden md:inline">actividades</span><span className="md:hidden">act.</span>
                         </span>
                       )}
                       {openDays.includes(day.dia) ? (
-                        <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                        <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
                       ) : (
-                        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
                       )}
                     </div>
                   </div>
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent>
-                  <div className="px-4 pb-4 space-y-3">
+                  <div className="px-3 pb-3 md:px-4 md:pb-4 space-y-2 md:space-y-3">
                     {/* Flight cards if any */}
                     {day.vuelos?.map((vuelo, idx) => (
                       <div key={`flight-${idx}`} className="flex gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">

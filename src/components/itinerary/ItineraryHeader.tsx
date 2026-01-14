@@ -257,11 +257,11 @@ const ItineraryHeader = ({
   }, [originCoords, destCoords]);
 
   return (
-    <div className="bg-card rounded-xl overflow-hidden border shadow-card">
+    <div className="bg-card md:rounded-xl overflow-hidden md:border md:shadow-card">
       {/* Main Header Row */}
       <div className="flex flex-col lg:flex-row">
-        {/* Left: Image + Info */}
-        <div className="relative flex-1 min-h-[200px] lg:min-h-[240px]">
+        {/* Left: Image + Info - taller on mobile for immersive feel */}
+        <div className="relative flex-1 min-h-[280px] md:min-h-[200px] lg:min-h-[240px]">
           <img
             src={heroImage}
             alt={displayDestination}
