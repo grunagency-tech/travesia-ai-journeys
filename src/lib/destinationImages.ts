@@ -95,6 +95,29 @@ const destinationMap: Record<string, string> = {
   'cusco': peruImg,
   'machu picchu': peruImg,
   
+  // Argentina
+  'buenos aires': peruImg, // Using Peru image as closest South American destination
+  'argentina': peruImg,
+  
+  // Brazil
+  'brasil': peruImg,
+  'brazil': peruImg,
+  'rio de janeiro': peruImg,
+  'são paulo': peruImg,
+  'sao paulo': peruImg,
+  
+  // Chile
+  'chile': peruImg,
+  'santiago': peruImg,
+  
+  // Colombia
+  'colombia': peruImg,
+  'bogotá': peruImg,
+  'bogota': peruImg,
+  'cartagena': peruImg,
+  'medellín': peruImg,
+  'medellin': peruImg,
+  
   // Australia
   'sydney': sydneyImg,
   'sídney': sydneyImg,

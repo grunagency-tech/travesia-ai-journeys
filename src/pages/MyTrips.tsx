@@ -108,10 +108,20 @@ const MyTrips = () => {
   };
 
   const getDuration = (startDate: string, endDate: string): number => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Parse as local dates to avoid timezone issues
+    const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+    const start = new Date(startYear, startMonth - 1, startDay);
+    const end = new Date(endYear, endMonth - 1, endDay);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  };
+
+  // Helper to format date as local (avoid timezone shift)
+  const formatLocalDate = (dateStr: string): string => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return format(date, 'd MMM', { locale: dateLocale });
   };
 
   if (authLoading || loading) {
@@ -257,7 +267,7 @@ const MyTrips = () => {
                           <div className="flex items-center gap-1.5">
                             <Calendar className="w-4 h-4 text-orange-500" />
                             <span>
-                              {format(new Date(trip.start_date), 'd MMM', { locale: es })} - {format(new Date(trip.end_date), 'd MMM', { locale: es })}
+                              {formatLocalDate(trip.start_date)} - {formatLocalDate(trip.end_date)}
                             </span>
                           </div>
                           
