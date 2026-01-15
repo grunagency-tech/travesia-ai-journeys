@@ -878,6 +878,12 @@ const ChatPage = () => {
     setCurrentConversationId(null);
     setConversationTitle(null);
     setTripDate(null);
+    setTripEndDate(null);
+    setTripDestination(null);
+    setTripOrigin(null);
+    setTripBudget(null);
+    setTripTravelers(1);
+    setTripImage(null);
     setTripSaved(false);
     setShowRegisterBanner(false);
     setPendingMessage(null);
@@ -890,9 +896,17 @@ const ChatPage = () => {
   };
 
   const handleSelectConversation = (convId: string) => {
-    // Clear current state
+    // Clear current state completely
     setMessages([]);
     setHtmlContent(null);
+    setItineraryData(null);
+    setTripDate(null);
+    setTripEndDate(null);
+    setTripDestination(null);
+    setTripOrigin(null);
+    setTripBudget(null);
+    setTripTravelers(1);
+    setTripImage(null);
     setTripSaved(false);
     setShowRegisterBanner(false);
     setPendingMessage(null);
