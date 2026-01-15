@@ -14,6 +14,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getDestinationImage } from '@/lib/destinationImages';
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
+import ItineraryPanel from '@/components/ItineraryPanel';
+import { ItineraryData as ItineraryDataType } from '@/components/itinerary/types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -283,6 +285,24 @@ const TripDetail = () => {
     
     setIsDeleting(true);
     try {
+      // Delete related data first (itinerary_days and flight_options)
+      await supabase
+        .from('itinerary_days')
+        .delete()
+        .eq('trip_id', id);
+      
+      await supabase
+        .from('flight_options')
+        .delete()
+        .eq('trip_id', id);
+
+      // Unlink any conversations from this trip
+      await supabase
+        .from('conversations')
+        .update({ trip_id: null })
+        .eq('trip_id', id);
+
+      // Now delete the trip itself
       const { error } = await supabase
         .from('trips')
         .delete()
@@ -443,687 +463,176 @@ const TripDetail = () => {
             </AlertDialog>
           </div>
 
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Left Column - Hero Card */}
-            <div className="lg:col-span-2">
-              {/* Hero Image Card */}
-              <div className="relative rounded-2xl overflow-hidden mb-6">
-                {/* Grayscale Image */}
-                <div className="relative h-[280px] md:h-[320px]">
-                  {imageLoading ? (
-                    <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <img 
-                      src={destinationImage} 
-                      alt={trip.destination}
-                      className="w-full h-full object-cover grayscale"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  
-                  {/* Verified Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-white/30">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Verificado con IA
-                    </span>
-                  </div>
-
-                  {/* Title and Info */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h1 className="font-urbanist font-bold text-2xl md:text-3xl text-white mb-4">
-                      Tu viaje a {trip.destination}
-                    </h1>
+          {/* Show ItineraryPanel if we have itinerary_data */}
+          {itineraryData ? (
+            <ItineraryPanel 
+              data={itineraryData as ItineraryDataType}
+              destination={trip.destination}
+              origin={trip.origin}
+              startDate={trip.start_date}
+              endDate={trip.end_date}
+              travelers={trip.travelers}
+              budget={trip.budget || undefined}
+            />
+          ) : (
+            /* Fallback: Two Column Layout for legacy trips */
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Left Column - Hero Card */}
+              <div className="lg:col-span-2">
+                {/* Hero Image Card */}
+                <div className="relative rounded-2xl overflow-hidden mb-6">
+                  <div className="relative h-[280px] md:h-[320px]">
+                    {imageLoading ? (
+                      <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <img 
+                        src={destinationImage} 
+                        alt={trip.destination}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                     
-                    {/* Info Badges */}
-                    <div className="flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
-                        <Calendar className="w-4 h-4" />
-                        {format(startDate, 'd', { locale: es })} - {format(endDate, 'd MMMM yyyy', { locale: es })}
+                    <div className="absolute top-4 left-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-white/30">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Verificado con IA
                       </span>
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
-                        <MapPin className="w-4 h-4" />
-                        {trip.destination}
-                      </span>
-                      {trip.budget && (
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      <h1 className="font-urbanist font-bold text-2xl md:text-3xl text-white mb-4">
+                        Tu viaje a {trip.destination}
+                      </h1>
+                      
+                      <div className="flex flex-wrap gap-2">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
-                          <DollarSign className="w-4 h-4" />
-                          ${trip.budget.toLocaleString()}
+                          <Calendar className="w-4 h-4" />
+                          {format(startDate, 'd', { locale: es })} - {format(endDate, 'd MMMM yyyy', { locale: es })}
                         </span>
-                      )}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
+                          <MapPin className="w-4 h-4" />
+                          {trip.destination}
+                        </span>
+                        {trip.budget && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30">
+                            <DollarSign className="w-4 h-4" />
+                            ${trip.budget.toLocaleString()} MXN
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Tabs Section */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full justify-start bg-transparent border-b rounded-none h-auto p-0 mb-6">
-                  <TabsTrigger 
-                    value="resumen" 
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
-                  >
-                    Resumen
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="transporte" 
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
-                  >
-                    Transporte
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="alojamiento" 
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
-                  >
-                    Alojamiento
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="comentarios" 
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-4 py-3 text-sm font-medium"
-                  >
-                    Comentarios
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Resumen Tab */}
-                <TabsContent value="resumen" className="mt-0">
-                  <div className="space-y-6">
-                    {/* Trip Summary Card */}
-                    <div className="bg-card rounded-2xl border p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-primary" />
-                        </div>
-                        <h3 className="font-urbanist font-bold text-lg">Resumen del viaje</h3>
+                {/* Legacy HTML Itinerary */}
+                {itineraryHtml && (
+                  <div className="bg-card rounded-2xl border p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-white" />
                       </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">{resumen?.duracion || tripDays}</p>
-                          <p className="text-xs text-muted-foreground">Días</p>
-                        </div>
-                        <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">{trip.travelers}</p>
-                          <p className="text-xs text-muted-foreground">Viajeros</p>
-                        </div>
-                        <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">{itinerarioDias.length || days.length}</p>
-                          <p className="text-xs text-muted-foreground">Días planificados</p>
-                        </div>
-                        <div className="text-center p-3 bg-muted/50 rounded-xl">
-                          <p className="text-2xl font-bold text-primary">
-                            ${resumen?.presupuestoEstimado?.toLocaleString() || trip.budget?.toLocaleString() || '—'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">Presupuesto</p>
-                        </div>
+                      <div>
+                        <h3 className="font-urbanist font-bold text-lg">Itinerario detallado</h3>
+                        <p className="text-xs text-muted-foreground">Generado con IA por travesIA</p>
                       </div>
+                    </div>
+                    <div 
+                      className="prose prose-sm max-w-none prose-headings:font-urbanist prose-headings:font-bold prose-a:text-primary"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(itineraryHtml) }} 
+                    />
+                  </div>
+                )}
 
-                      {/* Description from new structure */}
-                      {resumen?.descripcion && (
-                        <p className="text-muted-foreground leading-relaxed mb-4">{resumen.descripcion}</p>
-                      )}
-                      
-                      {/* Legacy summary fallback */}
-                      {!resumen?.descripcion && legacySummary && (
-                        <p className="text-muted-foreground leading-relaxed mb-4">{legacySummary}</p>
-                      )}
-
-                      {/* Highlights */}
-                      {(resumen?.highlights?.length ?? 0) > 0 && (
-                        <div className="mt-4 pt-4 border-t">
-                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-primary" />
-                            Puntos destacados
+                {/* Legacy Day by Day from DB */}
+                {days.length > 0 && (
+                  <div className="space-y-4 mt-6">
+                    <h3 className="font-urbanist font-bold text-lg px-1">Itinerario día a día</h3>
+                    {days.map((day) => (
+                      <div key={day.id} className="bg-card rounded-2xl border overflow-hidden">
+                        <div className="bg-primary/5 px-6 py-4 border-b">
+                          <h4 className="font-urbanist font-bold text-base">
+                            Día {day.day_number}
+                            {formatMaybeDate(day.date) && (
+                              <> — {formatMaybeDate(day.date)}</>
+                            )}
                           </h4>
-                          <ul className="space-y-2">
-                            {(resumen?.highlights ?? []).map((highlight, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                {highlight}
-                              </li>
-                            ))}
-                          </ul>
+                          {day.summary && (
+                            <p className="text-sm text-muted-foreground mt-1">{day.summary}</p>
+                          )}
                         </div>
-                      )}
-                    </div>
-
-                    {/* HTML Itinerary (legacy) */}
-                    {itineraryHtml && (
-                      <div className="bg-card rounded-2xl border p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-urbanist font-bold text-lg">Itinerario detallado</h3>
-                            <p className="text-xs text-muted-foreground">Generado con IA por travesIA</p>
-                          </div>
-                        </div>
-                        {/* Sanitized HTML to prevent XSS */}
-                        <div 
-                          className="prose prose-sm max-w-none prose-headings:font-urbanist prose-headings:font-bold prose-a:text-primary"
-                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(itineraryHtml) }} 
-                        />
-                      </div>
-                    )}
-
-                    {/* Day by Day Itinerary - New Structure */}
-                    {itinerarioDias.length > 0 && (
-                      <div className="space-y-4">
-                        <h3 className="font-urbanist font-bold text-lg px-1">Itinerario día a día</h3>
-                        {itinerarioDias.map((dia) => (
-                          <div key={dia.dia} className="bg-card rounded-2xl border overflow-hidden">
-                            <div className="bg-primary/5 px-6 py-4 border-b">
-                              <h4 className="font-urbanist font-bold text-base">
-                                Día {dia.dia}
-                                {formatMaybeDate(dia.fecha) && (
-                                  <> — {formatMaybeDate(dia.fecha)}</>
-                                )}
-                              </h4>
-                              {dia.resumenDia && (
-                                <p className="text-sm text-muted-foreground mt-1">{dia.resumenDia}</p>
-                              )}
-                            </div>
-                            <div className="p-6 space-y-4">
-                              {(dia.actividades?.length ?? 0) > 0 ? (
-                                (dia.actividades ?? []).map((actividad, index) => (
-                                  <div 
-                                    key={index} 
-                                    className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
-                                  >
-                                    <div className="flex justify-between items-start mb-2">
-                                      <div>
-                                        {actividad.hora && (
-                                          <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
-                                            {getTimeOfDayLabel(actividad.hora)}
-                                          </span>
-                                        )}
-                                        <h5 className="font-urbanist font-semibold text-base">
-                                          {actividad.titulo || 'Actividad'}
-                                        </h5>
-                                      </div>
-                                      {typeof actividad.costoAprox === 'number' && actividad.costoAprox > 0 && (
-                                        <span className="text-sm font-semibold text-primary">
-                                          ${actividad.costoAprox}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {actividad.descripcion && (
-                                      <p className="text-sm text-muted-foreground mb-2">
-                                        {actividad.descripcion}
-                                      </p>
-                                    )}
-                                    {actividad.ubicacion && (
-                                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <MapPin className="w-3 h-3 text-primary" />
-                                        {actividad.ubicacion}
-                                      </p>
-                                    )}
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-muted-foreground">Sin actividades detalladas para este día.</p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Legacy Day by Day from DB */}
-                    {itinerarioDias.length === 0 && days.length > 0 && (
-                      <div className="space-y-4">
-                        <h3 className="font-urbanist font-bold text-lg px-1">Itinerario día a día</h3>
-                        {days.map((day) => (
-                          <div key={day.id} className="bg-card rounded-2xl border overflow-hidden">
-                            <div className="bg-primary/5 px-6 py-4 border-b">
-                              <h4 className="font-urbanist font-bold text-base">
-                                Día {day.day_number}
-                                {formatMaybeDate(day.date) && (
-                                  <> — {formatMaybeDate(day.date)}</>
-                                )}
-                              </h4>
-                              {day.summary && (
-                                <p className="text-sm text-muted-foreground mt-1">{day.summary}</p>
-                              )}
-                            </div>
-                            <div className="p-6 space-y-4">
-                              {(day.activities?.length ?? 0) > 0 ? (
-                                (day.activities ?? []).map((activity: any, index: number) => (
-                                  <div 
-                                    key={index} 
-                                    className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
-                                  >
-                                    <div className="flex justify-between items-start mb-2">
-                                      <div>
-                                        {activity.timeOfDay && (
-                                          <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full mb-2">
-                                            {getTimeOfDayLabel(activity.timeOfDay)}
-                                          </span>
-                                        )}
-                                        <h5 className="font-urbanist font-semibold text-base">
-                                          {activity.title || 'Actividad'}
-                                        </h5>
-                                      </div>
-                                      {activity.approxCost && (
-                                        <span className="text-sm font-semibold text-primary">
-                                          ${activity.approxCost}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {activity.description && (
-                                      <p className="text-sm text-muted-foreground mb-2">
-                                        {activity.description}
-                                      </p>
-                                    )}
-                                    {activity.location && (
-                                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <MapPin className="w-3 h-3 text-primary" />
-                                        {activity.location}
-                                      </p>
-                                    )}
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-muted-foreground">Sin actividades detalladas para este día.</p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Empty state */}
-                    {!itineraryHtml && itinerarioDias.length === 0 && days.length === 0 && (
-                      <div className="bg-card rounded-2xl border p-10 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center">
-                          <Sparkles className="w-8 h-8 text-primary" />
-                        </div>
-                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin resumen disponible</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          Este viaje aún no tiene un itinerario generado. Puedes crear uno nuevo desde el chat.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-
-                {/* Transporte Tab */}
-                <TabsContent value="transporte" className="mt-0">
-                  <div className="space-y-4">
-                    {/* Route Info */}
-                    <div className="bg-card rounded-2xl border p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center">
-                          <Plane className="w-5 h-5 text-sky-600" />
-                        </div>
-                        <h3 className="font-urbanist font-bold text-lg">Ruta del viaje</h3>
-                      </div>
-                      <div className="flex items-center gap-4 text-lg">
-                        <span className="font-semibold">{trip.origin || 'Tu ciudad'}</span>
-                        <Plane className="w-5 h-5 text-primary rotate-90" />
-                        <span className="font-semibold">{trip.destination}</span>
-                      </div>
-                    </div>
-
-                    {/* Vuelos from new structure */}
-                    {(transporte?.vuelos?.length ?? 0) > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="font-urbanist font-bold text-lg px-1">Vuelos sugeridos</h3>
-                        {(transporte?.vuelos ?? []).map((vuelo, idx) => {
-                          const salidaLabel = formatMaybeDate(vuelo.fechaSalida, 'PPp');
-                          const llegadaLabel = formatMaybeDate(vuelo.fechaLlegada, 'PPp');
-                          const routeLabel = vuelo.origen && vuelo.destino
-                            ? `${vuelo.origen} → ${vuelo.destino}`
-                            : `${trip.origin || 'Tu ciudad'} → ${trip.destination}`;
-
-                          return (
-                            <div 
-                              key={idx} 
-                              className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
-                            >
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex-1">
-                                  <p className="font-urbanist font-bold text-base">{vuelo.aerolinea || 'Vuelo'}</p>
+                        <div className="p-6 space-y-4">
+                          {(day.activities?.length ?? 0) > 0 ? (
+                            (day.activities ?? []).map((activity: any, index: number) => (
+                              <div 
+                                key={index} 
+                                className="p-4 bg-muted/30 rounded-xl border-l-4 border-primary"
+                              >
+                                <h5 className="font-urbanist font-semibold text-base">
+                                  {activity.titulo || activity.title || 'Actividad'}
+                                </h5>
+                                {(activity.descripcion || activity.description) && (
                                   <p className="text-sm text-muted-foreground mt-1">
-                                    {routeLabel}
+                                    {activity.descripcion || activity.description}
                                   </p>
-                                  {(salidaLabel || llegadaLabel) && (
-                                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
-                                      {salidaLabel && (
-                                        <div className="flex items-center gap-1">
-                                          <Clock className="w-4 h-4 text-primary" />
-                                          <span>{salidaLabel}</span>
-                                        </div>
-                                      )}
-                                      {salidaLabel && llegadaLabel && (
-                                        <span className="text-primary">→</span>
-                                      )}
-                                      {llegadaLabel && (
-                                        <div className="flex items-center gap-1">
-                                          <Clock className="w-4 h-4 text-primary" />
-                                          <span>{llegadaLabel}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                                {typeof vuelo.precio === 'number' && (
-                                  <div className="text-right">
-                                    <p className="text-2xl font-urbanist font-bold text-primary">${vuelo.precio}</p>
-                                    <p className="text-xs text-muted-foreground">estimado</p>
-                                  </div>
                                 )}
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Legacy Flights from DB */}
-                    {(!transporte?.vuelos || transporte.vuelos.length === 0) && flights.length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="font-urbanist font-bold text-lg px-1">Opciones de vuelos</h3>
-                        {flights.map((flight) => {
-                          const salidaLabel = formatMaybeDate(flight.departure_time, 'PPp');
-                          const llegadaLabel = formatMaybeDate(flight.arrival_time, 'PPp');
-
-                          return (
-                            <div 
-                              key={flight.id} 
-                              className="bg-card rounded-2xl border p-5 hover:shadow-md transition-shadow"
-                            >
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex-1">
-                                  <p className="font-urbanist font-bold text-base">{flight.airline}</p>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {flight.origin} → {flight.destination}
-                                  </p>
-                                  {(salidaLabel || llegadaLabel) && (
-                                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
-                                      {salidaLabel && (
-                                        <div className="flex items-center gap-1">
-                                          <Clock className="w-4 h-4 text-primary" />
-                                          <span>{salidaLabel}</span>
-                                        </div>
-                                      )}
-                                      {salidaLabel && llegadaLabel && <span className="text-primary">→</span>}
-                                      {llegadaLabel && (
-                                        <div className="flex items-center gap-1">
-                                          <Clock className="w-4 h-4 text-primary" />
-                                          <span>{llegadaLabel}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-4">
-                                  <div className="text-right">
-                                    <p className="text-2xl font-urbanist font-bold text-primary">${flight.price}</p>
-                                    <p className="text-xs text-muted-foreground">por persona</p>
-                                  </div>
-                                  {flight.link && (
-                                    <Button className="rounded-full" size="sm" asChild>
-                                      <a href={flight.link} target="_blank" rel="noopener noreferrer">
-                                        Ver detalles
-                                      </a>
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Transporte Local */}
-                    {transporte?.transporteLocal && (
-                      <div className="bg-card rounded-2xl border p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                            <Car className="w-5 h-5 text-green-600" />
-                          </div>
-                          <h3 className="font-urbanist font-bold text-lg">Transporte local</h3>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Sin actividades detalladas.</p>
+                          )}
                         </div>
-                        <p className="text-muted-foreground leading-relaxed">
-                          {transporte.transporteLocal}
-                        </p>
                       </div>
-                    )}
-
-                    {/* Empty state */}
-                    {(!transporte?.vuelos || transporte.vuelos.length === 0) && flights.length === 0 && !transporte?.transporteLocal && (
-                      <div className="bg-card rounded-2xl border p-10 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-sky-100 rounded-2xl flex items-center justify-center">
-                          <Plane className="w-8 h-8 text-sky-500" />
-                        </div>
-                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin información de transporte</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          No hay información de transporte disponible para este viaje.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-
-                {/* Alojamiento Tab */}
-                <TabsContent value="alojamiento" className="mt-0">
-                  <div className="space-y-4">
-                    {(alojamiento || legacyAccommodation) ? (
-                      <div className="bg-card rounded-2xl border p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                            <Hotel className="w-5 h-5 text-amber-600" />
-                          </div>
-                          <h3 className="font-urbanist font-bold text-lg">Recomendación de alojamiento</h3>
-                        </div>
-                        
-                        <p className="text-muted-foreground leading-relaxed mb-4">
-                          {alojamiento?.recomendacion || legacyAccommodation?.recommendation}
-                        </p>
-
-                        {/* Zona */}
-                        {alojamiento?.zona && (
-                          <div className="flex items-center gap-2 mb-4 text-sm">
-                            <MapPin className="w-4 h-4 text-amber-600" />
-                            <span className="font-medium">Zona recomendada:</span>
-                            <span className="text-muted-foreground">{alojamiento.zona}</span>
-                          </div>
-                        )}
-
-                        {/* Costo */}
-                        {(alojamiento?.costoPorNoche || legacyAccommodation?.estimatedCostPerNight) && (
-                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl mb-4">
-                            <DollarSign className="w-4 h-4 text-amber-600" />
-                            <span className="text-sm font-medium text-amber-700">
-                              Costo estimado: ${alojamiento?.costoPorNoche || legacyAccommodation?.estimatedCostPerNight} por noche
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Opciones */}
-                        {alojamiento?.opciones && alojamiento.opciones.length > 0 && (
-                          <div className="mt-4 pt-4 border-t">
-                            <h4 className="font-semibold text-sm mb-3">Opciones sugeridas</h4>
-                            <ul className="space-y-2">
-                              {alojamiento.opciones.map((opcion, idx) => (
-                                <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                  <Hotel className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                                  {opcion}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="bg-card rounded-2xl border p-10 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-2xl flex items-center justify-center">
-                          <Hotel className="w-8 h-8 text-amber-500" />
-                        </div>
-                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin información de alojamiento</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          No hay recomendaciones de alojamiento disponibles para este viaje.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-
-                {/* Comentarios Tab */}
-                <TabsContent value="comentarios" className="mt-0">
-                  <div className="space-y-4">
-                    {comentarios && (comentarios.consejos?.length > 0 || comentarios.advertencias?.length > 0 || comentarios.mejorEpoca) ? (
-                      <>
-                        {/* Consejos */}
-                        {comentarios.consejos && comentarios.consejos.length > 0 && (
-                          <div className="bg-card rounded-2xl border p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <Lightbulb className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <h3 className="font-urbanist font-bold text-lg">Consejos útiles</h3>
-                            </div>
-                            <ul className="space-y-3">
-                              {comentarios.consejos.map((consejo, idx) => (
-                                <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
-                                  <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                  {consejo}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {/* Advertencias */}
-                        {comentarios.advertencias && comentarios.advertencias.length > 0 && (
-                          <div className="bg-card rounded-2xl border p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                                <AlertTriangle className="w-5 h-5 text-orange-600" />
-                              </div>
-                              <h3 className="font-urbanist font-bold text-lg">Advertencias</h3>
-                            </div>
-                            <ul className="space-y-3">
-                              {comentarios.advertencias.map((advertencia, idx) => (
-                                <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
-                                  <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                                  {advertencia}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {/* Mejor Época */}
-                        {comentarios.mejorEpoca && (
-                          <div className="bg-card rounded-2xl border p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                                <Sun className="w-5 h-5 text-green-600" />
-                              </div>
-                              <h3 className="font-urbanist font-bold text-lg">Mejor época para visitar</h3>
-                            </div>
-                            <p className="text-muted-foreground leading-relaxed">
-                              {comentarios.mejorEpoca}
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="bg-card rounded-2xl border p-10 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-violet-100 rounded-2xl flex items-center justify-center">
-                          <MessageSquare className="w-8 h-8 text-violet-500" />
-                        </div>
-                        <h3 className="font-urbanist font-bold text-lg mb-2">Sin comentarios aún</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          No hay consejos o comentarios disponibles para este viaje.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            {/* Right Column - Map & Quick Info */}
-            <div className="lg:col-span-1 space-y-4">
-              {/* Map */}
-              <div className="bg-card rounded-2xl border overflow-hidden">
-                {mapCoordinates ? (
-                  <div 
-                    ref={mapContainerRef} 
-                    className="h-[300px] w-full"
-                    style={{ zIndex: 0 }}
-                  />
-                ) : (
-                  <div className="h-[300px] bg-muted flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Mapa del viaje
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Cargando ubicación...
-                      </p>
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Quick Stats */}
-              <div className="bg-card rounded-2xl border p-5">
-                <h3 className="font-urbanist font-bold text-base mb-4">Detalles del viaje</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Destino</span>
-                    <span className="font-medium">{trip.destination}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Duración</span>
-                    <span className="font-medium">{tripDays} días</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Viajeros</span>
-                    <span className="font-medium">{trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}</span>
-                  </div>
-                  {trip.budget && (
+              {/* Right Column - Sidebar */}
+              <div className="space-y-6">
+                {/* Quick Stats */}
+                <div className="bg-card rounded-2xl border p-5">
+                  <h3 className="font-urbanist font-bold text-base mb-4">Detalles del viaje</h3>
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Presupuesto</span>
-                      <span className="font-medium">${trip.budget.toLocaleString()}</span>
+                      <span className="text-muted-foreground">Destino</span>
+                      <span className="font-medium">{trip.destination}</span>
                     </div>
-                  )}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Inicio</span>
-                    <span className="font-medium">{formatMaybeDate(trip.start_date, 'd MMM yyyy') || '—'}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Fin</span>
-                    <span className="font-medium">{formatMaybeDate(trip.end_date, 'd MMM yyyy') || '—'}</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Duración</span>
+                      <span className="font-medium">{tripDays} días</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Viajeros</span>
+                      <span className="font-medium">{trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}</span>
+                    </div>
+                    {trip.budget && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Presupuesto</span>
+                        <span className="font-medium">${trip.budget.toLocaleString()} MXN</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* travesIA Badge */}
-              <div className="bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl border border-primary/20 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center">
-                    <img src={logoIcon} alt="travesIA" className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-urbanist font-bold text-sm">Generado con travesIA</p>
-                    <p className="text-xs text-muted-foreground">Planificación inteligente</p>
+                {/* travesIA Badge */}
+                <div className="bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl border border-primary/20 p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center">
+                      <img src={logoIcon} alt="travesIA" className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="font-urbanist font-bold text-sm">Generado con travesIA</p>
+                      <p className="text-xs text-muted-foreground">Planificación inteligente</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -4,13 +4,25 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
-import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Users, Plus, ArrowRight, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS, de, pt, it } from 'date-fns/locale';
 import { getImageByDestination } from '@/lib/travelImages';
 import travelGlobeIcon from '@/assets/travel-globe-icon.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const locales = { ES: es, EN: enUS, DE: de, PT: pt, IT: it };
 
@@ -30,8 +42,10 @@ const MyTrips = () => {
   const { user, loading: authLoading } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const t = (key: string) => getTranslation(`myTrips.${key}`, language);
   const dateLocale = locales[language] || es;
@@ -61,6 +75,35 @@ const MyTrips = () => {
       console.error('Error loading trips:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTrip = async (tripId: string) => {
+    setDeletingId(tripId);
+    try {
+      // Delete related data first
+      await supabase.from('itinerary_days').delete().eq('trip_id', tripId);
+      await supabase.from('flight_options').delete().eq('trip_id', tripId);
+      await supabase.from('conversations').update({ trip_id: null }).eq('trip_id', tripId);
+
+      // Delete the trip
+      const { error } = await supabase.from('trips').delete().eq('id', tripId);
+      if (error) throw error;
+
+      setTrips(prev => prev.filter(t => t.id !== tripId));
+      toast({
+        title: "Viaje eliminado",
+        description: "El itinerario ha sido eliminado correctamente",
+      });
+    } catch (error) {
+      console.error('Error deleting trip:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el viaje",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -248,18 +291,59 @@ const MyTrips = () => {
                         </div>
                       </div>
 
-                      {/* CTA Button */}
-                      <Button 
-                        className="w-full rounded-full"
-                        variant="default"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/viaje/${trip.id}`);
-                        }}
-                      >
-                        Ver itinerario
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Button 
+                          className="flex-1 rounded-full"
+                          variant="default"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/viaje/${trip.id}`);
+                          }}
+                        >
+                          Ver itinerario
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              className="rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              onClick={(e) => e.stopPropagation()}
+                              disabled={deletingId === trip.id}
+                            >
+                              {deletingId === trip.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="font-urbanist font-bold text-xl">
+                                ¿Eliminar este viaje?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer. El itinerario a {trip.destination} será eliminado permanentemente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="rounded-full">Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteTrip(trip.id);
+                                }} 
+                                className="rounded-full bg-destructive hover:bg-destructive/90"
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </div>
                 </div>
