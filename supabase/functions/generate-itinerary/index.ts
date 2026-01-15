@@ -221,16 +221,14 @@ The JSON MUST have this EXACT structure (respect property names, but all TEXT VA
 
 IMPORTANT RULES:
 1. Create exactly ${days} days of itinerary
-2. Each day must have at least 4-5 activities with specific times (09:00, 12:30, etc)
-3. Be VERY specific with REAL place names, restaurants, attractions
-4. Prices must be realistic and up-to-date for ${destination}
-5. If flight data is available, use it; otherwise, suggest REAL airlines that operate that route
-6. Estimated budget should consider: flights, accommodation, meals, activities, and local transport
-7. Include REAL URLs from sites like TripAdvisor, GetYourGuide, Viator, Booking, or official attraction sites
-8. Cultural info must be ACCURATE and respectful - real destination customs
-9. Include REAL public transport info with approximate current prices
-10. Respond ONLY with the JSON, no additional text or markdown
-11. ALL text content must be in ${langConfig.name}`;
+2. Each day must have 3 activities with specific times (morning, afternoon, evening)
+3. Keep descriptions CONCISE (1-2 sentences max)
+4. Use REAL place names that exist
+5. Prices in USD, realistic for ${destination}
+6. Include functional booking URLs
+7. Respond ONLY with valid JSON, no markdown, no code blocks
+8. ALL text content must be in ${langConfig.name}
+9. Keep the response under 6000 tokens - be concise!`;
 
     const userPrompt = `Create a complete travel plan with these details:
 - Traveler description: ${description}
@@ -256,8 +254,8 @@ Generate the complete itinerary following EXACTLY the specified JSON structure. 
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.5,
-        max_completion_tokens: 8000,
+        temperature: 0.4,
+        max_tokens: 16000,
       }),
     });
 
