@@ -732,20 +732,43 @@ const ChatPage = () => {
           };
           setMessages((prev) => [...prev, generatingMessage]);
 
-          // Call generate-itinerary function with language
+          // Call generate-itinerary function with retry logic for cold starts
           const { data: session } = await supabase.auth.getSession();
-          const itineraryResponse = await supabase.functions.invoke("generate-itinerary", {
-            body: {
-              description: tripData.estiloViaje || "viaje cultural",
-              origin: tripData.origen,
-              destination: tripData.destino,
-              startDate: tripData.fechaSalida,
-              endDate: tripData.fechaRegreso,
-              travelers: tripData.pasajeros || 1,
-              budget: tripData.presupuesto || null,
-              language: detectedLanguage,
-            },
-          });
+          
+          const invokeWithRetry = async (retries = 2): Promise<any> => {
+            try {
+              const response = await supabase.functions.invoke("generate-itinerary", {
+                body: {
+                  description: tripData.estiloViaje || "viaje cultural",
+                  origin: tripData.origen,
+                  destination: tripData.destino,
+                  startDate: tripData.fechaSalida,
+                  endDate: tripData.fechaRegreso,
+                  travelers: tripData.pasajeros || 1,
+                  budget: tripData.presupuesto || null,
+                  language: detectedLanguage,
+                },
+              });
+              
+              // If we get an error and have retries left, try again
+              if (response.error && retries > 0) {
+                console.log(`Retrying generate-itinerary, attempts left: ${retries}`);
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5s before retry
+                return invokeWithRetry(retries - 1);
+              }
+              
+              return response;
+            } catch (err) {
+              if (retries > 0) {
+                console.log(`Error caught, retrying generate-itinerary, attempts left: ${retries}`);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                return invokeWithRetry(retries - 1);
+              }
+              throw err;
+            }
+          };
+          
+          const itineraryResponse = await invokeWithRetry();
 
           if (itineraryResponse.error) {
             throw new Error(itineraryResponse.error.message || "Error generando itinerario");
