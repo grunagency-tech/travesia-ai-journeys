@@ -1192,6 +1192,7 @@ const ChatPage = () => {
           <div className="w-full h-full bg-background md:bg-white md:rounded-lg md:shadow-lg overflow-hidden">
             <ItineraryPanel 
               data={itineraryData}
+              destination={tripDestination || undefined}
               origin={tripOrigin || undefined}
               startDate={tripDate || undefined}
               endDate={tripEndDate || undefined}
