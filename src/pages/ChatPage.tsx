@@ -533,25 +533,31 @@ const ChatPage = () => {
 
     setIsSaving(true);
     try {
+      // Use itinerary data title or fallback to first message
       const firstUserMessage = messages.find(m => m.role === "user")?.content || "Mi viaje";
-      const tripTitle = conversationTitle || `Viaje: ${firstUserMessage.substring(0, 50)}${firstUserMessage.length > 50 ? '...' : ''}`;
+      const tripTitle = itineraryData?.resumen?.titulo || conversationTitle || `Viaje: ${firstUserMessage.substring(0, 50)}${firstUserMessage.length > 50 ? '...' : ''}`;
       
-      // Use tripDate from webhook or default to today
+      // Use captured trip data from the conversation
       const startDate = tripDate || new Date().toISOString().split('T')[0];
-      // Calculate end date as 7 days after start date
-      const startDateObj = new Date(startDate);
-      const endDateObj = new Date(startDateObj);
-      endDateObj.setDate(endDateObj.getDate() + 7);
-      const endDate = endDateObj.toISOString().split('T')[0];
+      const endDate = tripEndDate || (() => {
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(startDateObj);
+        endDateObj.setDate(endDateObj.getDate() + 7);
+        return endDateObj.toISOString().split('T')[0];
+      })();
+      
+      // Get travelers count - default to 1
+      const travelersCount = 1;
       
       const { data: trip, error } = await supabase.from("trips").insert({
         user_id: user.id,
         title: tripTitle,
-        origin: "Por definir",
-        destination: conversationTitle || "Por definir", 
+        origin: tripOrigin || "Por definir",
+        destination: tripDestination || conversationTitle || "Por definir", 
         start_date: startDate,
         end_date: endDate,
-        travelers: 1,
+        budget: tripBudget || itineraryData?.resumen?.presupuestoEstimado || null,
+        travelers: travelersCount,
         preferences: { 
           itinerary_html: htmlContent,
           itinerary_data: itineraryData 
@@ -559,6 +565,19 @@ const ChatPage = () => {
       }).select().single();
 
       if (error) throw error;
+
+      // Save itinerary days if available
+      if (trip && itineraryData?.itinerario && itineraryData.itinerario.length > 0) {
+        const daysData = itineraryData.itinerario.map((dia) => ({
+          trip_id: trip.id,
+          day_number: dia.dia,
+          date: dia.fecha,
+          summary: dia.resumenDia || null,
+          activities: dia.actividades || [],
+        }));
+
+        await supabase.from('itinerary_days').insert(daysData);
+      }
 
       // Link trip to conversation
       if (currentConversationId && trip) {
