@@ -254,6 +254,7 @@ const ChatPage = () => {
   const [tripDestination, setTripDestination] = useState<string | null>(null);
   const [tripOrigin, setTripOrigin] = useState<string | null>(null);
   const [tripTravelers, setTripTravelers] = useState<number>(1);
+  const [tripBudget, setTripBudget] = useState<number | null>(null);
   const [tripImage, setTripImage] = useState<string | null>(null);
   const [itineraryData, setItineraryData] = useState<ItineraryData | null>(null);
 
@@ -712,6 +713,9 @@ const ChatPage = () => {
           }
           if (tripData.pasajeros) {
             setTripTravelers(tripData.pasajeros);
+          }
+          if (tripData.presupuesto) {
+            setTripBudget(tripData.presupuesto);
           }
 
           // Show generating message based on detected language - mention it may take a few minutes
@@ -1192,6 +1196,7 @@ const ChatPage = () => {
               startDate={tripDate || undefined}
               endDate={tripEndDate || undefined}
               travelers={tripTravelers}
+              budget={tripBudget || undefined}
               customImage={tripImage || undefined}
             />
           </div>

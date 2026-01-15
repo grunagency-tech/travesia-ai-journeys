@@ -175,7 +175,9 @@ const geocodeLocation = async (location: string): Promise<[number, number] | nul
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return '';
   try {
-    const date = new Date(dateStr);
+    // Parse as local date to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
   } catch {
     return dateStr;
@@ -383,7 +385,7 @@ const ItineraryHeader = ({
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-green-400" />
                   <span className="text-sm font-semibold text-green-400">
-                    ${budget.toLocaleString()} USD
+                    ${budget.toLocaleString()} MXN
                   </span>
                 </div>
               )}

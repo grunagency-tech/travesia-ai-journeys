@@ -174,6 +174,7 @@ export interface ItineraryPanelProps {
   startDate?: string;
   endDate?: string;
   travelers?: number;
+  budget?: number;
   customImage?: string;
   onAddToItinerary?: (item: FlightOption | AccommodationOption | CarRentalOption | ActivityOption, type: string, dayNumber?: number) => void;
 }
