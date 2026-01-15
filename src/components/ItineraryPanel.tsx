@@ -1,5 +1,7 @@
+import { useState, useCallback } from "react";
 import { Calendar, Plane, Hotel, Compass, Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import {
   ItineraryHeader,
   TabItinerario,
@@ -8,8 +10,19 @@ import {
   TabActividades,
   TabInfoLocal,
   ItineraryData,
-  ItineraryPanelProps
+  ItineraryPanelProps,
+  ActivityOption,
+  FlightOption,
+  AccommodationOption,
+  CarRentalOption
 } from "@/components/itinerary";
+
+interface AddedItem {
+  type: 'flight' | 'hotel' | 'car' | 'activity';
+  item: FlightOption | AccommodationOption | CarRentalOption | ActivityOption;
+  day: number;
+  time?: string;
+}
 
 const ItineraryPanel = ({ 
   data, 
@@ -19,6 +32,10 @@ const ItineraryPanel = ({
   travelers = 1,
   customImage 
 }: ItineraryPanelProps) => {
+  const { toast } = useToast();
+  const [addedItems, setAddedItems] = useState<AddedItem[]>([]);
+  const [activeTab, setActiveTab] = useState("itinerario");
+
   const inferDestination = (): string => {
     if (data.destino) return data.destino;
 
@@ -41,6 +58,31 @@ const ItineraryPanel = ({
   const budget = data.resumen?.presupuestoEstimado;
   const duration = data.itinerario?.length || data.resumen?.duracion;
 
+  // Handle adding activity to itinerary
+  const handleAddActivity = useCallback((activity: ActivityOption, day?: number, time?: string) => {
+    const newItem: AddedItem = {
+      type: 'activity',
+      item: activity,
+      day: day || 1,
+      time: time
+    };
+    
+    setAddedItems(prev => [...prev, newItem]);
+    
+    toast({
+      title: "Actividad agregada",
+      description: `${activity.nombre} se agregó al Día ${day || 1}`,
+    });
+
+    // Switch to itinerary tab to show the addition
+    setActiveTab("itinerario");
+  }, [toast]);
+
+  // Navigate to activities tab
+  const handleNavigateToActivities = useCallback(() => {
+    setActiveTab("actividades");
+  }, []);
+
   return (
     <div className="h-full overflow-auto bg-background md:bg-muted/30">
       {/* Header with map - full width on mobile */}
@@ -59,7 +101,7 @@ const ItineraryPanel = ({
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="itinerario" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Sticky tabs - scrollable on mobile */}
         <div className="sticky top-0 bg-background md:bg-muted/30 backdrop-blur-sm z-10 px-3 md:px-4 pt-3 md:pt-4 border-b md:border-b-0">
           <TabsList className="w-full justify-start h-auto p-1 bg-muted md:bg-card md:border rounded-xl overflow-x-auto flex-nowrap scrollbar-hide">
@@ -109,7 +151,11 @@ const ItineraryPanel = ({
         {/* Tab Contents - full width padding on mobile */}
         <div className="p-3 md:p-4">
           <TabsContent value="itinerario" className="mt-0">
-            <TabItinerario days={data.itinerario || []} />
+            <TabItinerario 
+              days={data.itinerario || []} 
+              addedItems={addedItems}
+              onAddActivity={handleNavigateToActivities}
+            />
           </TabsContent>
 
           <TabsContent value="transporte" className="mt-0">
@@ -134,6 +180,7 @@ const ItineraryPanel = ({
             <TabActividades
               activities={data.actividades}
               highlights={data.resumen?.highlights}
+              onAddActivity={handleAddActivity}
             />
           </TabsContent>
 
