@@ -288,14 +288,27 @@ Generate the complete itinerary following EXACTLY the specified JSON structure. 
     // Parse the JSON response
     let itinerary;
     try {
-      // Extract JSON from markdown code blocks if present
-      const jsonMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-      const jsonStr = jsonMatch ? jsonMatch[1] : content;
-      itinerary = JSON.parse(jsonStr.trim());
+      // Clean the content from markdown code blocks
+      let jsonStr = content.trim();
+      
+      // Remove starting ```json or ``` 
+      if (jsonStr.startsWith('```json')) {
+        jsonStr = jsonStr.slice(7);
+      } else if (jsonStr.startsWith('```')) {
+        jsonStr = jsonStr.slice(3);
+      }
+      
+      // Remove ending ```
+      if (jsonStr.endsWith('```')) {
+        jsonStr = jsonStr.slice(0, -3);
+      }
+      
+      jsonStr = jsonStr.trim();
+      itinerary = JSON.parse(jsonStr);
       console.log('JSON parsed successfully');
     } catch (e) {
       console.error('Failed to parse AI response as JSON:', e);
-      console.error('Raw content:', content);
+      console.error('Raw content (first 500 chars):', content.substring(0, 500));
       throw new Error('Invalid JSON response from AI');
     }
 
