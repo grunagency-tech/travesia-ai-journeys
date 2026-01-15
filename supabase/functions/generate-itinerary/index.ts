@@ -50,10 +50,10 @@ serve(async (req) => {
     
     const { description, origin, destination, startDate, endDate, travelers, budget, flightData, language } = validationResult.data;
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
-      throw new Error('LOVABLE_API_KEY not configured');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
+    if (!GOOGLE_AI_API_KEY) {
+      console.error('GOOGLE_AI_API_KEY not configured');
+      throw new Error('GOOGLE_AI_API_KEY not configured');
     }
 
     // Calculate number of days
@@ -241,27 +241,44 @@ ${flightData ? `\n- Available flight data:\n${JSON.stringify(flightData, null, 2
 
 Generate the complete itinerary following EXACTLY the specified JSON structure. Remember: ALL text content must be in ${langConfig.name}.`;
 
-    console.log('Calling Lovable AI for itinerary generation...');
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+    console.log('Calling Google AI for itinerary generation...');
+    
+    // Format messages for Google AI
+    const formattedContents = [
+      {
+        role: "user",
+        parts: [{ text: systemPrompt }],
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.4,
-        max_tokens: 16000,
-      }),
-    });
+      {
+        role: "model",
+        parts: [{ text: "Understood. I will generate a detailed travel itinerary in the specified JSON format." }],
+      },
+      {
+        role: "user",
+        parts: [{ text: userPrompt }],
+      },
+    ];
+    
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: formattedContents,
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 16000,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('Google AI error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -269,17 +286,11 @@ Generate the complete itinerary following EXACTLY the specified JSON structure. 
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      throw new Error(`AI API returned ${response.status}`);
+      throw new Error(`Google AI returned ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     console.log('AI Response received, parsing JSON...');
 
