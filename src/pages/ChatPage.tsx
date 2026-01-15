@@ -238,6 +238,7 @@ const ChatPage = () => {
   const [tripSaved, setTripSaved] = useState(false);
   const [tripCount, setTripCount] = useState(0);
   const [checkingTripCount, setCheckingTripCount] = useState(false);
+  const [limitNotificationShown, setLimitNotificationShown] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
@@ -461,12 +462,24 @@ const ChatPage = () => {
     }
   }, [htmlContent]);
 
-  // Check trip count when user is available
+  // Check trip count when user is available or when returning to the page
   useEffect(() => {
     if (user && !authLoading) {
       checkTripCount();
     }
   }, [user, authLoading]);
+
+  // Re-check trip count when page gains focus (user might have deleted a trip)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user && htmlContent && !tripSaved) {
+        checkTripCount();
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user, htmlContent, tripSaved]);
 
   const checkTripCount = async () => {
     if (!user) return;
@@ -493,11 +506,21 @@ const ChatPage = () => {
       // Check if under limit before auto-saving
       if (tripCount < MAX_SAVED_TRIPS) {
         saveTrip();
+        setLimitNotificationShown(false);
+      } else if (!limitNotificationShown) {
+        // Show notification that limit is reached but keep itinerary visible (only once)
+        setLimitNotificationShown(true);
+        toast({
+          title: "Límite de viajes alcanzado",
+          description: `Tienes ${MAX_SAVED_TRIPS} viajes guardados. Ve a "Mis Viajes" para eliminar uno y poder guardar este.`,
+          variant: "destructive",
+          duration: 8000,
+        });
       }
     } else if (htmlContent && !tripSaved && !authLoading && !user) {
       setShowAuthDialog(true);
     }
-  }, [htmlContent, user, authLoading, tripSaved, tripCount, checkingTripCount]);
+  }, [htmlContent, user, authLoading, tripSaved, tripCount, checkingTripCount, limitNotificationShown]);
 
   // Auto-save when user logs in after seeing itinerary
   useEffect(() => {
@@ -885,6 +908,7 @@ const ChatPage = () => {
     setTripTravelers(1);
     setTripImage(null);
     setTripSaved(false);
+    setLimitNotificationShown(false);
     setShowRegisterBanner(false);
     setPendingMessage(null);
     userMessageCountRef.current = 0;
@@ -908,6 +932,7 @@ const ChatPage = () => {
     setTripTravelers(1);
     setTripImage(null);
     setTripSaved(false);
+    setLimitNotificationShown(false);
     setShowRegisterBanner(false);
     setPendingMessage(null);
     userMessageCountRef.current = 0;
@@ -918,7 +943,8 @@ const ChatPage = () => {
     setShowSidebar(false);
   };
 
-  const canShowSaveButton = false; // Auto-save is now enabled, no manual save button needed
+  // Show save button when itinerary exists, not saved, and there's room now
+  const canShowSaveButton = htmlContent && !tripSaved && user && tripCount < MAX_SAVED_TRIPS && !isSaving;
 
   return (
     <div className="h-screen flex">
@@ -1222,7 +1248,25 @@ const ChatPage = () => {
         )}
 
         {itineraryData ? (
-          <div className="w-full h-full bg-background md:bg-white md:rounded-lg md:shadow-lg overflow-hidden">
+          <div className="w-full h-full bg-background md:bg-white md:rounded-lg md:shadow-lg overflow-hidden relative">
+            {/* Save banner when there's room to save */}
+            {canShowSaveButton && (
+              <div className="absolute top-4 right-4 z-20">
+                <Button
+                  onClick={saveTrip}
+                  disabled={isSaving}
+                  className="rounded-full shadow-lg gap-2"
+                  size="sm"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Guardar itinerario
+                </Button>
+              </div>
+            )}
             <ItineraryPanel 
               data={itineraryData}
               destination={tripDestination || undefined}
