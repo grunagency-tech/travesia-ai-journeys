@@ -240,65 +240,80 @@ const ItineraryHeader = ({
   useEffect(() => {
     if (!mapRef.current || !destCoords) return;
 
+    // Clean up previous map instance
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
       mapInstanceRef.current = null;
     }
 
-    const map = L.map(mapRef.current, {
-      zoomControl: false,
-      attributionControl: false,
-      dragging: true,
-      scrollWheelZoom: false,
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map);
-
-    const destIcon = L.divIcon({
-      className: 'custom-marker',
-      html: `<div style="background: hsl(var(--primary)); width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-        <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
-      </div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-    });
-
-    const originIcon = L.divIcon({
-      className: 'custom-marker',
-      html: `<div style="background: #22c55e; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-    });
-
-    // Add destination marker
-    L.marker(destCoords, { icon: destIcon }).addTo(map);
-
-    // If we have origin, add marker and draw route line
-    if (originCoords) {
-      L.marker(originCoords, { icon: originIcon }).addTo(map);
+    // Small delay to ensure container is properly sized
+    const initMap = () => {
+      if (!mapRef.current) return;
       
-      // Draw curved line between origin and destination
-      const latlngs: L.LatLngExpression[] = [originCoords, destCoords];
-      L.polyline(latlngs, {
-        color: 'hsl(240, 100%, 50%)',
-        weight: 2,
-        opacity: 0.7,
-        dashArray: '10, 10'
+      const map = L.map(mapRef.current, {
+        zoomControl: false,
+        attributionControl: false,
+        dragging: true,
+        scrollWheelZoom: false,
+        touchZoom: true,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
       }).addTo(map);
 
-      // Fit bounds to show both points
-      const bounds = L.latLngBounds([originCoords, destCoords]);
-      map.fitBounds(bounds, { padding: [30, 30] });
-    } else {
-      map.setView(destCoords, 10);
-    }
+      const destIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background: hsl(var(--primary)); width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+          <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
+        </div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
 
-    mapInstanceRef.current = map;
-    setTimeout(() => map.invalidateSize(), 100);
+      const originIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background: #22c55e; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      // Add destination marker
+      L.marker(destCoords, { icon: destIcon }).addTo(map);
+
+      // If we have origin, add marker and draw route line
+      if (originCoords) {
+        L.marker(originCoords, { icon: originIcon }).addTo(map);
+        
+        // Draw curved line between origin and destination
+        const latlngs: L.LatLngExpression[] = [originCoords, destCoords];
+        L.polyline(latlngs, {
+          color: 'hsl(240, 100%, 50%)',
+          weight: 2,
+          opacity: 0.7,
+          dashArray: '10, 10'
+        }).addTo(map);
+
+        // Fit bounds to show both points
+        const bounds = L.latLngBounds([originCoords, destCoords]);
+        map.fitBounds(bounds, { padding: [30, 30] });
+      } else {
+        map.setView(destCoords, 10);
+      }
+
+      mapInstanceRef.current = map;
+
+      // Multiple invalidateSize calls to ensure proper rendering
+      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 300);
+      setTimeout(() => map.invalidateSize(), 500);
+    };
+
+    // Delay initialization to ensure container is rendered
+    const timeoutId = setTimeout(initMap, 50);
 
     return () => {
+      clearTimeout(timeoutId);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -377,11 +392,11 @@ const ItineraryHeader = ({
         </div>
 
         {/* Right: Map */}
-        <div className="w-full lg:w-80 h-48 lg:h-auto bg-muted relative">
+        <div className="w-full lg:w-80 h-[200px] lg:h-auto bg-muted relative overflow-hidden">
           {destCoords ? (
-            <div ref={mapRef} className="w-full h-full min-h-[200px] lg:min-h-[240px]" />
+            <div ref={mapRef} className="w-full h-full absolute inset-0" style={{ minHeight: '200px' }} />
           ) : (
-            <div className="w-full h-full min-h-[200px] flex items-center justify-center text-muted-foreground">
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               <MapPin className="w-8 h-8 animate-pulse" />
             </div>
           )}
