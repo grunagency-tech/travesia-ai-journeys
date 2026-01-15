@@ -65,9 +65,9 @@ const TabAlojamiento = ({
     precioPorNoche: costPerNight,
   }] : []);
 
-  const getImageForHotel = (hotel: AccommodationOption, idx: number): string => {
+  const getImageForHotel = (hotel: AccommodationOption): string => {
     if (hotel.imagen) return hotel.imagen;
-    return getHotelImage(hotel.nombre, idx);
+    return getHotelImage();
   };
 
   return (
@@ -89,7 +89,7 @@ const TabAlojamiento = ({
                     {/* Image */}
                     <div className="w-full md:w-48 h-44 md:h-auto bg-muted relative overflow-hidden">
                       <img 
-                        src={getImageForHotel(hotel, idx)} 
+                        src={getImageForHotel(hotel)} 
                         alt={hotel.nombre}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         onError={(e) => {
@@ -242,7 +242,7 @@ const TabAlojamiento = ({
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                         <img 
-                          src={getImageForHotel(hotel, idx + 3)} 
+                          src={getImageForHotel(hotel)} 
                           alt={hotel.nombre} 
                           className="w-full h-full object-cover"
                           onError={(e) => {

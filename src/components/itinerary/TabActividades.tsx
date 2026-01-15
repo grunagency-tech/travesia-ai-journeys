@@ -80,9 +80,9 @@ const TabActividades = ({
     setSelectedActivity(null);
   };
 
-  const getImageForActivity = (activity: ActivityOption, idx: number): string => {
+  const getImageForActivity = (activity: ActivityOption): string => {
     if (activity.imagen) return activity.imagen;
-    return getActivityImage(activity.nombre, activity.tipo, idx);
+    return getActivityImage(activity.nombre, activity.tipo);
   };
 
   // If no structured activities, show highlights instead
@@ -167,7 +167,7 @@ const TabActividades = ({
                       {/* Image */}
                       <div className="h-44 bg-muted relative overflow-hidden">
                         <img 
-                          src={getImageForActivity(activity, idx)} 
+                          src={getImageForActivity(activity)} 
                           alt={activity.nombre}
                           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                           onError={(e) => {
