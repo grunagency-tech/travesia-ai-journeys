@@ -30,6 +30,7 @@ const ItineraryPanel = ({
   startDate, 
   endDate, 
   travelers = 1,
+  budget: userBudget,
   customImage 
 }: ItineraryPanelProps) => {
   const { toast } = useToast();
@@ -55,7 +56,8 @@ const ItineraryPanel = ({
 
   const destination = inferDestination();
   const title = data.resumen?.titulo || `Tu viaje a ${destination}`;
-  const budget = data.resumen?.presupuestoEstimado;
+  // Use user's original budget if provided, otherwise fall back to AI estimate
+  const budget = userBudget || data.resumen?.presupuestoEstimado;
   const duration = data.itinerario?.length || data.resumen?.duracion;
 
   // Handle adding activity to itinerary
