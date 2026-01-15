@@ -253,6 +253,15 @@ const ChatPage = () => {
   const userMessageCountRef = useRef(0);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
+
+  // Anonymous draft restore (sessionStorage)
+  const [resumeDraftDialogOpen, setResumeDraftDialogOpen] = useState(false);
+  const draftToRestoreRef = useRef<{
+    messages: Message[];
+    pendingMessage: string | null;
+    showRegisterBanner: boolean;
+    userMessageCount: number;
+  } | null>(null);
   
   // Conversation state
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationIdFromState);
@@ -426,33 +435,40 @@ const ChatPage = () => {
   }, [pendingMessage, showRegisterBanner]);
 
   // Restore messages from sessionStorage on mount (for non-logged in users)
+  // NOTE: We ask the user whether to continue or start fresh to avoid accidental carry-over.
   useEffect(() => {
     if (user || currentConversationId) return; // Don't restore if logged in or loading a conversation
-    
+
     const savedMessages = sessionStorage.getItem('chatMessages');
-    const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
-    const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
-    const savedUserMessageCount = sessionStorage.getItem('chatUserMessageCount');
-    
-    if (savedMessages) {
-      const parsed = JSON.parse(savedMessages).map((m: any) => ({
+    if (!savedMessages) return;
+
+    try {
+      const parsed: Message[] = JSON.parse(savedMessages).map((m: any) => ({
         ...m,
         timestamp: new Date(m.timestamp)
       }));
-      setMessages(parsed);
-      messagesRef.current = parsed;
-    }
-    
-    if (savedPendingMessage) {
-      setPendingMessage(savedPendingMessage);
-    }
-    
-    if (savedBannerState === 'true' && !user) {
-      setShowRegisterBanner(true);
-    }
-    
-    if (savedUserMessageCount) {
-      userMessageCountRef.current = parseInt(savedUserMessageCount, 10);
+
+      // If there is no meaningful history, don't prompt.
+      if (!parsed || parsed.length === 0) return;
+
+      const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
+      const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
+      const savedUserMessageCount = sessionStorage.getItem('chatUserMessageCount');
+
+      draftToRestoreRef.current = {
+        messages: parsed,
+        pendingMessage: savedPendingMessage,
+        showRegisterBanner: savedBannerState === 'true',
+        userMessageCount: savedUserMessageCount ? parseInt(savedUserMessageCount, 10) : 0,
+      };
+
+      setResumeDraftDialogOpen(true);
+    } catch (e) {
+      // If corrupted, clear it.
+      sessionStorage.removeItem('chatMessages');
+      sessionStorage.removeItem('chatPendingMessage');
+      sessionStorage.removeItem('chatShowRegisterBanner');
+      sessionStorage.removeItem('chatUserMessageCount');
     }
   }, []);
 
@@ -988,6 +1004,33 @@ const ChatPage = () => {
     setShowSidebar(false);
   };
 
+  const restoreAnonymousDraft = () => {
+    const draft = draftToRestoreRef.current;
+    setResumeDraftDialogOpen(false);
+
+    if (!draft) return;
+
+    setMessages(draft.messages);
+    messagesRef.current = draft.messages;
+
+    if (draft.pendingMessage) {
+      setPendingMessage(draft.pendingMessage);
+    }
+
+    if (draft.showRegisterBanner && !user) {
+      setShowRegisterBanner(true);
+    }
+
+    userMessageCountRef.current = draft.userMessageCount || 0;
+    draftToRestoreRef.current = null;
+  };
+
+  const discardAnonymousDraft = () => {
+    draftToRestoreRef.current = null;
+    setResumeDraftDialogOpen(false);
+    handleNewChat();
+  };
+
   // Show save button when itinerary exists, not saved, and there's room now
   const canShowSaveButton = htmlContent && !tripSaved && user && tripCount < MAX_SAVED_TRIPS && !isSaving;
 
@@ -1012,6 +1055,24 @@ const ChatPage = () => {
             <Button variant="secondary" onClick={() => navigate('/register', { state: { returnTo: '/chat' } })}>
               Registrarme
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Resume / new chat dialog for anonymous drafts */}
+      <Dialog open={resumeDraftDialogOpen} onOpenChange={setResumeDraftDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Continuar tu chat anterior?</DialogTitle>
+            <DialogDescription>
+              Detecté un chat guardado en este dispositivo. Puedes continuar donde lo dejaste o empezar uno nuevo.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={discardAnonymousDraft}>
+              Empezar nuevo
+            </Button>
+            <Button onClick={restoreAnonymousDraft}>Continuar chat</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
