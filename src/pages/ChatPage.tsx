@@ -228,6 +228,13 @@ const ChatPage = () => {
   const conversationIdFromState = location.state?.conversationId || null;
   
   const [messages, setMessages] = useState<Message[]>([]);
+  const messagesRef = useRef<Message[]>([]);
+  const loadConversationSeqRef = useRef(0);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
@@ -284,6 +291,8 @@ const ChatPage = () => {
   }, [conversationIdFromState, user]);
 
   const loadConversation = async (convId: string) => {
+    const seq = ++loadConversationSeqRef.current;
+
     try {
       // Load conversation details
       const { data: conv, error: convError } = await supabase
@@ -291,6 +300,9 @@ const ChatPage = () => {
         .select('*')
         .eq('id', convId)
         .maybeSingle();
+
+      // If the user switched chats while we were loading, ignore this result
+      if (seq !== loadConversationSeqRef.current) return;
 
       if (convError) throw convError;
       if (!conv) {
@@ -308,6 +320,8 @@ const ChatPage = () => {
         .eq('conversation_id', convId)
         .order('created_at', { ascending: true });
 
+      if (seq !== loadConversationSeqRef.current) return;
+
       if (msgsError) throw msgsError;
 
       const loadedMessages: Message[] = (msgs || []).map(m => ({
@@ -318,12 +332,15 @@ const ChatPage = () => {
       }));
 
       setMessages(loadedMessages);
+      messagesRef.current = loadedMessages;
       userMessageCountRef.current = loadedMessages.filter(m => m.role === 'user').length;
 
       // Check if there's HTML content in the last assistant message
       const lastAssistantMsg = [...loadedMessages].reverse().find(m => m.role === 'assistant' && m.htmlContent);
       if (lastAssistantMsg?.htmlContent) {
         setHtmlContent(lastAssistantMsg.htmlContent);
+      } else {
+        setHtmlContent(null);
       }
     } catch (error) {
       console.error('Error loading conversation:', error);
@@ -423,6 +440,7 @@ const ChatPage = () => {
         timestamp: new Date(m.timestamp)
       }));
       setMessages(parsed);
+      messagesRef.current = parsed;
     }
     
     if (savedPendingMessage) {
@@ -679,7 +697,11 @@ const ChatPage = () => {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => {
+      const next = [...prev, userMessage];
+      messagesRef.current = next;
+      return next;
+    });
     setInputValue("");
     setIsLoading(true);
 
@@ -690,7 +712,7 @@ const ChatPage = () => {
 
     try {
       // Build message history for context
-      const messageHistory = [...messages, userMessage].map(m => ({
+      const messageHistory = messagesRef.current.map(m => ({
         role: m.role,
         content: m.content,
       }));
@@ -776,7 +798,11 @@ const ChatPage = () => {
             content: generatingMessages[detectedLanguage] || generatingMessages.es,
             timestamp: new Date(),
           };
-          setMessages((prev) => [...prev, generatingMessage]);
+          setMessages((prev) => {
+            const next = [...prev, generatingMessage];
+            messagesRef.current = next;
+            return next;
+          });
 
           // Call generate-itinerary function with retry logic for cold starts
           const { data: session } = await supabase.auth.getSession();
@@ -856,10 +882,12 @@ const ChatPage = () => {
       setMessages((prev) => {
         // If we showed a "generating" message, replace it
         const lastMsg = prev[prev.length - 1];
-        if (lastMsg?.content.includes("Generando tu itinerario")) {
-          return [...prev.slice(0, -1), assistantMessage];
-        }
-        return [...prev, assistantMessage];
+        const next = lastMsg?.content.includes("Generando tu itinerario")
+          ? [...prev.slice(0, -1), assistantMessage]
+          : [...prev, assistantMessage];
+
+        messagesRef.current = next;
+        return next;
       });
 
       // Save assistant message to DB
@@ -882,7 +910,11 @@ const ChatPage = () => {
         content: `Lo siento, hubo un error al procesar tu mensaje. (${errorDetails})`,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => {
+        const next = [...prev, errorMessage];
+        messagesRef.current = next;
+        return next;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -894,6 +926,10 @@ const ChatPage = () => {
   };
 
   const handleNewChat = () => {
+    // Cancel any in-flight conversation loads and clear everything
+    loadConversationSeqRef.current += 1;
+    messagesRef.current = [];
+
     // Clear everything and start fresh
     setMessages([]);
     setHtmlContent(null);
@@ -920,7 +956,10 @@ const ChatPage = () => {
   };
 
   const handleSelectConversation = (convId: string) => {
-    // Clear current state completely
+    // Cancel any in-flight loads and clear current state completely
+    loadConversationSeqRef.current += 1;
+    messagesRef.current = [];
+
     setMessages([]);
     setHtmlContent(null);
     setItineraryData(null);
@@ -936,7 +975,13 @@ const ChatPage = () => {
     setShowRegisterBanner(false);
     setPendingMessage(null);
     userMessageCountRef.current = 0;
-    
+
+    // Also clear any anonymous-session draft to avoid leakage
+    sessionStorage.removeItem('chatMessages');
+    sessionStorage.removeItem('chatPendingMessage');
+    sessionStorage.removeItem('chatShowRegisterBanner');
+    sessionStorage.removeItem('chatUserMessageCount');
+
     // Load selected conversation
     setCurrentConversationId(convId);
     loadConversation(convId);
