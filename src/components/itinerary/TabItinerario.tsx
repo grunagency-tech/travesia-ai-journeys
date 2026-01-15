@@ -28,7 +28,14 @@ interface TabItinerarioProps {
 const formatFullDate = (dateStr?: string): string => {
   if (!dateStr) return '';
   try {
-    const date = new Date(dateStr);
+    // Parse as local date to avoid timezone issues (YYYY-MM-DD format)
+    const [year, month, day] = dateStr.split('-').map(Number);
+    if (!year || !month || !day) {
+      // Fallback for other formats
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   } catch {
     return dateStr;
