@@ -178,3 +178,35 @@ All colors MUST be HSL.
     display: none;
   }
 }
+
+/* Leaflet map fixes for mobile */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 200px;
+  z-index: 1;
+  background: hsl(var(--muted));
+}
+
+.leaflet-tile-pane {
+  z-index: 1;
+}
+
+.leaflet-marker-pane {
+  z-index: 2;
+}
+
+.leaflet-overlay-pane {
+  z-index: 3;
+}
+
+/* Custom marker styles */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ensure Leaflet tiles load properly */
+.leaflet-tile {
+  visibility: visible !important;
+}
