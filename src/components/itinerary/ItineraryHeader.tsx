@@ -157,8 +157,7 @@ const geocodeLocation = async (location: string): Promise<[number, number] | nul
     // Use the full location string for better geocoding accuracy
     console.log('Geocoding location:', location);
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`,
-      { headers: { 'User-Agent': 'TravesIA/1.0' } }
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`
     );
     const data = await response.json();
     if (data && data.length > 0) {
@@ -393,16 +392,16 @@ const ItineraryHeader = ({
           </div>
         </div>
 
-        {/* Right: Map - hidden on mobile */}
-        <div className="hidden lg:block w-80 h-auto bg-muted relative overflow-hidden">
+        {/* Right/Bottom: Map */}
+        <div className="block w-full lg:w-80 bg-muted relative overflow-hidden min-h-[200px] lg:min-h-[240px]">
           {destCoords ? (
-            <div ref={mapRef} className="w-full h-full absolute inset-0" style={{ minHeight: '200px' }} />
+            <div ref={mapRef} className="w-full h-full absolute inset-0" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               <MapPin className="w-8 h-8 animate-pulse" />
             </div>
           )}
-          
+
           {/* Route info overlay */}
           {origin && (
             <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2">

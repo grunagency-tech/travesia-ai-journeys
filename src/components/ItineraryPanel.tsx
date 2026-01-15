@@ -25,7 +25,8 @@ interface AddedItem {
 }
 
 const ItineraryPanel = ({ 
-  data, 
+  data,
+  destination: providedDestination,
   origin,
   startDate, 
   endDate, 
@@ -54,7 +55,7 @@ const ItineraryPanel = ({
     return base || "Destino";
   };
 
-  const destination = inferDestination();
+  const destination = providedDestination || inferDestination();
   const title = data.resumen?.titulo || `Tu viaje a ${destination}`;
   // Use user's original budget if provided, otherwise fall back to AI estimate
   const budget = userBudget || data.resumen?.presupuestoEstimado;

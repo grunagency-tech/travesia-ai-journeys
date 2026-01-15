@@ -170,6 +170,7 @@ export interface ItineraryData {
 
 export interface ItineraryPanelProps {
   data: ItineraryData;
+  destination?: string;
   origin?: string;
   startDate?: string;
   endDate?: string;
