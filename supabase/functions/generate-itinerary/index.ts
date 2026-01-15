@@ -251,12 +251,13 @@ Generate the complete itinerary following EXACTLY the specified JSON structure. 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
+        temperature: 0.5,
+        max_completion_tokens: 8000,
       }),
     });
 
