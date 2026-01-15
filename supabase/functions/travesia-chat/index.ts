@@ -144,11 +144,32 @@ serve(async (req) => {
 
     console.log("AI raw response:", content);
 
-    // Try to parse the JSON response
+    // Try to parse the JSON response - handle various formats
     let parsedResponse;
     try {
-      // Clean up potential markdown code blocks
       let cleanContent = content.trim();
+      
+      // First, try to extract JSON from markdown code blocks anywhere in the text
+      const jsonBlockMatch = cleanContent.match(/```json\s*([\s\S]*?)```/);
+      if (jsonBlockMatch) {
+        cleanContent = jsonBlockMatch[1].trim();
+      } else {
+        // Try without json specifier
+        const codeBlockMatch = cleanContent.match(/```\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          cleanContent = codeBlockMatch[1].trim();
+        }
+      }
+      
+      // If still not starting with {, try to find JSON object in the text
+      if (!cleanContent.startsWith("{")) {
+        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          cleanContent = jsonMatch[0];
+        }
+      }
+      
+      // Clean up markdown at start/end if present
       if (cleanContent.startsWith("```json")) {
         cleanContent = cleanContent.slice(7);
       } else if (cleanContent.startsWith("```")) {
