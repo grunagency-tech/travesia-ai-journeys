@@ -135,35 +135,26 @@ const MyTrips = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Header with gradient overlay like itinerary */}
-      <div className="relative">
-        <div className="absolute inset-x-0 top-0 h-[200px] bg-gradient-to-b from-primary/8 via-primary/4 to-transparent" />
-        
-        {/* Spacer for navbar */}
-        <div className="h-20" />
+      {/* Spacer for navbar */}
+      <div className="h-20" />
 
-        <div className="relative container mx-auto px-4 md:px-8 pt-8 pb-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <img src={travelGlobeIcon} alt="travesIA" className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="font-urbanist font-bold text-2xl md:text-3xl text-foreground">
-                    {t('title')}
-                  </h1>
-                  {trips.length > 0 && (
-                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded-full">
-                      {trips.length}
-                    </span>
-                  )}
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  {t('subtitle')}
-                </p>
-              </div>
+      {/* Clean Header */}
+      <div className="container mx-auto px-4 md:px-8 pt-6 pb-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-urbanist font-bold text-2xl md:text-3xl text-foreground">
+                {t('title')}
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                {t('subtitle')}
+              </p>
             </div>
+            {trips.length > 0 && (
+              <span className="bg-primary/10 text-primary text-sm font-semibold px-3 py-1.5 rounded-full">
+                {trips.length} {trips.length === 1 ? 'viaje' : 'viajes'}
+              </span>
+            )}
           </div>
         </div>
       </div>
