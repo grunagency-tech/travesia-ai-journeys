@@ -773,8 +773,22 @@ const ChatPage = () => {
       // Handle status complete - generate itinerary
       if (data.status === "complete") {
         try {
-          // Parse the trip data from text field
-          const tripData = typeof data.text === "string" ? JSON.parse(data.text) : data.text;
+          // Parse the trip data from text field - clean markdown if present
+          let textToParse = data.text;
+          if (typeof textToParse === "string") {
+            // Clean markdown code blocks
+            textToParse = textToParse.trim();
+            if (textToParse.startsWith("```json")) {
+              textToParse = textToParse.slice(7);
+            } else if (textToParse.startsWith("```")) {
+              textToParse = textToParse.slice(3);
+            }
+            if (textToParse.endsWith("```")) {
+              textToParse = textToParse.slice(0, -3);
+            }
+            textToParse = textToParse.trim();
+          }
+          const tripData = typeof textToParse === "string" ? JSON.parse(textToParse) : textToParse;
           console.log("Trip data complete:", tripData);
 
           // Set trip metadata
