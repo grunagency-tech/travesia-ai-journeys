@@ -383,7 +383,7 @@ const ItineraryHeader = ({
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-green-400" />
                   <span className="text-sm font-semibold text-green-400">
-                    ${budget.toLocaleString()} MXN
+                    ${budget.toLocaleString()} USD
                   </span>
                 </div>
               )}
@@ -391,8 +391,8 @@ const ItineraryHeader = ({
           </div>
         </div>
 
-        {/* Right: Map */}
-        <div className="w-full lg:w-80 h-[200px] lg:h-auto bg-muted relative overflow-hidden">
+        {/* Right: Map - hidden on mobile */}
+        <div className="hidden lg:block w-80 h-auto bg-muted relative overflow-hidden">
           {destCoords ? (
             <div ref={mapRef} className="w-full h-full absolute inset-0" style={{ minHeight: '200px' }} />
           ) : (
