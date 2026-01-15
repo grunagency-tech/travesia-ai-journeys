@@ -418,11 +418,11 @@ const TripDetail = () => {
       <div className="h-16" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 md:px-8 py-6 md:py-10">
+      <div className="container mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-6 md:pb-10">
         <div className="max-w-6xl mx-auto">
           
           {/* Top Navigation */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/mis-viajes')}
