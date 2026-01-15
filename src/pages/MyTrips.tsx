@@ -116,7 +116,7 @@ const MyTrips = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="flex flex-col items-center gap-4">
@@ -132,43 +132,36 @@ const MyTrips = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Header */}
+      {/* Header with gradient overlay like itinerary */}
       <div className="relative">
-        {/* Background decorative elements */}
-        <div className="absolute inset-x-0 top-0 h-[280px] md:h-[320px] overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-blue-500/10" />
-          <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-blue-400/10 rounded-full blur-2xl" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-        </div>
-
+        <div className="absolute inset-x-0 top-0 h-[200px] bg-gradient-to-b from-primary/8 via-primary/4 to-transparent" />
+        
         {/* Spacer for navbar */}
         <div className="h-20" />
 
-        {/* Header Content */}
-        <div className="relative container mx-auto px-4 md:px-8 pt-14">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <img src={travelGlobeIcon} alt="travesIA" className="w-8 h-8" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="font-urbanist font-extrabold text-3xl md:text-4xl text-foreground">
-                      {t('title')}
-                    </h1>
-                    <span className="bg-primary/10 text-primary text-sm font-semibold px-3 py-1 rounded-full">
+        <div className="relative container mx-auto px-4 md:px-8 pt-8 pb-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <img src={travelGlobeIcon} alt="travesIA" className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="font-urbanist font-bold text-2xl md:text-3xl text-foreground">
+                    {t('title')}
+                  </h1>
+                  {trips.length > 0 && (
+                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded-full">
                       {trips.length}
                     </span>
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    {t('subtitle')}
-                  </p>
+                  )}
                 </div>
+                <p className="text-muted-foreground text-sm">
+                  {t('subtitle')}
+                </p>
               </div>
             </div>
           </div>
@@ -177,31 +170,43 @@ const MyTrips = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 md:px-8 pb-16">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {trips.length === 0 ? (
-            /* Empty State */
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden animate-fade-in">
-              <div className="bg-gradient-to-r from-primary to-blue-600 px-6 md:px-10 py-6">
-                <h2 className="font-urbanist font-bold text-xl md:text-2xl text-white flex items-center gap-3">
-                  ¡Comienza tu aventura!
-                </h2>
-                <p className="text-white/80 text-sm mt-1">
-                  Crea tu primer itinerario personalizado
-                </p>
-              </div>
-              <div className="p-10 md:p-16 text-center">
-                <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <MapPin className="w-10 h-10 text-primary" />
+            /* Empty State - styled like itinerary card */
+            <div className="bg-card rounded-xl overflow-hidden border shadow-sm animate-fade-in">
+              {/* Header gradient banner like itinerary */}
+              <div className="relative h-32 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary via-blue-600 to-primary/80" />
+                <div className="absolute inset-0 opacity-20" style={{ 
+                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+                  backgroundSize: '24px 24px'
+                }} />
+                <div className="absolute inset-0 flex items-center px-6">
+                  <div>
+                    <h2 className="font-urbanist font-bold text-xl text-white">
+                      ¡Comienza tu aventura!
+                    </h2>
+                    <p className="text-white/80 text-sm mt-1">
+                      Crea tu primer itinerario personalizado
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-urbanist font-bold text-2xl text-foreground mb-3">
+              </div>
+              
+              {/* Empty state content */}
+              <div className="p-8 md:p-12 text-center">
+                <div className="w-16 h-16 mx-auto mb-5 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <MapPin className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="font-urbanist font-bold text-xl text-foreground mb-2">
                   Aún no tienes viajes guardados
                 </h3>
-                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                   Planifica tu próximo destino con ayuda de nuestra inteligencia artificial
                 </p>
                 <Button 
                   onClick={() => navigate('/crear-viaje')}
-                  className="rounded-full px-8"
+                  className="rounded-full px-6"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Crear mi primer viaje
@@ -209,93 +214,75 @@ const MyTrips = () => {
               </div>
             </div>
           ) : (
-            /* Trip Cards */
-            <div className="space-y-6">
+            /* Trip Cards - styled like itinerary panel */
+            <div className="space-y-4">
               {trips.map((trip) => (
                 <div 
                   key={trip.id} 
-                  className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+                  className="bg-card rounded-xl overflow-hidden border shadow-sm cursor-pointer hover:shadow-md hover:border-primary/20 transition-all duration-300 animate-fade-in group"
                   onClick={() => navigate(`/viaje/${trip.id}`)}
                 >
                   <div className="flex flex-col md:flex-row">
-                    {/* Image Section */}
-                    <div className="relative w-full md:w-2/5 h-48 md:h-auto md:min-h-[240px]">
+                    {/* Image Section - like itinerary header */}
+                    <div className="relative w-full md:w-72 h-44 md:h-auto md:min-h-[180px] flex-shrink-0">
                       <img 
                         src={getImageByDestination(trip.destination)}
                         alt={trip.destination}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
                       
                       {/* Duration Badge */}
-                      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
-                        <span className="text-sm font-bold text-foreground">
+                      <div className="absolute top-3 left-3">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full">
+                          <Calendar className="w-3.5 h-3.5" />
                           {getDuration(trip.start_date, trip.end_date)} días
                         </span>
                       </div>
                       
-                      {/* Destination on image (mobile) */}
-                      <div className="absolute bottom-4 left-4 md:hidden">
-                        <h2 className="font-urbanist font-extrabold text-2xl text-white drop-shadow-lg">
+                      {/* Destination overlay on mobile */}
+                      <div className="absolute bottom-3 left-3 md:hidden">
+                        <h2 className="font-urbanist font-bold text-xl text-white drop-shadow-lg">
                           {trip.destination}
                         </h2>
                       </div>
                     </div>
 
                     {/* Content Section */}
-                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
+                    <div className="flex-1 p-5 flex flex-col justify-between">
                       <div>
                         {/* Destination (desktop) */}
-                        <h2 className="hidden md:block font-urbanist font-extrabold text-2xl md:text-3xl text-foreground mb-4">
+                        <h2 className="hidden md:block font-urbanist font-bold text-xl text-foreground mb-3">
                           {trip.destination}
                         </h2>
 
-                        {/* Trip Info Grid */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4">
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
-                                <MapPin className="w-4 h-4 text-primary" />
-                              </div>
-                              <span className="text-xs text-muted-foreground font-medium uppercase">Ruta</span>
-                            </div>
-                            <p className="font-semibold text-foreground text-sm">
-                              {trip.origin} → {trip.destination}
-                            </p>
+                        {/* Trip Info - compact like itinerary */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground mb-4">
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            <span>{trip.origin} → {trip.destination}</span>
                           </div>
-
-                          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-4">
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-8 h-8 bg-orange-200 rounded-xl flex items-center justify-center">
-                                <Calendar className="w-4 h-4 text-orange-600" />
-                              </div>
-                              <span className="text-xs text-muted-foreground font-medium uppercase">Fechas</span>
-                            </div>
-                            <p className="font-semibold text-foreground text-sm">
+                          
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-4 h-4 text-orange-500" />
+                            <span>
                               {format(new Date(trip.start_date), 'd MMM', { locale: es })} - {format(new Date(trip.end_date), 'd MMM', { locale: es })}
-                            </p>
+                            </span>
                           </div>
-
-                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4">
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-8 h-8 bg-green-200 rounded-xl flex items-center justify-center">
-                                <Users className="w-4 h-4 text-green-600" />
-                              </div>
-                              <span className="text-xs text-muted-foreground font-medium uppercase">Viajeros</span>
-                            </div>
-                            <p className="font-semibold text-foreground text-sm">
-                              {trip.travelers} {trip.travelers === 1 ? 'persona' : 'personas'}
-                            </p>
+                          
+                          <div className="flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-green-500" />
+                            <span>{trip.travelers} {trip.travelers === 1 ? 'viajero' : 'viajeros'}</span>
                           </div>
-
                         </div>
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <Button 
                           className="flex-1 rounded-full"
                           variant="default"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/viaje/${trip.id}`);
@@ -307,9 +294,9 @@ const MyTrips = () => {
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button 
-                              variant="outline" 
+                              variant="ghost" 
                               size="icon"
-                              className="rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                               onClick={(e) => e.stopPropagation()}
                               disabled={deletingId === trip.id}
                             >
@@ -320,9 +307,9 @@ const MyTrips = () => {
                               )}
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogContent className="rounded-xl" onClick={(e) => e.stopPropagation()}>
                             <AlertDialogHeader>
-                              <AlertDialogTitle className="font-urbanist font-bold text-xl">
+                              <AlertDialogTitle className="font-urbanist font-bold text-lg">
                                 ¿Eliminar este viaje?
                               </AlertDialogTitle>
                               <AlertDialogDescription>
