@@ -1196,6 +1196,9 @@ const ChatPage = () => {
     loadConversationSeqRef.current += 1;
     messagesRef.current = [];
 
+    // Clear the "last conversation" marker so auto-restore doesn't bring us back
+    localStorage.removeItem("travesia:last-conv:v1");
+
     // Clear everything and start fresh
     setMessages([]);
     setHtmlContent(null);
