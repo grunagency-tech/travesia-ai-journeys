@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft, Plus } from "lucide-react";
 import LoadingItinerary from "@/components/LoadingItinerary";
 import { ItineraryHeader } from "@/components/itinerary";
 import ItineraryPanel from "@/components/ItineraryPanel";
@@ -1199,6 +1199,9 @@ const ChatPage = () => {
     // Clear the "last conversation" marker so auto-restore doesn't bring us back
     localStorage.removeItem("travesia:last-conv:v1");
 
+    // On mobile, ensure we return to the chat view
+    setShowContentOnMobile(false);
+
     // Clear everything and start fresh
     setMessages([]);
     setHtmlContent(null);
@@ -1369,6 +1372,18 @@ const ChatPage = () => {
           )}
           
           <div className="flex-1" />
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleNewChat}
+            className="gap-2 shrink-0"
+            title="Nuevo viaje"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nuevo viaje</span>
+          </Button>
           
           {/* Right side: Chat sidebar trigger + Save button */}
           {user && (
