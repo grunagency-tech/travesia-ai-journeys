@@ -42,6 +42,22 @@ User: "I want to go to Tokyo next month" → You: "Tokyo! Great choice 🇯🇵 
 
 ---
 
+**MODIFICATION MODE (when hasItinerary is true):**
+When the user already has an itinerary generated and asks for modifications or refinements (like "algo más lujoso", "prefiero moderno", "quiero más actividades culturales", etc.):
+- Return status: "complete" immediately WITH the updated preferences
+- Include ALL existing trip data (existingTripData) PLUS the new preferences in estiloViaje
+- Add a brief friendly acknowledgment in the text field before the JSON
+- The system will regenerate the itinerary with the new preferences
+
+Example modification response:
+User has itinerary for Dublin, asks: "algo muy lujoso"
+{
+  "status": "complete", 
+  "text": "{\\"destino\\": \\"Dublín, Irlanda\\", \\"codigoIATA_destino\\": \\"DUB\\", \\"origen\\": \\"Ciudad de México\\", \\"codigoIATA_origen\\": \\"MEX\\", \\"fechaSalida\\": \\"2026-01-20\\", \\"fechaRegreso\\": \\"2026-01-30\\", \\"pasajeros\\": 1, \\"presupuesto\\": 3000, \\"estiloViaje\\": \\"lujo, exclusivo\\", \\"language\\": \\"es\\"}"
+}
+
+---
+
 TECHNICAL RULES (never break these):
 
 Your response MUST be valid JSON:
@@ -52,7 +68,7 @@ Your response MUST be valid JSON:
 
 If status is "incomplete": Just have a natural conversation. The "text" is your friendly message.
 
-If status is "complete" (you have ALL data): The "text" contains a JSON STRING with trip details:
+If status is "complete" (you have ALL data OR modifying existing itinerary): The "text" contains a JSON STRING with trip details:
 {
   "status": "complete",
   "text": "{\\"destino\\": \\"París, Francia\\", \\"codigoIATA_destino\\": \\"CDG\\", \\"origen\\": \\"Ciudad de México\\", \\"codigoIATA_origen\\": \\"MEX\\", \\"fechaSalida\\": \\"2026-05-01\\", \\"fechaRegreso\\": \\"2026-05-10\\", \\"pasajeros\\": 2, \\"presupuesto\\": 3000, \\"estiloViaje\\": \\"cultural\\", \\"language\\": \\"es\\"}"
@@ -68,7 +84,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, userLocation } = await req.json();
+    const { messages, userLocation, existingTripData, hasItinerary } = await req.json();
     
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
@@ -82,7 +98,21 @@ serve(async (req) => {
       locationContext = `\n\nContexto: La ubicación actual del usuario parece ser: ${parts.join(", ")}. Puedes sugerirla como origen si el usuario no especifica otro.`;
     }
 
-    const systemPromptWithLocation = SYSTEM_PROMPT + locationContext;
+    // Build existing trip context if modifying
+    let tripContext = "";
+    if (hasItinerary && existingTripData) {
+      tripContext = `\n\n**IMPORTANT - MODIFICATION MODE ACTIVE**: The user already has an itinerary generated with this data:
+- Destination: ${existingTripData.destino || "unknown"}
+- Origin: ${existingTripData.origen || "unknown"}
+- Departure: ${existingTripData.fechaSalida || "unknown"}
+- Return: ${existingTripData.fechaRegreso || "unknown"}
+- Travelers: ${existingTripData.pasajeros || 1}
+- Budget: ${existingTripData.presupuesto || "unknown"}
+
+If the user asks to modify preferences (style, luxury level, type of activities, hotels, etc.), respond with status: "complete" including ALL the existing trip data above plus the new/updated estiloViaje. This will regenerate the itinerary with the new preferences.`;
+    }
+
+    const systemPromptWithLocation = SYSTEM_PROMPT + locationContext + tripContext;
 
     // Prepare messages for Google AI - combine system prompt into first user message
     const formattedMessages = messages.map((m: { role: string; content: string }) => ({
