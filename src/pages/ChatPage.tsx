@@ -253,7 +253,7 @@ const ChatPage = () => {
   const [showRegisterBanner, setShowRegisterBanner] = useState(false);
   const userMessageCountRef = useRef(0);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
+  const [showDesktopSidebar, setShowDesktopSidebar] = useState(false);
 
   // Anonymous draft restore (sessionStorage)
   const [resumeDraftDialogOpen, setResumeDraftDialogOpen] = useState(false);
