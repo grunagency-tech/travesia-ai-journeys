@@ -11,6 +11,10 @@ interface LoadingItineraryProps {
 const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Estimated total time in seconds (based on typical generation time)
+  const estimatedTotalTime = 90; // ~1.5 minutes
 
   const steps = [
     { icon: Plane, text: 'Buscando los mejores vuelos...', textEn: 'Finding the best flights...' },
@@ -20,22 +24,40 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
   ];
 
   useEffect(() => {
+    // Elapsed time counter
+    const timeInterval = setInterval(() => {
+      setElapsedTime((prev) => prev + 1);
+    }, 1000);
+
+    // Progress based on elapsed time with realistic curve
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 95) return 95;
-        return prev + Math.random() * 3;
+        // Logarithmic progression that slows down as it approaches 95%
+        const timeProgress = Math.min((elapsedTime / estimatedTotalTime) * 100, 95);
+        const smoothProgress = prev + (timeProgress - prev) * 0.1;
+        return Math.min(smoothProgress, 95);
       });
-    }, 500);
+    }, 200);
 
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length);
     }, 3000);
 
     return () => {
+      clearInterval(timeInterval);
       clearInterval(progressInterval);
       clearInterval(stepInterval);
     };
-  }, []);
+  }, [elapsedTime]);
+
+  // Calculate remaining time estimate
+  const getRemainingTime = () => {
+    const remaining = Math.max(0, estimatedTotalTime - elapsedTime);
+    if (remaining <= 0) return 'Finalizando...';
+    if (remaining < 60) return `~${remaining}s restantes`;
+    const minutes = Math.ceil(remaining / 60);
+    return `~${minutes} min restantes`;
+  };
 
   const CurrentIcon = steps[currentStep].icon;
 
@@ -86,67 +108,76 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8">
         {/* Logo with glow effect */}
-        <div className="mb-8 relative">
-          <div className="absolute inset-0 w-32 h-32 mx-auto bg-orange-400/30 rounded-full blur-2xl animate-pulse" />
-          <div className="relative w-28 h-28 mx-auto bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
-            <img src={logoIcon} alt="travesIA" className="w-16 h-16 brightness-0 invert" />
+        <div className="mb-6 relative">
+          <div className="absolute inset-0 w-24 h-24 mx-auto bg-orange-400/30 rounded-full blur-2xl animate-pulse" />
+          <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
+            <img src={logoIcon} alt="travesIA" className="w-12 h-12 brightness-0 invert" />
           </div>
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
-            <div className="bg-orange-400 shadow-lg rounded-full p-2 animate-bounce">
-              <Sparkles className="w-5 h-5 text-white" />
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+            <div className="bg-orange-400 shadow-lg rounded-full p-1.5 animate-bounce">
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>
 
         {/* Title */}
-        <h3 className="text-2xl md:text-3xl font-urbanist font-bold mb-2 text-white">
+        <h3 className="text-xl md:text-2xl font-urbanist font-bold mb-1 text-white">
           {t('itineraryOnWay')}
         </h3>
 
         {/* Destination badge */}
         {destination && (
-          <div className="mb-4 inline-flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-1.5">
-            <MapPin className="w-4 h-4 text-orange-300" />
-            <span className="text-white/90 font-medium">{destination}</span>
+          <div className="mb-3 inline-flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-3 py-1">
+            <MapPin className="w-3.5 h-3.5 text-orange-300" />
+            <span className="text-white/90 text-sm font-medium">{destination}</span>
           </div>
         )}
 
-        {/* Brand */}
-        <div className="flex items-center justify-center gap-2 mb-4 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-          <img src={logoFull} alt="travesIA" className="h-5 brightness-0 invert" />
-        </div>
+        {/* Brand tagline */}
+        <p className="text-white/80 text-sm mb-4">Planea menos. Viaja más.</p>
 
-        {/* Progress bar */}
-        <div className="w-full max-w-xs mb-6">
-          <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+        {/* Main Progress Bar - Prominent like reference image */}
+        <div className="w-full max-w-md mb-4 px-4">
+          <div className="h-3 bg-white/20 rounded-full overflow-hidden shadow-inner">
             <div
-              className="h-full bg-gradient-to-r from-orange-400 to-orange-300 rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-400 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
               style={{ width: `${progress}%` }}
-            />
+            >
+              {/* Shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+            </div>
+          </div>
+          
+          {/* Progress info */}
+          <div className="flex justify-between items-center mt-2 text-xs">
+            <span className="text-white/70">{Math.round(progress)}% completado</span>
+            <span className="text-orange-300 font-medium">{getRemainingTime()}</span>
           </div>
         </div>
 
         {/* Animated step indicator */}
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-xl px-5 py-3 mb-6 transition-all duration-500">
-          <CurrentIcon className="w-5 h-5 text-orange-300 animate-pulse" />
+        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 mb-4 transition-all duration-500">
+          <CurrentIcon className="w-4 h-4 text-orange-300 animate-pulse" />
           <span className="text-white/90 text-sm font-medium">
             {steps[currentStep].text}
           </span>
         </div>
 
         {/* Info text */}
-        <p className="text-blue-100/80 text-sm max-w-sm mx-auto leading-relaxed">
+        <p className="text-blue-100/70 text-xs max-w-sm mx-auto leading-relaxed">
           {t('preparingPlan')}
         </p>
 
         {/* Step indicators */}
-        <div className="mt-6 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-1.5">
           {steps.map((_, i) => (
             <div
               key={i}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
                 i === currentStep
                   ? 'bg-orange-400 scale-125'
+                  : i < currentStep
+                  ? 'bg-orange-400/50'
                   : 'bg-white/30'
               }`}
             />
@@ -196,6 +227,11 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
           100% { opacity: 0; width: 120px; }
         }
         
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        
         .animate-cloud {
           animation: cloud-float linear infinite;
         }
@@ -223,6 +259,10 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
         
         .animate-float-particle {
           animation: float-particle ease-in-out infinite;
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 2s ease-in-out infinite;
         }
       `}</style>
     </div>
