@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft } from "lucide-react";
+import LoadingItinerary from "@/components/LoadingItinerary";
 import { ItineraryHeader } from "@/components/itinerary";
 import ItineraryPanel from "@/components/ItineraryPanel";
 import { Button } from "@/components/ui/button";
@@ -1497,36 +1498,7 @@ const ChatPage = () => {
             </div>
           </div>
         ) : (
-          <div className="text-center px-8 relative z-10 flex flex-col items-center justify-center h-full bg-primary md:bg-transparent">
-            <div className="mb-8 relative">
-              <div className="w-28 h-28 mx-auto bg-orange-500 rounded-3xl flex items-center justify-center shadow-2xl">
-                <img src={logoIcon} alt="travesIA" className="w-16 h-16 animate-pulse brightness-0 invert" />
-              </div>
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
-                <div className="bg-orange-400 shadow-lg rounded-full p-2">
-                  <Sparkles className="w-5 h-5 text-white animate-bounce" />
-                </div>
-              </div>
-            </div>
-            
-            <h3 className="text-2xl font-urbanist font-bold mb-4 text-white">
-              {t('itineraryOnWay')}
-            </h3>
-            
-            <div className="flex items-center justify-center gap-2 mb-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mx-auto w-fit">
-              <img src={logoFull} alt="travesIA" className="h-5 brightness-0 invert" />
-            </div>
-            
-            <p className="text-blue-100 text-base max-w-sm mx-auto leading-relaxed">
-              {t('preparingPlan')}
-            </p>
-            
-            <div className="mt-10 flex items-center justify-center gap-3">
-              <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse" />
-              <span className="text-sm text-white/70">{t('waitingMessage')}</span>
-              <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-            </div>
-          </div>
+          <LoadingItinerary destination={tripDestination || undefined} t={t} />
         )}
       </div>
     </div>
