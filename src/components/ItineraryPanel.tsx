@@ -167,6 +167,9 @@ const ItineraryPanel = ({
               carRentalRecommended={data.transporte?.alquilerCocheRecomendado}
               carOptions={data.transporte?.opcionesCoche}
               localTransport={data.transporte?.transporteLocal}
+              destination={destination}
+              startDate={startDate}
+              endDate={endDate}
             />
           </TabsContent>
 

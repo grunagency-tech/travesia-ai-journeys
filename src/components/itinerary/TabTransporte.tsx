@@ -19,9 +19,49 @@ interface TabTransporteProps {
   carRentalRecommended?: boolean;
   carOptions?: CarRentalOption[];
   localTransport?: string | LocalTransportData;
+  destination?: string; // For generating fallback car rental links
+  startDate?: string;
+  endDate?: string;
   onAddFlight?: (flight: FlightOption) => void;
   onAddCar?: (car: CarRentalOption) => void;
 }
+
+// Generate fallback car rental options with real links
+const generateDefaultCarOptions = (destination?: string, startDate?: string, endDate?: string): CarRentalOption[] => {
+  const destEncoded = encodeURIComponent(destination || 'aeropuerto');
+  const pickupDate = startDate || '';
+  const dropoffDate = endDate || '';
+  
+  // Build Kayak link
+  const kayakLink = `https://www.kayak.com/cars/${destEncoded}/${pickupDate}/${dropoffDate}`;
+  
+  return [
+    {
+      id: 'default-economy',
+      empresa: 'Múltiples proveedores',
+      tipoVehiculo: 'Económico (Ej: Toyota Yaris)',
+      precio: 25,
+      puntoRecogida: 'Aeropuerto principal',
+      link: kayakLink,
+    },
+    {
+      id: 'default-compact',
+      empresa: 'Múltiples proveedores',
+      tipoVehiculo: 'Compacto (Ej: VW Golf)',
+      precio: 35,
+      puntoRecogida: 'Aeropuerto principal',
+      link: kayakLink,
+    },
+    {
+      id: 'default-suv',
+      empresa: 'Múltiples proveedores',
+      tipoVehiculo: 'SUV (Ej: Toyota RAV4)',
+      precio: 55,
+      puntoRecogida: 'Aeropuerto principal',
+      link: kayakLink,
+    },
+  ];
+};
 
 // Categorize flights: cheapest, best-rated, fastest
 const categorizeFlights = (flights: FlightOption[]): FlightOption[] => {
@@ -127,12 +167,23 @@ const TabTransporte = ({
   carRentalRecommended,
   carOptions = [],
   localTransport,
+  destination,
+  startDate,
+  endDate,
   onAddFlight,
   onAddCar
 }: TabTransporteProps) => {
   const [showAllFlights, setShowAllFlights] = useState(false);
   const [showCarSection, setShowCarSection] = useState(carRentalRecommended ?? false);
   const [showAllCars, setShowAllCars] = useState(false);
+
+  // Use provided car options or generate defaults
+  const effectiveCarOptions = useMemo(() => {
+    if (carOptions && carOptions.length > 0) {
+      return carOptions;
+    }
+    return generateDefaultCarOptions(destination, startDate, endDate);
+  }, [carOptions, destination, startDate, endDate]);
 
   // Get categorized top 3 flights
   const categorizedFlights = useMemo(() => categorizeFlights(flights), [flights]);
@@ -237,34 +288,49 @@ const TabTransporte = ({
           )}
         </div>
 
-        {showCarSection && carOptions.length > 0 && (
+        {showCarSection && (
           <div className="space-y-3 mt-4">
-            {(showAllCars ? carOptions : carOptions.slice(0, 2)).map((car, idx) => (
-              <Card key={idx}>
+            {/* Info badge for default options */}
+            {carOptions.length === 0 && (
+              <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded-lg p-2 mb-3 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-blue-500" />
+                <span>Precios estimados. Haz clic en "Reservar" para ver disponibilidad real.</span>
+              </div>
+            )}
+            
+            {(showAllCars ? effectiveCarOptions : effectiveCarOptions.slice(0, 3)).map((car, idx) => (
+              <Card key={car.id || idx} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">{car.tipoVehiculo}</p>
-                      <p className="text-sm text-muted-foreground">{car.empresa}</p>
-                      {car.puntoRecogida && (
-                        <p className="text-xs text-muted-foreground mt-1">📍 {car.puntoRecogida}</p>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <Car className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">{car.tipoVehiculo}</p>
+                        <p className="text-sm text-muted-foreground">{car.empresa}</p>
+                        {car.puntoRecogida && (
+                          <p className="text-xs text-muted-foreground mt-1">📍 {car.puntoRecogida}</p>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right min-w-[130px]">
                       {car.precio && (
-                        <p className="font-bold text-green-600">${car.precio.toLocaleString()}/día</p>
+                        <p className="font-bold text-green-600">
+                          ${car.precio.toLocaleString()}
+                          <span className="text-xs font-normal text-muted-foreground">/día</span>
+                        </p>
                       )}
                       <div className="flex flex-col gap-1.5 mt-2">
-                        {car.link && (
-                          <Button 
-                            size="sm" 
-                            variant="default"
-                            onClick={() => window.open(car.link, '_blank')}
-                          >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Reservar
-                          </Button>
-                        )}
+                        <Button 
+                          size="sm" 
+                          variant="default"
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => window.open(car.link || `https://www.kayak.com/cars/${encodeURIComponent(destination || '')}`, '_blank')}
+                        >
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          Reservar
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => onAddCar?.(car)}>
                           Agregar
                         </Button>
@@ -275,18 +341,12 @@ const TabTransporte = ({
               </Card>
             ))}
             
-            {carOptions.length > 2 && !showAllCars && (
+            {effectiveCarOptions.length > 3 && !showAllCars && (
               <Button variant="ghost" className="w-full" onClick={() => setShowAllCars(true)}>
                 Ver más opciones
               </Button>
             )}
           </div>
-        )}
-
-        {showCarSection && carOptions.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No hay opciones de alquiler disponibles
-          </p>
         )}
       </div>
 
