@@ -1591,29 +1591,6 @@ const ChatPage = () => {
         <div className="hidden md:block absolute top-1/3 left-1/4 w-2 h-2 bg-white/20 rounded-full" />
         <div className="hidden md:block absolute bottom-1/3 right-1/4 w-3 h-3 bg-white/15 rounded-full" />
         
-        {/* Generation Progress Bar - shown when generating itinerary */}
-        {isGeneratingItinerary && (
-          <div className="absolute top-0 left-0 right-0 z-30 md:top-6 md:left-6 md:right-6 md:rounded-t-lg overflow-hidden">
-            <div className="bg-primary px-4 py-3 md:rounded-t-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white text-sm font-medium flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 animate-pulse" />
-                  Creando tu itinerario personalizado...
-                </span>
-                <span className="text-orange-300 text-sm font-medium">{Math.round(generationProgress)}%</span>
-              </div>
-              <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-400 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
-                  style={{ width: `${generationProgress}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" 
-                       style={{ animation: 'shimmer 2s ease-in-out infinite' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Mobile close button - floating */}
         {showContentOnMobile && (
@@ -1685,6 +1662,30 @@ const ChatPage = () => {
           </div>
         ) : (
           <LoadingItinerary destination={tripDestination || undefined} t={t} />
+        )}
+
+        {/* Generation Progress Bar - fixed at bottom when generating */}
+        {isGeneratingItinerary && (
+          <div className="absolute bottom-0 left-0 right-0 z-30 md:bottom-6 md:left-6 md:right-6 md:rounded-b-lg overflow-hidden">
+            <div className="bg-primary/95 backdrop-blur-sm px-4 py-3 md:rounded-b-lg shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white text-sm font-medium flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                  Creando tu itinerario personalizado...
+                </span>
+                <span className="text-orange-300 text-sm font-medium">{Math.round(generationProgress)}%</span>
+              </div>
+              <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-400 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                  style={{ width: `${generationProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" 
+                       style={{ animation: 'shimmer 2s ease-in-out infinite' }} />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
