@@ -689,6 +689,10 @@ const ChatPage = () => {
   const sendMessage = async (messageText: string, isFromPending = false) => {
     if (!messageText.trim() || isLoading) return;
 
+    const hasExistingItinerary = !!itineraryData;
+    const isAckOnly = /^\s*(gracias|ok|vale|perfecto|listo|genial|bien|thanks|thx)\b/i.test(messageText.trim());
+    const shouldTryRegenerate = hasExistingItinerary && !isAckOnly;
+
     // TEMPORARILY DISABLED for testing - registration gate
     // const currentUserMessages = userMessageCountRef.current;
     // if (currentUserMessages >= 1 && !user && !isFromPending) {
@@ -853,7 +857,9 @@ const ChatPage = () => {
             try {
               const response = await supabase.functions.invoke("generate-itinerary", {
                 body: {
-                  description: tripData.estiloViaje || "viaje cultural",
+                  description: hasExistingItinerary
+                    ? `${tripData.estiloViaje || "viaje"} | Cambios solicitados: ${messageText}`
+                    : (tripData.estiloViaje || "viaje cultural"),
                   origin: tripData.origen,
                   destination: tripData.destino,
                   startDate: tripData.fechaSalida,
@@ -910,8 +916,64 @@ const ChatPage = () => {
           responseText = "Hubo un error al generar el itinerario. Por favor, intenta de nuevo.";
         }
       } else {
-        // Status incomplete - just show the text response
+        // Status incomplete - show the text response
         responseText = data.text || "¿En qué puedo ayudarte?";
+
+        // If the user already has an itinerary and is requesting changes, regenerate using the current trip data
+        if (
+          shouldTryRegenerate &&
+          tripDestination &&
+          tripOrigin &&
+          tripDate &&
+          tripEndDate
+        ) {
+          try {
+            const updatingMessages: Record<string, string> = {
+              es: "Perfecto, voy a ajustar tu itinerario con ese cambio. Dame 1-2 minutos... ✨",
+              en: "Got it — I'll update your itinerary with that change. Give me 1-2 minutes... ✨",
+              fr: "Parfait — je mets à jour votre itinéraire avec ce changement. Donnez-moi 1-2 minutes... ✨",
+              de: "Alles klar — ich aktualisiere deine Reiseroute. Gib mir 1-2 Minuten... ✨",
+              pt: "Perfeito — vou atualizar seu itinerário com essa mudança. Me dá 1-2 minutos... ✨",
+              it: "Perfetto — aggiorno il tuo itinerario con questa modifica. Dammi 1-2 minuti... ✨",
+            };
+
+            const updatingMessage: Message = {
+              role: "assistant",
+              content: updatingMessages[language] || updatingMessages.es,
+              timestamp: new Date(),
+            };
+            setMessages((prev) => {
+              const next = [...prev, updatingMessage];
+              messagesRef.current = next;
+              return next;
+            });
+
+            const itineraryResponse = await supabase.functions.invoke("generate-itinerary", {
+              body: {
+                description: `Cambios solicitados: ${messageText}`,
+                origin: tripOrigin,
+                destination: tripDestination,
+                startDate: tripDate,
+                endDate: tripEndDate,
+                travelers: tripTravelers || 1,
+                budget: tripBudget || null,
+                language: language || "es",
+              },
+            });
+
+            if (!itineraryResponse.error) {
+              const itinerary = itineraryResponse.data?.itinerary;
+              if (itinerary) {
+                const generatedHtml = generateItineraryHtml(itinerary);
+                setHtmlContent(generatedHtml);
+                setItineraryData(itinerary as ItineraryData);
+                receivedHtml = generatedHtml;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to regenerate itinerary from follow-up:", e);
+          }
+        }
       }
 
       const assistantMessage: Message = {
@@ -922,9 +984,13 @@ const ChatPage = () => {
       };
 
       setMessages((prev) => {
-        // If we showed a "generating" message, replace it
+        // If we showed a generating/updating message, replace it
         const lastMsg = prev[prev.length - 1];
-        const next = lastMsg?.content.includes("Generando tu itinerario")
+        const isGeneratingPlaceholder =
+          lastMsg?.role === "assistant" &&
+          /(Generando tu itinerario|preparando tu itinerario|actualizando tu itinerario)/i.test(lastMsg.content);
+
+        const next = isGeneratingPlaceholder
           ? [...prev.slice(0, -1), assistantMessage]
           : [...prev, assistantMessage];
 
