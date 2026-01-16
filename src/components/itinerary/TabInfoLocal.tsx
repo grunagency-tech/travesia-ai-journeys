@@ -240,6 +240,41 @@ const TabInfoLocal = ({
                     <p className="text-sm text-orange-700">{localInfo.cultura.festividades}</p>
                   </div>
                 )}
+
+                {/* Currency Conversion - inside Cultura tab */}
+                {localInfo.conversionMoneda && (
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-100 mt-4">
+                    <p className="text-sm font-medium text-green-900 mb-3 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Conversión de moneda
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <label className="text-xs text-green-700 block mb-1">
+                          {localInfo.conversionMoneda.monedaOrigen || 'USD'}
+                        </label>
+                        <Input
+                          type="number"
+                          value={conversionAmount}
+                          onChange={(e) => setConversionAmount(Number(e.target.value))}
+                          className="text-lg font-medium bg-white"
+                        />
+                      </div>
+                      <span className="text-xl text-green-600">=</span>
+                      <div className="flex-1">
+                        <label className="text-xs text-green-700 block mb-1">
+                          {localInfo.conversionMoneda.monedaLocal || 'Local'}
+                        </label>
+                        <div className="text-xl font-bold text-green-700 p-2 bg-white rounded-md border">
+                          {convertedAmount || '—'}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-green-600 mt-2">
+                      Tipo de cambio: 1 {localInfo.conversionMoneda.monedaOrigen || 'USD'} = {localInfo.conversionMoneda.tipoCambio} {localInfo.conversionMoneda.monedaLocal}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -371,44 +406,6 @@ const TabInfoLocal = ({
         </TabsContent>
       </Tabs>
 
-      {/* Currency Conversion */}
-      {localInfo?.conversionMoneda && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-green-600" />
-              Conversión de moneda
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="text-sm text-muted-foreground block mb-1">
-                  {localInfo.conversionMoneda.monedaOrigen || 'USD'}
-                </label>
-                <Input
-                  type="number"
-                  value={conversionAmount}
-                  onChange={(e) => setConversionAmount(Number(e.target.value))}
-                  className="text-lg font-medium"
-                />
-              </div>
-              <span className="text-2xl text-muted-foreground">=</span>
-              <div className="flex-1">
-                <label className="text-sm text-muted-foreground block mb-1">
-                  {localInfo.conversionMoneda.monedaLocal || 'Local'}
-                </label>
-                <div className="text-2xl font-bold text-primary p-2">
-                  {convertedAmount || '—'}
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Tipo de cambio: 1 {localInfo.conversionMoneda.monedaOrigen || 'USD'} = {localInfo.conversionMoneda.tipoCambio} {localInfo.conversionMoneda.monedaLocal}
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Tips & Warnings */}
       <div className="space-y-4">
