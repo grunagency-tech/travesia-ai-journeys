@@ -27,6 +27,8 @@ export interface ItineraryDay {
 export interface FlightOption {
   id?: string;
   aerolinea: string;
+  codigoAerolinea?: string; // IATA code for logo (e.g., "AA", "LA", "IB")
+  logoUrl?: string;
   origen?: string;
   destino?: string;
   fechaSalida?: string;
@@ -37,6 +39,7 @@ export interface FlightOption {
   escalas?: number;
   precio?: number;
   calificacion?: number;
+  categoria?: 'cheapest' | 'best-rated' | 'fastest'; // Category for display
   link?: string;
 }
 
