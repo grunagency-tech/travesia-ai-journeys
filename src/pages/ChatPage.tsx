@@ -733,6 +733,16 @@ const ChatPage = () => {
         content: m.content,
       }));
 
+      // Check if we already have an itinerary - if so, pass current trip data for modifications
+      const existingTripData = itineraryData ? {
+        destino: tripDestination,
+        origen: tripOrigin,
+        fechaSalida: tripDate,
+        fechaRegreso: tripEndDate,
+        pasajeros: tripTravelers,
+        presupuesto: tripBudget,
+      } : null;
+
       const response = await fetch(CHAT_FUNCTION_URL, {
         method: "POST",
         headers: {
@@ -746,6 +756,8 @@ const ChatPage = () => {
             state: state || null,
             city: city || null,
           },
+          existingTripData,
+          hasItinerary: !!itineraryData,
         }),
       });
 
