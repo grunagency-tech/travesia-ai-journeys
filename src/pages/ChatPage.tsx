@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { ConversationList } from "@/components/ConversationList";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { stripGeneratedItineraryHeader } from "@/lib/itineraryHtml";
 import logoFull from "@/assets/logo-full.svg";
 import logoIcon from "@/assets/logo-icon.svg";
 import {
@@ -1613,7 +1614,11 @@ const ChatPage = () => {
               
               {/* HTML Content - Sanitized to prevent XSS */}
               <div className="p-4 md:p-6 pt-0">
-                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} />
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(stripGeneratedItineraryHeader(htmlContent)),
+                  }}
+                />
               </div>
             </div>
           </div>
