@@ -131,44 +131,108 @@ If the user asks to modify preferences (style, luxury level, type of activities,
 
     console.log("Calling Google AI with messages:", formattedMessages.length);
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: formattedMessages,
-          generationConfig: {
-            temperature: 0.7,
-          },
-        }),
-      }
-    );
+    // Retry logic for API calls
+    const callGoogleAI = async (retries = 2): Promise<string> => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                contents: formattedMessages,
+                generationConfig: {
+                  temperature: 0.7,
+                },
+                safetySettings: [
+                  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                ],
+              }),
+            }
+          );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Google AI error:", response.status, errorText);
-      
-      if (response.status === 429) {
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Google AI error (attempt ${attempt + 1}):`, response.status, errorText);
+            
+            if (response.status === 429) {
+              if (attempt < retries) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+                continue;
+              }
+              throw new Error("RATE_LIMIT");
+            }
+            
+            if (attempt < retries) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
+            }
+            throw new Error("AI_SERVICE_ERROR");
+          }
+
+          const data = await response.json();
+          
+          // Check for blocked content
+          if (data.candidates?.[0]?.finishReason === "SAFETY") {
+            console.warn("Response blocked by safety filters");
+            if (attempt < retries) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
+            }
+          }
+          
+          const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+          if (!content || content.trim() === "") {
+            console.warn(`Empty content (attempt ${attempt + 1}), promptFeedback:`, data.promptFeedback);
+            if (attempt < retries) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
+            }
+            // Return a fallback response instead of throwing
+            return JSON.stringify({
+              status: "incomplete",
+              text: "¡Hola! 👋 Parece que hubo un pequeño problema. ¿Podrías repetir lo que me decías?"
+            });
+          }
+
+          return content;
+        } catch (fetchError) {
+          console.error(`Fetch error (attempt ${attempt + 1}):`, fetchError);
+          if (attempt < retries) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            continue;
+          }
+          throw fetchError;
+        }
+      }
+      throw new Error("MAX_RETRIES_EXCEEDED");
+    };
+
+    let content: string;
+    try {
+      content = await callGoogleAI();
+    } catch (apiError) {
+      const errorMessage = apiError instanceof Error ? apiError.message : "Unknown";
+      if (errorMessage === "RATE_LIMIT") {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
       return new Response(
-        JSON.stringify({ error: "AI service error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          status: "incomplete",
+          text: "Lo siento, estoy experimentando dificultades técnicas. Por favor, intenta de nuevo en unos segundos. 🙏"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-    }
-
-    const data = await response.json();
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!content) {
-      throw new Error("No content in AI response");
     }
 
     console.log("AI raw response:", content);
