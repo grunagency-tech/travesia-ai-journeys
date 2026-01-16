@@ -694,14 +694,14 @@ const ChatPage = () => {
     const isAckOnly = /^\s*(gracias|ok|vale|perfecto|listo|genial|bien|thanks|thx)\b/i.test(messageText.trim());
     const shouldTryRegenerate = hasExistingItinerary && !isAckOnly;
 
-    // TEMPORARILY DISABLED for testing - registration gate
-    // const currentUserMessages = userMessageCountRef.current;
-    // if (currentUserMessages >= 1 && !user && !isFromPending) {
-    //   setPendingMessage(messageText);
-    //   setInputValue("");
-    //   setShowRegisterBanner(true);
-    //   return;
-    // }
+    // Registration gate - show banner after first message for non-logged users
+    const currentUserMessages = userMessageCountRef.current;
+    if (currentUserMessages >= 1 && !user && !isFromPending) {
+      setPendingMessage(messageText);
+      setInputValue("");
+      setShowRegisterBanner(true);
+      return;
+    }
 
     // Create conversation if user is logged in and no conversation exists
     let convId = currentConversationId;
