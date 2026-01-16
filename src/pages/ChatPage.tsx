@@ -345,7 +345,43 @@ const ChatPage = () => {
       messagesRef.current = loadedMessages;
       userMessageCountRef.current = loadedMessages.filter(m => m.role === 'user').length;
 
-      // Check if there's HTML content in the last assistant message
+      // If conversation has a linked trip, load the full trip data to restore itineraryData
+      if (conv.trip_id) {
+        const { data: tripData, error: tripError } = await supabase
+          .from('trips')
+          .select('*')
+          .eq('id', conv.trip_id)
+          .maybeSingle();
+
+        if (seq !== loadConversationSeqRef.current) return;
+
+        if (!tripError && tripData) {
+          // Restore trip metadata
+          setTripDestination(tripData.destination);
+          setTripOrigin(tripData.origin);
+          setTripDate(tripData.start_date);
+          setTripEndDate(tripData.end_date);
+          setTripBudget(tripData.budget);
+          setTripTravelers(tripData.travelers || 1);
+          setTripSaved(true);
+
+          // Restore itineraryData from preferences if available
+          const prefs = tripData.preferences as { itinerary_data?: ItineraryData; itinerary_html?: string } | null;
+          if (prefs?.itinerary_data) {
+            setItineraryData(prefs.itinerary_data);
+            // Also set HTML for fallback
+            if (prefs.itinerary_html) {
+              setHtmlContent(prefs.itinerary_html);
+            }
+            return; // Exit early - we have the full structured data
+          } else if (prefs?.itinerary_html) {
+            setHtmlContent(prefs.itinerary_html);
+            return;
+          }
+        }
+      }
+
+      // Fallback: Check if there's HTML content in the last assistant message
       const lastAssistantMsg = [...loadedMessages].reverse().find(m => m.role === 'assistant' && m.htmlContent);
       if (lastAssistantMsg?.htmlContent) {
         setHtmlContent(lastAssistantMsg.htmlContent);
