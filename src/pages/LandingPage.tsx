@@ -588,17 +588,14 @@ const LandingPage = () => {
               </div>
 
               <div className="flex flex-col md:flex-row gap-6 md:gap-12 md:items-start">
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Privacidad
+                <a href="/privacidad" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Política de Privacidad
                 </a>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Términos
+                <a href="/terminos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Términos y Condiciones
                 </a>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Ayuda
-                </a>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Contacto
+                <a href="/ayuda" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Centro de Ayuda
                 </a>
               </div>
             </div>
