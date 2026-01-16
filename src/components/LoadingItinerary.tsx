@@ -6,12 +6,17 @@ import logoFull from '@/assets/logo-full.svg';
 interface LoadingItineraryProps {
   destination?: string;
   t: (key: string) => string;
+  /** When provided, overrides internal progress calculation */
+  externalProgress?: number;
 }
 
-const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
-  const [progress, setProgress] = useState(0);
+const LoadingItinerary = ({ destination, t, externalProgress }: LoadingItineraryProps) => {
+  const [internalProgress, setInternalProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Use external progress if provided, otherwise use internal
+  const progress = externalProgress !== undefined ? externalProgress : internalProgress;
 
   // Estimated total time in seconds (based on typical generation time)
   const estimatedTotalTime = 90; // ~1.5 minutes
@@ -24,6 +29,9 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
   ];
 
   useEffect(() => {
+    // Skip internal progress if using external
+    if (externalProgress !== undefined) return;
+
     // Elapsed time counter
     const timeInterval = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
@@ -31,7 +39,7 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
 
     // Progress based on elapsed time with realistic curve
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
+      setInternalProgress((prev) => {
         // Logarithmic progression that slows down as it approaches 95%
         const timeProgress = Math.min((elapsedTime / estimatedTotalTime) * 100, 95);
         const smoothProgress = prev + (timeProgress - prev) * 0.1;
@@ -39,16 +47,19 @@ const LoadingItinerary = ({ destination, t }: LoadingItineraryProps) => {
       });
     }, 200);
 
+    return () => {
+      clearInterval(timeInterval);
+      clearInterval(progressInterval);
+    };
+  }, [elapsedTime, externalProgress]);
+
+  useEffect(() => {
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length);
     }, 3000);
 
-    return () => {
-      clearInterval(timeInterval);
-      clearInterval(progressInterval);
-      clearInterval(stepInterval);
-    };
-  }, [elapsedTime]);
+    return () => clearInterval(stepInterval);
+  }, [steps.length]);
 
   // Calculate remaining time estimate
   const getRemainingTime = () => {
