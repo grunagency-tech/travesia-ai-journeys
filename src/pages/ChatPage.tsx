@@ -485,8 +485,15 @@ const ChatPage = () => {
         timestamp: new Date(m.timestamp)
       }));
 
-      // If there is no meaningful history, don't prompt.
-      if (!parsed || parsed.length === 0) return;
+      // Only prompt if there's a meaningful conversation (at least 2 messages - one exchange)
+      if (!parsed || parsed.length < 2) {
+        // Not enough history to warrant a prompt - just clear and start fresh
+        sessionStorage.removeItem('chatMessages');
+        sessionStorage.removeItem('chatPendingMessage');
+        sessionStorage.removeItem('chatShowRegisterBanner');
+        sessionStorage.removeItem('chatUserMessageCount');
+        return;
+      }
 
       const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
       const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
