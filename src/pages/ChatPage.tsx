@@ -275,6 +275,8 @@ const ChatPage = () => {
   const [tripBudget, setTripBudget] = useState<number | null>(null);
   const [tripImage, setTripImage] = useState<string | null>(null);
   const [itineraryData, setItineraryData] = useState<ItineraryData | null>(null);
+  const [isGeneratingItinerary, setIsGeneratingItinerary] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
 
   // Edge function URL for TravesIA chat
   const CHAT_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/travesia-chat`;
@@ -901,6 +903,19 @@ const ChatPage = () => {
           // Call generate-itinerary function with retry logic for cold starts
           const { data: session } = await supabase.auth.getSession();
           
+          // Start progress animation
+          setIsGeneratingItinerary(true);
+          setGenerationProgress(0);
+          const progressInterval = setInterval(() => {
+            setGenerationProgress((prev) => {
+              // Slow logarithmic progress that approaches but never reaches 95%
+              if (prev >= 90) return prev + (95 - prev) * 0.02;
+              if (prev >= 70) return prev + (90 - prev) * 0.03;
+              if (prev >= 40) return prev + (70 - prev) * 0.04;
+              return prev + (40 - prev) * 0.08;
+            });
+          }, 500);
+          
           const invokeWithRetry = async (retries = 2): Promise<any> => {
             try {
               const response = await supabase.functions.invoke("generate-itinerary", {
@@ -937,6 +952,14 @@ const ChatPage = () => {
           };
           
           const itineraryResponse = await invokeWithRetry();
+          
+          // Complete progress and stop
+          clearInterval(progressInterval);
+          setGenerationProgress(100);
+          setTimeout(() => {
+            setIsGeneratingItinerary(false);
+            setGenerationProgress(0);
+          }, 500);
 
           if (itineraryResponse.error) {
             throw new Error(itineraryResponse.error.message || "Error generando itinerario");
@@ -962,6 +985,9 @@ const ChatPage = () => {
         } catch (parseError) {
           console.error("Error processing complete status:", parseError);
           responseText = "Hubo un error al generar el itinerario. Por favor, intenta de nuevo.";
+          // Stop progress on error
+          setIsGeneratingItinerary(false);
+          setGenerationProgress(0);
         }
       } else {
         // Status incomplete - show the text response
@@ -996,6 +1022,18 @@ const ChatPage = () => {
               return next;
             });
 
+            // Start progress animation for regeneration
+            setIsGeneratingItinerary(true);
+            setGenerationProgress(0);
+            const regenProgressInterval = setInterval(() => {
+              setGenerationProgress((prev) => {
+                if (prev >= 90) return prev + (95 - prev) * 0.02;
+                if (prev >= 70) return prev + (90 - prev) * 0.03;
+                if (prev >= 40) return prev + (70 - prev) * 0.04;
+                return prev + (40 - prev) * 0.08;
+              });
+            }, 500);
+
             const itineraryResponse = await supabase.functions.invoke("generate-itinerary", {
               body: {
                 description: `Cambios solicitados: ${messageText}`,
@@ -1009,6 +1047,14 @@ const ChatPage = () => {
               },
             });
 
+            // Complete progress
+            clearInterval(regenProgressInterval);
+            setGenerationProgress(100);
+            setTimeout(() => {
+              setIsGeneratingItinerary(false);
+              setGenerationProgress(0);
+            }, 500);
+
             if (!itineraryResponse.error) {
               const itinerary = itineraryResponse.data?.itinerary;
               if (itinerary) {
@@ -1020,6 +1066,8 @@ const ChatPage = () => {
             }
           } catch (e) {
             console.warn("Failed to regenerate itinerary from follow-up:", e);
+            setIsGeneratingItinerary(false);
+            setGenerationProgress(0);
           }
         }
       }
@@ -1474,12 +1522,36 @@ const ChatPage = () => {
       </div>
 
       {/* Itinerary Section - Full screen on mobile, 65% on desktop */}
-      <div className={`${showContentOnMobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} w-full md:relative md:flex-1 bg-background md:bg-primary items-stretch md:items-center justify-center md:p-6 overflow-hidden`}>
+      <div className={`${showContentOnMobile ? 'fixed inset-0 z-50 flex flex-col' : 'hidden md:flex md:flex-col'} w-full md:relative md:flex-1 bg-background md:bg-primary items-stretch md:items-center justify-center md:p-6 overflow-hidden`}>
         {/* Decorative background elements - only on desktop */}
         <div className="hidden md:block absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
         <div className="hidden md:block absolute bottom-20 left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-xl" />
         <div className="hidden md:block absolute top-1/3 left-1/4 w-2 h-2 bg-white/20 rounded-full" />
         <div className="hidden md:block absolute bottom-1/3 right-1/4 w-3 h-3 bg-white/15 rounded-full" />
+        
+        {/* Generation Progress Bar - shown when generating itinerary */}
+        {isGeneratingItinerary && (
+          <div className="absolute top-0 left-0 right-0 z-30 md:top-6 md:left-6 md:right-6 md:rounded-t-lg overflow-hidden">
+            <div className="bg-primary px-4 py-3 md:rounded-t-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white text-sm font-medium flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                  Creando tu itinerario personalizado...
+                </span>
+                <span className="text-orange-300 text-sm font-medium">{Math.round(generationProgress)}%</span>
+              </div>
+              <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-400 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                  style={{ width: `${generationProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" 
+                       style={{ animation: 'shimmer 2s ease-in-out infinite' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Mobile close button - floating */}
         {showContentOnMobile && (

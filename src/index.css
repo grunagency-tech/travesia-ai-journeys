@@ -210,3 +210,9 @@ All colors MUST be HSL.
 .leaflet-tile {
   visibility: visible !important;
 }
+
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
