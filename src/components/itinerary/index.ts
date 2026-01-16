@@ -5,4 +5,5 @@ export { default as TabTransporte } from './TabTransporte';
 export { default as TabAlojamiento } from './TabAlojamiento';
 export { default as TabActividades } from './TabActividades';
 export { default as TabInfoLocal } from './TabInfoLocal';
+export { default as FlightCard } from './FlightCard';
 export * from './types';

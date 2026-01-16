@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Plane, Clock, Star, ArrowRight, Car, ChevronDown, Plus, ExternalLink, Bus, Train, CreditCard, AlertCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plane, Car, ChevronDown, Bus, Train, CreditCard, AlertCircle, ExternalLink, DollarSign, Award, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FlightOption, CarRentalOption, TransportOption } from "./types";
+import FlightCard from "./FlightCard";
 
 interface LocalTransportData {
   descripcion?: string;
@@ -22,6 +23,105 @@ interface TabTransporteProps {
   onAddCar?: (car: CarRentalOption) => void;
 }
 
+// Categorize flights: cheapest, best-rated, fastest
+const categorizeFlights = (flights: FlightOption[]): FlightOption[] => {
+  if (!flights || flights.length === 0) return [];
+  
+  const categorized: FlightOption[] = [];
+  const usedIds = new Set<string>();
+  
+  // Helper to generate unique id for flight
+  const getFlightId = (f: FlightOption) => 
+    f.id || `${f.aerolinea}-${f.precio}-${f.escalas}`;
+  
+  // 1. Find the cheapest flight
+  const sortedByPrice = [...flights].sort((a, b) => (a.precio || 999999) - (b.precio || 999999));
+  if (sortedByPrice.length > 0) {
+    const cheapest = { ...sortedByPrice[0], categoria: 'cheapest' as const };
+    categorized.push(cheapest);
+    usedIds.add(getFlightId(cheapest));
+  }
+  
+  // 2. Find the fastest flight (least stops, or direct flight)
+  const sortedBySpeed = [...flights].sort((a, b) => {
+    // First by number of stops
+    const stopsA = a.escalas ?? 999;
+    const stopsB = b.escalas ?? 999;
+    if (stopsA !== stopsB) return stopsA - stopsB;
+    
+    // Then by duration if available
+    const durationToMinutes = (dur?: string): number => {
+      if (!dur) return 9999;
+      const match = dur.match(/(\d+)h\s*(\d+)?m?/);
+      if (match) {
+        return parseInt(match[1]) * 60 + (parseInt(match[2]) || 0);
+      }
+      return 9999;
+    };
+    return durationToMinutes(a.duracion) - durationToMinutes(b.duracion);
+  });
+  
+  // Find a fastest that's not already used
+  for (const flight of sortedBySpeed) {
+    if (!usedIds.has(getFlightId(flight))) {
+      const fastest = { ...flight, categoria: 'fastest' as const };
+      categorized.push(fastest);
+      usedIds.add(getFlightId(fastest));
+      break;
+    }
+  }
+  
+  // 3. Find the best-rated flight
+  const sortedByRating = [...flights].sort((a, b) => {
+    // Higher rating is better
+    const ratingA = a.calificacion ?? 0;
+    const ratingB = b.calificacion ?? 0;
+    if (ratingB !== ratingA) return ratingB - ratingA;
+    
+    // If no ratings, use airline reputation (basic heuristic)
+    const premiumAirlines = ['iberia', 'emirates', 'qatar', 'lufthansa', 'air france', 'british airways', 'delta', 'united', 'american', 'klm', 'swiss'];
+    const isAPremium = premiumAirlines.some(pa => a.aerolinea.toLowerCase().includes(pa)) ? 1 : 0;
+    const isBPremium = premiumAirlines.some(pa => b.aerolinea.toLowerCase().includes(pa)) ? 1 : 0;
+    return isBPremium - isAPremium;
+  });
+  
+  // Find a best-rated that's not already used
+  for (const flight of sortedByRating) {
+    if (!usedIds.has(getFlightId(flight))) {
+      const bestRated = { ...flight, categoria: 'best-rated' as const };
+      categorized.push(bestRated);
+      usedIds.add(getFlightId(bestRated));
+      break;
+    }
+  }
+  
+  // If we still need more flights to have 3, add more by price
+  if (categorized.length < 3) {
+    for (const flight of sortedByPrice) {
+      if (!usedIds.has(getFlightId(flight))) {
+        // Assign a category based on what's missing
+        const hasCategory = (cat: string) => categorized.some(f => f.categoria === cat);
+        let category: 'cheapest' | 'best-rated' | 'fastest' = 'cheapest';
+        
+        if (!hasCategory('fastest')) category = 'fastest';
+        else if (!hasCategory('best-rated')) category = 'best-rated';
+        
+        const newFlight = { ...flight, categoria: category };
+        categorized.push(newFlight);
+        usedIds.add(getFlightId(newFlight));
+        
+        if (categorized.length >= 3) break;
+      }
+    }
+  }
+  
+  // Sort by category order: cheapest, best-rated, fastest
+  const categoryOrder = { 'cheapest': 1, 'best-rated': 2, 'fastest': 3 };
+  return categorized.sort((a, b) => 
+    (categoryOrder[a.categoria || 'cheapest'] || 4) - (categoryOrder[b.categoria || 'cheapest'] || 4)
+  );
+};
+
 const TabTransporte = ({
   flights = [],
   carRentalRecommended,
@@ -34,107 +134,61 @@ const TabTransporte = ({
   const [showCarSection, setShowCarSection] = useState(carRentalRecommended ?? false);
   const [showAllCars, setShowAllCars] = useState(false);
 
-  const topFlights = flights.slice(0, 3);
-  const remainingFlights = flights.slice(3);
-
-  const formatDuration = (duration?: string) => {
-    return duration || '—';
-  };
-
-  const formatTime = (time?: string) => {
-    return time || '—';
-  };
+  // Get categorized top 3 flights
+  const categorizedFlights = useMemo(() => categorizeFlights(flights), [flights]);
+  
+  // Get remaining flights (those not in top 3)
+  const remainingFlights = useMemo(() => {
+    const topIds = new Set(categorizedFlights.map(f => f.id || `${f.aerolinea}-${f.precio}-${f.escalas}`));
+    return flights.filter(f => !topIds.has(f.id || `${f.aerolinea}-${f.precio}-${f.escalas}`));
+  }, [flights, categorizedFlights]);
 
   return (
     <div className="space-y-6">
       {/* Flights Section */}
       <div>
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+        <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
           <Plane className="w-5 h-5 text-primary" />
-          Vuelos disponibles
+          Los mejores vuelos disponibles
         </h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Seleccionamos las mejores opciones para tu viaje
+        </p>
 
-        {topFlights.length > 0 ? (
+        {/* Category Legend */}
+        {categorizedFlights.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+              <DollarSign className="w-3 h-3 mr-1" />
+              Más barato
+            </Badge>
+            <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+              <Award className="w-3 h-3 mr-1" />
+              Mejor calificado
+            </Badge>
+            <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+              <Zap className="w-3 h-3 mr-1" />
+              Más rápido
+            </Badge>
+          </div>
+        )}
+
+        {categorizedFlights.length > 0 ? (
           <div className="space-y-3">
-            {topFlights.map((flight, idx) => (
-              <Card key={idx} className="overflow-hidden hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Airline & Route */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Plane className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-semibold">{flight.aerolinea}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {flight.origen} <ArrowRight className="w-3 h-3 inline mx-1" /> {flight.destino}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Times */}
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-muted-foreground" />
-                          <span>{formatTime(flight.horaSalida)} - {formatTime(flight.horaLlegada)}</span>
-                        </div>
-                        {flight.duracion && (
-                          <span className="text-muted-foreground">{flight.duracion}</span>
-                        )}
-                        <Badge variant={flight.escalas === 0 ? "default" : "secondary"} className="text-xs">
-                          {flight.escalas === 0 ? 'Directo' : `${flight.escalas} escala${flight.escalas > 1 ? 's' : ''}`}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Rating */}
-                    {flight.calificacion && (
-                      <div className="flex items-center gap-1 text-yellow-500">
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-medium">{flight.calificacion}</span>
-                      </div>
-                    )}
-
-                    {/* Price & Action */}
-                    <div className="text-right min-w-[140px]">
-                      {flight.precio && (
-                        <p className="text-xl font-bold text-primary">
-                          ${flight.precio.toLocaleString()}
-                          <span className="text-xs font-normal text-muted-foreground ml-1">USD</span>
-                        </p>
-                      )}
-                      <div className="flex flex-col gap-1.5 mt-2">
-                        {flight.link && (
-                          <Button 
-                            size="sm"
-                            variant="default"
-                            onClick={() => window.open(flight.link, '_blank')}
-                          >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Reservar
-                          </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          variant={flight.link ? "outline" : "default"}
-                          onClick={() => onAddFlight?.(flight)}
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Agregar
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {categorizedFlights.map((flight, idx) => (
+              <FlightCard 
+                key={flight.id || idx} 
+                flight={flight} 
+                onAddFlight={onAddFlight}
+                showCategory={true}
+              />
             ))}
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground bg-muted/30 rounded-xl">
             <Plane className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>No hay vuelos disponibles</p>
+            <p className="text-sm mt-1">Intenta con otras fechas o destinos</p>
           </div>
         )}
 
@@ -149,39 +203,12 @@ const TabTransporte = ({
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3 mt-3">
               {remainingFlights.map((flight, idx) => (
-                <Card key={idx} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                            <Plane className="w-4 h-4 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{flight.aerolinea}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatTime(flight.horaSalida)} - {formatTime(flight.horaLlegada)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      {flight.precio && (
-                        <p className="font-semibold text-primary">${flight.precio.toLocaleString()}</p>
-                      )}
-                      <div className="flex items-center gap-2">
-                        {flight.link && (
-                          <Button size="sm" onClick={() => window.open(flight.link, '_blank')}>
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Reservar
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline" onClick={() => onAddFlight?.(flight)}>
-                          Agregar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <FlightCard 
+                  key={flight.id || idx} 
+                  flight={flight} 
+                  onAddFlight={onAddFlight}
+                  showCategory={false}
+                />
               ))}
             </CollapsibleContent>
           </Collapsible>
