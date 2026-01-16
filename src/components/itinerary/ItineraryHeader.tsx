@@ -384,7 +384,7 @@ const ItineraryHeader = ({
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-green-400" />
                   <span className="text-sm font-semibold text-green-400">
-                    ${budget.toLocaleString()} MXN
+                    ${budget.toLocaleString()} USD
                   </span>
                 </div>
               )}
