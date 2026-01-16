@@ -15,6 +15,7 @@ interface ItineraryHeaderProps {
   budget?: number;
   duration?: number;
   customImage?: string;
+  onImageResolved?: (imageUrl: string) => void;
 }
 
 // Normalize text for matching (remove accents, lowercase)
@@ -192,7 +193,8 @@ const ItineraryHeader = ({
   travelers = 1,
   budget,
   duration,
-  customImage
+  customImage,
+  onImageResolved
 }: ItineraryHeaderProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -208,15 +210,19 @@ const ItineraryHeader = ({
     const fetchImage = async () => {
       if (customImage) {
         setHeroImage(customImage);
+        onImageResolved?.(customImage);
         return;
       }
       
       const dbImage = await getDestinationImageFromDB(displayDestination);
       if (dbImage) {
         setHeroImage(dbImage);
+        onImageResolved?.(dbImage);
       } else {
         // Fallback to local images
-        setHeroImage(getDestinationImage(displayDestination));
+        const localImage = getDestinationImage(displayDestination);
+        setHeroImage(localImage);
+        onImageResolved?.(localImage);
       }
     };
     

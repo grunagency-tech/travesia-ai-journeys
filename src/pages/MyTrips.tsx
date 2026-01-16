@@ -36,6 +36,7 @@ interface Trip {
   budget: number | null;
   travelers: number;
   created_at: string;
+  image_url: string | null;
 }
 
 const MyTrips = () => {
@@ -227,7 +228,7 @@ const MyTrips = () => {
                     {/* Image Section - like itinerary header */}
                     <div className="relative w-full md:w-72 h-44 md:h-auto md:min-h-[180px] flex-shrink-0">
                       <img 
-                        src={getImageByDestination(trip.destination)}
+                        src={trip.image_url || getImageByDestination(trip.destination)}
                         alt={trip.destination}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
