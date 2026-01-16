@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Hotel, Star, MapPin, ChevronDown, Plus, ExternalLink, Wifi, Car, Utensils, Dumbbell } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Hotel, Star, MapPin, ChevronDown, Plus, ExternalLink, Wifi, Car, Utensils, Dumbbell, DollarSign, Award, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,111 @@ const amenityIcons: Record<string, React.ReactNode> = {
   parking: <Car className="w-3 h-3" />,
   restaurant: <Utensils className="w-3 h-3" />,
   gym: <Dumbbell className="w-3 h-3" />,
+};
+
+// Category info for hotels
+type HotelCategory = 'cheapest' | 'best-rated' | 'best-location';
+
+const getCategoryInfo = (category?: HotelCategory): { icon: React.ReactNode; label: string; color: string } => {
+  switch (category) {
+    case 'cheapest':
+      return {
+        icon: <DollarSign className="w-3.5 h-3.5" />,
+        label: 'Más barato',
+        color: 'bg-green-100 text-green-700 border-green-200'
+      };
+    case 'best-rated':
+      return {
+        icon: <Award className="w-3.5 h-3.5" />,
+        label: 'Mejor calificado',
+        color: 'bg-yellow-100 text-yellow-700 border-yellow-200'
+      };
+    case 'best-location':
+      return {
+        icon: <Navigation className="w-3.5 h-3.5" />,
+        label: 'Mejor ubicado',
+        color: 'bg-blue-100 text-blue-700 border-blue-200'
+      };
+    default:
+      return { icon: null, label: '', color: '' };
+  }
+};
+
+// Categorize hotels: cheapest, best-rated, best-location
+const categorizeHotels = (hotels: AccommodationOption[]): (AccommodationOption & { categoria?: HotelCategory })[] => {
+  if (!hotels || hotels.length === 0) return [];
+  
+  const categorized: (AccommodationOption & { categoria?: HotelCategory })[] = [];
+  const usedIds = new Set<string>();
+  
+  const getHotelId = (h: AccommodationOption) => h.id || `${h.nombre}-${h.precioPorNoche}`;
+  
+  // 1. Find the cheapest hotel
+  const sortedByPrice = [...hotels].sort((a, b) => (a.precioPorNoche || 999999) - (b.precioPorNoche || 999999));
+  if (sortedByPrice.length > 0) {
+    const cheapest = { ...sortedByPrice[0], categoria: 'cheapest' as HotelCategory };
+    categorized.push(cheapest);
+    usedIds.add(getHotelId(cheapest));
+  }
+  
+  // 2. Find the best-rated hotel
+  const sortedByRating = [...hotels].sort((a, b) => (b.calificacion || 0) - (a.calificacion || 0));
+  for (const hotel of sortedByRating) {
+    if (!usedIds.has(getHotelId(hotel))) {
+      const bestRated = { ...hotel, categoria: 'best-rated' as HotelCategory };
+      categorized.push(bestRated);
+      usedIds.add(getHotelId(bestRated));
+      break;
+    }
+  }
+  
+  // 3. Find the best-located hotel (closest to center or first one with good location tags)
+  const sortedByLocation = [...hotels].sort((a, b) => {
+    // Prefer hotels with distanciaCentro
+    const distA = a.distanciaCentro ?? 999;
+    const distB = b.distanciaCentro ?? 999;
+    if (distA !== distB) return distA - distB;
+    
+    // Check for location-related tags
+    const locationTags = ['centro', 'central', 'downtown', 'céntrico', 'ubicación'];
+    const hasLocationTagA = a.etiquetas?.some(t => locationTags.some(lt => t.toLowerCase().includes(lt))) ? 1 : 0;
+    const hasLocationTagB = b.etiquetas?.some(t => locationTags.some(lt => t.toLowerCase().includes(lt))) ? 1 : 0;
+    return hasLocationTagB - hasLocationTagA;
+  });
+  
+  for (const hotel of sortedByLocation) {
+    if (!usedIds.has(getHotelId(hotel))) {
+      const bestLocation = { ...hotel, categoria: 'best-location' as HotelCategory };
+      categorized.push(bestLocation);
+      usedIds.add(getHotelId(bestLocation));
+      break;
+    }
+  }
+  
+  // If we still need more hotels to have 3, add more by rating
+  if (categorized.length < 3) {
+    for (const hotel of sortedByRating) {
+      if (!usedIds.has(getHotelId(hotel))) {
+        const hasCategory = (cat: HotelCategory) => categorized.some(h => h.categoria === cat);
+        let category: HotelCategory = 'cheapest';
+        
+        if (!hasCategory('best-location')) category = 'best-location';
+        else if (!hasCategory('best-rated')) category = 'best-rated';
+        
+        const newHotel = { ...hotel, categoria: category };
+        categorized.push(newHotel);
+        usedIds.add(getHotelId(newHotel));
+        
+        if (categorized.length >= 3) break;
+      }
+    }
+  }
+  
+  // Sort by category order: cheapest, best-rated, best-location
+  const categoryOrder = { 'cheapest': 1, 'best-rated': 2, 'best-location': 3 };
+  return categorized.sort((a, b) => 
+    (categoryOrder[a.categoria || 'cheapest'] || 4) - (categoryOrder[b.categoria || 'cheapest'] || 4)
+  );
 };
 
 const TabAlojamiento = ({
@@ -55,11 +160,17 @@ const TabAlojamiento = ({
     return opt;
   });
 
-  const topOptions = normalizedOptions.slice(0, 3);
-  const remainingOptions = normalizedOptions.slice(3);
+  // Categorize top 3 hotels
+  const categorizedHotels = useMemo(() => categorizeHotels(normalizedOptions), [normalizedOptions]);
+  
+  // Get remaining hotels
+  const remainingOptions = useMemo(() => {
+    const topIds = new Set(categorizedHotels.map(h => h.id || `${h.nombre}-${h.precioPorNoche}`));
+    return normalizedOptions.filter(h => !topIds.has(h.id || `${h.nombre}-${h.precioPorNoche}`));
+  }, [normalizedOptions, categorizedHotels]);
 
   // If no structured options, create one from the recommendation
-  const displayOptions = topOptions.length > 0 ? topOptions : (recommendation ? [{
+  const displayOptions = categorizedHotels.length > 0 ? categorizedHotels : (recommendation ? [{
     nombre: recommendation,
     ubicacion: recommendedZone,
     precioPorNoche: costPerNight,
@@ -72,18 +183,51 @@ const TabAlojamiento = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="font-semibold text-lg flex items-center gap-2">
-        <Hotel className="w-5 h-5 text-primary" />
-        Opciones de alojamiento
-      </h3>
+      <div>
+        <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
+          <Hotel className="w-5 h-5 text-primary" />
+          Las mejores opciones de alojamiento
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Seleccionamos las mejores opciones para tu estadía
+        </p>
+        
+        {/* Category Legend */}
+        {categorizedHotels.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+              <DollarSign className="w-3 h-3 mr-1" />
+              Más barato
+            </Badge>
+            <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+              <Award className="w-3 h-3 mr-1" />
+              Mejor calificado
+            </Badge>
+            <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+              <Navigation className="w-3 h-3 mr-1" />
+              Mejor ubicado
+            </Badge>
+          </div>
+        )}
+      </div>
 
       {displayOptions.length > 0 ? (
         <div className="space-y-4">
           {displayOptions.map((hotel, idx) => {
             const isExpanded = expandedCards.has(idx);
+            const hotelWithCategory = hotel as AccommodationOption & { categoria?: HotelCategory };
+            const categoryInfo = getCategoryInfo(hotelWithCategory.categoria);
             
             return (
-              <Card key={idx} className="overflow-hidden hover:shadow-md transition-shadow">
+              <Card 
+                key={idx} 
+                className="overflow-hidden hover:shadow-md transition-shadow border-l-4"
+                style={{ 
+                  borderLeftColor: hotelWithCategory.categoria === 'cheapest' ? '#22c55e' : 
+                                   hotelWithCategory.categoria === 'best-rated' ? '#eab308' : 
+                                   hotelWithCategory.categoria === 'best-location' ? '#3b82f6' : 'transparent' 
+                }}
+              >
                 <CardContent className="p-0">
                   <div className="flex flex-col md:flex-row">
                     {/* Image */}
@@ -112,7 +256,7 @@ const TabAlojamiento = ({
                     <div className="flex-1 p-4">
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div className="flex-1">
-                          {/* Name & Rating */}
+                          {/* Name & Rating & Category */}
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h4 className="font-semibold text-lg">{hotel.nombre}</h4>
                             {hotel.calificacion && (
@@ -120,6 +264,12 @@ const TabAlojamiento = ({
                                 <Star className="w-4 h-4 fill-current" />
                                 <span className="text-sm font-medium">{hotel.calificacion}</span>
                               </div>
+                            )}
+                            {categoryInfo.label && (
+                              <Badge variant="outline" className={`text-xs ${categoryInfo.color}`}>
+                                {categoryInfo.icon}
+                                <span className="ml-1">{categoryInfo.label}</span>
+                              </Badge>
                             )}
                           </div>
 
