@@ -185,7 +185,7 @@ export const ConversationList = ({ onSelectConversation, onNewChat, selectedId, 
         <Button 
           onClick={onNewChat}
           className="w-full gap-2"
-          variant="default"
+          variant="outline"
         >
           <Plus className="w-4 h-4" />
           Nuevo Chat

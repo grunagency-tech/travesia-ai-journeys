@@ -1202,9 +1202,9 @@ const ChatPage = () => {
             <img src={logoFull} alt="travesIA" className="h-8" />
           </Link>
           
-          {conversationTitle && (
+          {tripDestination && (
             <span className="hidden sm:block text-sm text-muted-foreground truncate max-w-[200px]">
-              {conversationTitle}
+              {tripDestination}
             </span>
           )}
           
