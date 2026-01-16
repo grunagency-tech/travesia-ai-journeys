@@ -16,6 +16,7 @@ import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { ConversationList } from "@/components/ConversationList";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { stripGeneratedItineraryHeader } from "@/lib/itineraryHtml";
+import { loadConversationItineraryCache, saveConversationItineraryCache } from "@/lib/conversationItineraryCache";
 import logoFull from "@/assets/logo-full.svg";
 import logoIcon from "@/assets/logo-icon.svg";
 import {
@@ -303,8 +304,36 @@ const ChatPage = () => {
     }
   }, [conversationIdFromState, user]);
 
+  // Restore last open conversation for logged-in users when coming back to /chat
+  useEffect(() => {
+    if (!user) return;
+    if (conversationIdFromState) return;
+    if (currentConversationId) return;
+
+    const lastConvId = localStorage.getItem("travesia:last-conv:v1");
+    if (lastConvId) {
+      loadConversation(lastConvId);
+    }
+  }, [user, conversationIdFromState, currentConversationId]);
+
   const loadConversation = async (convId: string) => {
     const seq = ++loadConversationSeqRef.current;
+
+    // Fast local restore to prevent the UI from "falling back" (HTML/Loading) when navigating away and back.
+    const cached = loadConversationItineraryCache(convId);
+    if (cached) {
+      setConversationTitle(cached.conversationTitle);
+      setTripDestination(cached.tripDestination);
+      setTripOrigin(cached.tripOrigin);
+      setTripDate(cached.tripDate);
+      setTripEndDate(cached.tripEndDate);
+      setTripTravelers(cached.tripTravelers || 1);
+      setTripBudget(cached.tripBudget);
+      setTripImage(cached.tripImage);
+      setItineraryData(cached.itineraryData);
+      if (cached.htmlContent) setHtmlContent(cached.htmlContent);
+      setCurrentConversationId(convId);
+    }
 
     try {
       // Load conversation details
@@ -325,6 +354,7 @@ const ChatPage = () => {
 
       setConversationTitle(conv.title);
       setCurrentConversationId(convId);
+      localStorage.setItem("travesia:last-conv:v1", convId);
 
       // Load messages
       const { data: msgs, error: msgsError } = await supabase
@@ -458,6 +488,37 @@ const ChatPage = () => {
       console.error('Error updating conversation title:', error);
     }
   };
+
+  // Persist itinerary UI for logged-in users too (so aesthetics don't change when navigating away)
+  useEffect(() => {
+    if (!currentConversationId) return;
+
+    localStorage.setItem("travesia:last-conv:v1", currentConversationId);
+    saveConversationItineraryCache(currentConversationId, {
+      itineraryData,
+      htmlContent,
+      conversationTitle,
+      tripDestination,
+      tripOrigin,
+      tripDate,
+      tripEndDate,
+      tripTravelers,
+      tripBudget,
+      tripImage,
+    });
+  }, [
+    currentConversationId,
+    itineraryData,
+    htmlContent,
+    conversationTitle,
+    tripDestination,
+    tripOrigin,
+    tripDate,
+    tripEndDate,
+    tripTravelers,
+    tripBudget,
+    tripImage,
+  ]);
 
   // Save messages to sessionStorage when they change (for non-logged in users)
   useEffect(() => {
