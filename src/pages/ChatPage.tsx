@@ -485,9 +485,8 @@ const ChatPage = () => {
         timestamp: new Date(m.timestamp)
       }));
 
-      // Only prompt if there's a meaningful conversation (at least 2 messages - one exchange)
+      // Only restore if there's a meaningful conversation (at least 2 messages)
       if (!parsed || parsed.length < 2) {
-        // Not enough history to warrant a prompt - just clear and start fresh
         sessionStorage.removeItem('chatMessages');
         sessionStorage.removeItem('chatPendingMessage');
         sessionStorage.removeItem('chatShowRegisterBanner');
@@ -495,20 +494,23 @@ const ChatPage = () => {
         return;
       }
 
+      // Auto-restore without asking for anonymous users
+      setMessages(parsed);
+      messagesRef.current = parsed;
+
       const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
       const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
       const savedUserMessageCount = sessionStorage.getItem('chatUserMessageCount');
 
-      draftToRestoreRef.current = {
-        messages: parsed,
-        pendingMessage: savedPendingMessage,
-        showRegisterBanner: savedBannerState === 'true',
-        userMessageCount: savedUserMessageCount ? parseInt(savedUserMessageCount, 10) : 0,
-      };
+      if (savedPendingMessage) {
+        setPendingMessage(savedPendingMessage);
+      }
+      if (savedBannerState === 'true') {
+        setShowRegisterBanner(true);
+      }
+      userMessageCountRef.current = savedUserMessageCount ? parseInt(savedUserMessageCount, 10) : 0;
 
-      setResumeDraftDialogOpen(true);
     } catch (e) {
-      // If corrupted, clear it.
       sessionStorage.removeItem('chatMessages');
       sessionStorage.removeItem('chatPendingMessage');
       sessionStorage.removeItem('chatShowRegisterBanner');
