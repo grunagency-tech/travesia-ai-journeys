@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2, MessageCircle } from 'lucide-react';
+import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2, MessageCircle, Music2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
@@ -569,14 +569,17 @@ const LandingPage = () => {
               <div className="flex flex-col gap-3 max-w-sm items-start">
                 <img src={logoFull} alt="travesIA" className="h-8" />
                 <div className="flex items-center gap-4">
-                  <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
-                    <Linkedin className="w-6 h-6" />
-                  </a>
-                  <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
+                  <a href="https://www.tiktok.com/@travesia.pe?_r=1&_t=ZS-936wD3Dcgem" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-600 transition-colors">
                     <Instagram className="w-6 h-6" />
                   </a>
-                  <a href="#" className="text-orange-500 hover:text-orange-600 transition-colors">
+                  <a href="https://www.tiktok.com/@travesia.pe?_r=1&_t=ZS-936wD3Dcgem" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-600 transition-colors">
+                    <Music2 className="w-6 h-6" />
+                  </a>
+                  <a href="https://www.facebook.com/profile.php?id=61586770825280" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-600 transition-colors">
                     <Facebook className="w-6 h-6" />
+                  </a>
+                  <a href="https://www.linkedin.com/company/travesia-trip-planner/" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-600 transition-colors">
+                    <Linkedin className="w-6 h-6" />
                   </a>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed text-left">
