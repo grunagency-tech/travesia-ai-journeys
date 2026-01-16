@@ -180,5 +180,6 @@ export interface ItineraryPanelProps {
   travelers?: number;
   budget?: number;
   customImage?: string;
+  onImageResolved?: (imageUrl: string) => void;
   onAddToItinerary?: (item: FlightOption | AccommodationOption | CarRentalOption | ActivityOption, type: string, dayNumber?: number) => void;
 }

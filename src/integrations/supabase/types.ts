@@ -263,6 +263,7 @@ export type Database = {
           destination: string
           end_date: string
           id: string
+          image_url: string | null
           origin: string
           preferences: Json | null
           start_date: string
@@ -276,6 +277,7 @@ export type Database = {
           destination: string
           end_date: string
           id?: string
+          image_url?: string | null
           origin: string
           preferences?: Json | null
           start_date: string
@@ -289,6 +291,7 @@ export type Database = {
           destination?: string
           end_date?: string
           id?: string
+          image_url?: string | null
           origin?: string
           preferences?: Json | null
           start_date?: string

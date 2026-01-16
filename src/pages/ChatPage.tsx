@@ -363,6 +363,7 @@ const ChatPage = () => {
           setTripEndDate(tripData.end_date);
           setTripBudget(tripData.budget);
           setTripTravelers(tripData.travelers || 1);
+          setTripImage(tripData.image_url || null);
           setTripSaved(true);
 
           // Restore itineraryData from preferences if available
@@ -661,6 +662,7 @@ const ChatPage = () => {
         end_date: endDate,
         budget: tripBudget || itineraryData?.resumen?.presupuestoEstimado || null,
         travelers: travelersCount,
+        image_url: tripImage || null,
         preferences: { 
           itinerary_html: htmlContent,
           itinerary_data: itineraryData 
@@ -1520,6 +1522,7 @@ const ChatPage = () => {
               travelers={tripTravelers}
               budget={tripBudget || undefined}
               customImage={tripImage || undefined}
+              onImageResolved={(imageUrl) => setTripImage(imageUrl)}
             />
           </div>
         ) : htmlContent ? (

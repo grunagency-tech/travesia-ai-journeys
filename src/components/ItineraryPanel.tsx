@@ -32,7 +32,8 @@ const ItineraryPanel = ({
   endDate, 
   travelers = 1,
   budget: userBudget,
-  customImage 
+  customImage,
+  onImageResolved
 }: ItineraryPanelProps) => {
   const { toast } = useToast();
   const [addedItems, setAddedItems] = useState<AddedItem[]>([]);
@@ -100,6 +101,7 @@ const ItineraryPanel = ({
           budget={budget}
           duration={duration}
           customImage={customImage}
+          onImageResolved={onImageResolved}
         />
       </div>
 
