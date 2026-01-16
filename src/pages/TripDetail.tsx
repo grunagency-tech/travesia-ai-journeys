@@ -14,6 +14,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getDestinationImage } from '@/lib/destinationImages';
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
+import { stripGeneratedItineraryHeader } from '@/lib/itineraryHtml';
 import ItineraryPanel from '@/components/ItineraryPanel';
 import { ItineraryData as ItineraryDataType } from '@/components/itinerary/types';
 import {
@@ -542,7 +543,7 @@ const TripDetail = () => {
                     </div>
                     <div 
                       className="prose prose-sm max-w-none prose-headings:font-urbanist prose-headings:font-bold prose-a:text-primary"
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(itineraryHtml) }} 
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(stripGeneratedItineraryHeader(itineraryHtml)) }} 
                     />
                   </div>
                 )}
