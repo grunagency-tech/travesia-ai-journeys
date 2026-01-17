@@ -26,6 +26,38 @@ interface TabTransporteProps {
   onAddCar?: (car: CarRentalOption) => void;
 }
 
+// Car rental company logos
+const getCarRentalLogo = (empresa: string): string => {
+  const carRentalLogos: Record<string, string> = {
+    'hertz': 'https://logo.clearbit.com/hertz.com',
+    'enterprise': 'https://logo.clearbit.com/enterprise.com',
+    'avis': 'https://logo.clearbit.com/avis.com',
+    'budget': 'https://logo.clearbit.com/budget.com',
+    'sixt': 'https://logo.clearbit.com/sixt.com',
+    'europcar': 'https://logo.clearbit.com/europcar.com',
+    'national': 'https://logo.clearbit.com/nationalcar.com',
+    'alamo': 'https://logo.clearbit.com/alamo.com',
+    'dollar': 'https://logo.clearbit.com/dollar.com',
+    'thrifty': 'https://logo.clearbit.com/thrifty.com',
+    'ace': 'https://logo.clearbit.com/acerentacar.com',
+    'payless': 'https://logo.clearbit.com/paylesscar.com',
+    'fox': 'https://logo.clearbit.com/foxrentacar.com',
+    'localiza': 'https://logo.clearbit.com/localiza.com',
+    'movida': 'https://logo.clearbit.com/movida.com.br',
+    'unidas': 'https://logo.clearbit.com/unidas.com.br',
+  };
+
+  const normalizedEmpresa = empresa.toLowerCase();
+  
+  for (const [key, url] of Object.entries(carRentalLogos)) {
+    if (normalizedEmpresa.includes(key)) {
+      return url;
+    }
+  }
+
+  return '';
+};
+
 // Generate fallback car rental options with real links
 const generateDefaultCarOptions = (destination?: string, startDate?: string, endDate?: string): CarRentalOption[] => {
   const destEncoded = encodeURIComponent(destination || 'aeropuerto');
@@ -38,7 +70,7 @@ const generateDefaultCarOptions = (destination?: string, startDate?: string, end
   return [
     {
       id: 'default-economy',
-      empresa: 'Múltiples proveedores',
+      empresa: 'Hertz',
       tipoVehiculo: 'Económico (Ej: Toyota Yaris)',
       precio: 25,
       puntoRecogida: 'Aeropuerto principal',
@@ -46,7 +78,7 @@ const generateDefaultCarOptions = (destination?: string, startDate?: string, end
     },
     {
       id: 'default-compact',
-      empresa: 'Múltiples proveedores',
+      empresa: 'Enterprise',
       tipoVehiculo: 'Compacto (Ej: VW Golf)',
       precio: 35,
       puntoRecogida: 'Aeropuerto principal',
@@ -54,7 +86,7 @@ const generateDefaultCarOptions = (destination?: string, startDate?: string, end
     },
     {
       id: 'default-suv',
-      empresa: 'Múltiples proveedores',
+      empresa: 'Avis',
       tipoVehiculo: 'SUV (Ej: Toyota RAV4)',
       precio: 55,
       puntoRecogida: 'Aeropuerto principal',
@@ -298,13 +330,27 @@ const TabTransporte = ({
               </div>
             )}
             
-            {(showAllCars ? effectiveCarOptions : effectiveCarOptions.slice(0, 3)).map((car, idx) => (
+            {(showAllCars ? effectiveCarOptions : effectiveCarOptions.slice(0, 3)).map((car, idx) => {
+              const carLogo = getCarRentalLogo(car.empresa);
+              return (
               <Card key={car.id || idx} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                        <Car className="w-5 h-5 text-green-600" />
+                      <div className="w-12 h-12 rounded-lg bg-white border flex items-center justify-center overflow-hidden shadow-sm">
+                        {carLogo ? (
+                          <img 
+                            src={carLogo} 
+                            alt={car.empresa}
+                            className="w-10 h-10 object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.parentElement!.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>';
+                            }}
+                          />
+                        ) : (
+                          <Car className="w-5 h-5 text-green-600" />
+                        )}
                       </div>
                       <div>
                         <p className="font-semibold">{car.tipoVehiculo}</p>
@@ -339,7 +385,8 @@ const TabTransporte = ({
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
             
             {effectiveCarOptions.length > 3 && !showAllCars && (
               <Button variant="ghost" className="w-full" onClick={() => setShowAllCars(true)}>
