@@ -91,6 +91,7 @@ The JSON MUST have this EXACT structure (respect property names, but all TEXT VA
     "vuelos": [
       {
         "aerolinea": "string - name of real airline operating that route (e.g: American Airlines, Delta, United)",
+        "codigoAerolinea": "string - IATA airline code for logo display (e.g: AA, DL, UA, IB, AF, LH, BA, EK, QR, AM, LA, AV)",
         "origen": "string - IATA airport code (e.g: MEX, LAX, JFK)",
         "destino": "string - destination IATA airport code (e.g: LAS, CDG, LHR)",
         "fechaSalida": "string - ISO date (YYYY-MM-DDTHH:mm:ss)",
@@ -223,14 +224,16 @@ IMPORTANT RULES:
 1. Create exactly ${days} days of itinerary
 2. CRITICAL - DATES: Day 1 MUST have fecha="${startDate}", Day 2 MUST have fecha="${new Date(new Date(startDate).getTime() + 86400000).toISOString().split('T')[0]}", and so on. Calculate each day's date by adding (dia - 1) days to the start date ${startDate}.
 3. Each day must have 3 activities with specific times (morning, afternoon, evening)
-4. Keep descriptions CONCISE (1-2 sentences max)
-5. Use REAL place names that exist
-6. Prices in USD, realistic for ${destination}
-7. Include functional booking URLs
-8. Respond ONLY with valid JSON, no markdown, no code blocks
-9. ALL text content must be in ${langConfig.name}
-10. Keep the response under 6000 tokens - be concise!
-11. This trip is for ${travelers} travelers - consider group sizes for activity recommendations`;
+4. MANDATORY - RESTAURANTS: At least ONE activity per day MUST be a restaurant recommendation with tipo="Gastronomía". Include the restaurant name, typical dishes, and approximate price per person.
+5. Keep descriptions CONCISE (1-2 sentences max)
+6. Use REAL place names that exist
+7. Prices in USD, realistic for ${destination}
+8. Include functional booking URLs
+9. Respond ONLY with valid JSON, no markdown, no code blocks
+10. ALL text content must be in ${langConfig.name}
+11. Keep the response under 6000 tokens - be concise!
+12. This trip is for ${travelers} travelers - consider group sizes for activity recommendations
+13. Include the IATA airline code (codigoAerolinea) for each flight to display airline logos`;
 
     const userPrompt = `Create a complete travel plan with these details:
 - Traveler description: ${description}
