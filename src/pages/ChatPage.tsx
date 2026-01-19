@@ -1618,13 +1618,13 @@ const ChatPage = () => {
           </form>
         </div>
 
-        {/* Floating button to show sidebar - bottom right */}
+        {/* Floating button to show sidebar - top left of chat area */}
         {user && !showDesktopSidebar && (
           <Button
             variant="outline"
             size="icon"
             onClick={() => setShowDesktopSidebar(true)}
-            className="hidden lg:flex fixed bottom-6 right-6 z-50 bg-white shadow-lg hover:bg-gray-50 border-gray-200"
+            className="hidden lg:flex absolute top-4 left-4 z-40 bg-white/95 backdrop-blur-sm shadow-md hover:bg-white border-gray-200/80"
             title="Mostrar historial"
           >
             <PanelLeft className="h-5 w-5" />
