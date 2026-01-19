@@ -156,8 +156,8 @@ The JSON MUST have this EXACT structure (respect property names, but all TEXT VA
   ],
   "itinerario": [
     {
-      "dia": number,
-      "fecha": "string - date YYYY-MM-DD",
+      "dia": number - day number starting from 1,
+      "fecha": "string - EXACT date in YYYY-MM-DD format. Day 1 MUST use the exact startDate provided, Day 2 is startDate + 1 day, etc.",
       "resumenDia": "string - brief summary of the day",
       "clima": "string - expected weather for that date",
       "actividades": [
@@ -221,23 +221,29 @@ The JSON MUST have this EXACT structure (respect property names, but all TEXT VA
 
 IMPORTANT RULES:
 1. Create exactly ${days} days of itinerary
-2. Each day must have 3 activities with specific times (morning, afternoon, evening)
-3. Keep descriptions CONCISE (1-2 sentences max)
-4. Use REAL place names that exist
-5. Prices in USD, realistic for ${destination}
-6. Include functional booking URLs
-7. Respond ONLY with valid JSON, no markdown, no code blocks
-8. ALL text content must be in ${langConfig.name}
-9. Keep the response under 6000 tokens - be concise!`;
+2. CRITICAL - DATES: Day 1 MUST have fecha="${startDate}", Day 2 MUST have fecha="${new Date(new Date(startDate).getTime() + 86400000).toISOString().split('T')[0]}", and so on. Calculate each day's date by adding (dia - 1) days to the start date ${startDate}.
+3. Each day must have 3 activities with specific times (morning, afternoon, evening)
+4. Keep descriptions CONCISE (1-2 sentences max)
+5. Use REAL place names that exist
+6. Prices in USD, realistic for ${destination}
+7. Include functional booking URLs
+8. Respond ONLY with valid JSON, no markdown, no code blocks
+9. ALL text content must be in ${langConfig.name}
+10. Keep the response under 6000 tokens - be concise!
+11. This trip is for ${travelers} travelers - consider group sizes for activity recommendations`;
 
     const userPrompt = `Create a complete travel plan with these details:
 - Traveler description: ${description}
 - Origin: ${origin}
 - Destination: ${destination}
-- Dates: ${startDate} to ${endDate} (${days} days)
-- Number of travelers: ${travelers}
-- User budget: ${budget ? `$${budget} USD` : 'Not specified (suggest mid-range options)'}
+- EXACT Start Date: ${startDate} (Day 1 fecha MUST be this exact date)
+- EXACT End Date: ${endDate}
+- Total days: ${days}
+- Number of travelers: ${travelers} person(s) - IMPORTANT: recommend activities suitable for groups of ${travelers}
+- User budget: ${budget ? `$${budget} USD total for all ${travelers} travelers` : 'Not specified (suggest mid-range options)'}
 ${flightData ? `\n- Available flight data:\n${JSON.stringify(flightData, null, 2)}` : ''}
+
+CRITICAL: The itinerario array MUST have Day 1 with fecha="${startDate}". Each subsequent day adds 1 to the date.
 
 Generate the complete itinerary following EXACTLY the specified JSON structure. Remember: ALL text content must be in ${langConfig.name}.`;
 
