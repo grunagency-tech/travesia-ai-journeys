@@ -10,51 +10,72 @@ interface FlightCardProps {
   showCategory?: boolean;
 }
 
-// Airline logo URL using a public API
+// Airline logo URL using IATA code (priority) or fallback to clearbit
 const getAirlineLogo = (airline: string, iataCode?: string): string => {
-  // Try to use logo.clearbit.com for airlines
+  // If IATA code is available, use Kiwi's reliable airline logo API
+  if (iataCode) {
+    return `https://images.kiwi.com/airlines/64/${iataCode}.png`;
+  }
+
+  // Fallback: IATA codes for common airlines
+  const airlineIataCodes: Record<string, string> = {
+    'american': 'AA',
+    'delta': 'DL',
+    'united': 'UA',
+    'iberia': 'IB',
+    'air france': 'AF',
+    'lufthansa': 'LH',
+    'british airways': 'BA',
+    'emirates': 'EK',
+    'qatar': 'QR',
+    'aeromexico': 'AM',
+    'latam': 'LA',
+    'avianca': 'AV',
+    'copa': 'CM',
+    'jetsmart': 'JA',
+    'volaris': 'Y4',
+    'viva aerobus': 'VB',
+    'spirit': 'NK',
+    'frontier': 'F9',
+    'southwest': 'WN',
+    'ryanair': 'FR',
+    'easyjet': 'U2',
+    'klm': 'KL',
+    'swiss': 'LX',
+    'turkish': 'TK',
+    'air canada': 'AC',
+    'tap': 'TP',
+    'vueling': 'VY',
+    'aer lingus': 'EI',
+    'jetblue': 'B6',
+    'alaska': 'AS',
+    'interjet': '4O',
+    'gol': 'G3',
+    'azul': 'AD',
+  };
+
+  const normalizedAirline = airline.toLowerCase();
+  
+  for (const [key, code] of Object.entries(airlineIataCodes)) {
+    if (normalizedAirline.includes(key)) {
+      return `https://images.kiwi.com/airlines/64/${code}.png`;
+    }
+  }
+
+  // Last resort: try clearbit
   const airlineLogos: Record<string, string> = {
     'latam': 'https://logo.clearbit.com/latam.com',
     'avianca': 'https://logo.clearbit.com/avianca.com',
     'american': 'https://logo.clearbit.com/aa.com',
     'delta': 'https://logo.clearbit.com/delta.com',
     'united': 'https://logo.clearbit.com/united.com',
-    'iberia': 'https://logo.clearbit.com/iberia.com',
-    'air france': 'https://logo.clearbit.com/airfrance.com',
-    'lufthansa': 'https://logo.clearbit.com/lufthansa.com',
-    'british airways': 'https://logo.clearbit.com/britishairways.com',
-    'emirates': 'https://logo.clearbit.com/emirates.com',
-    'qatar': 'https://logo.clearbit.com/qatarairways.com',
-    'copa': 'https://logo.clearbit.com/copaair.com',
     'aeromexico': 'https://logo.clearbit.com/aeromexico.com',
-    'jetsmart': 'https://logo.clearbit.com/jetsmart.com',
-    'sky airline': 'https://logo.clearbit.com/skyairline.com',
-    'viva air': 'https://logo.clearbit.com/vivaair.com',
-    'ryanair': 'https://logo.clearbit.com/ryanair.com',
-    'easyjet': 'https://logo.clearbit.com/easyjet.com',
-    'southwest': 'https://logo.clearbit.com/southwest.com',
-    'spirit': 'https://logo.clearbit.com/spirit.com',
-    'frontier': 'https://logo.clearbit.com/flyfrontier.com',
-    'klm': 'https://logo.clearbit.com/klm.com',
-    'swiss': 'https://logo.clearbit.com/swiss.com',
-    'turkish': 'https://logo.clearbit.com/turkishairlines.com',
-    'air canada': 'https://logo.clearbit.com/aircanada.com',
-    'aer lingus': 'https://logo.clearbit.com/aerlingus.com',
-    'tap': 'https://logo.clearbit.com/flytap.com',
-    'vueling': 'https://logo.clearbit.com/vueling.com',
   };
 
-  const normalizedAirline = airline.toLowerCase();
-  
   for (const [key, url] of Object.entries(airlineLogos)) {
     if (normalizedAirline.includes(key)) {
       return url;
     }
-  }
-
-  // If IATA code is available, try using it
-  if (iataCode) {
-    return `https://images.kiwi.com/airlines/64/${iataCode}.png`;
   }
 
   return '';
