@@ -805,9 +805,12 @@ const ChatPage = () => {
     const isAckOnly = /^\s*(gracias|ok|vale|perfecto|listo|genial|bien|thanks|thx)\b/i.test(messageText.trim());
     const shouldTryRegenerate = hasExistingItinerary && !isAckOnly;
 
-    // Registration gate - show banner after first message for non-logged users
+    // Registration gate - for anonymous users, allow enough messages to reach a "complete" trip
+    // (otherwise the itinerary never gets generated). Gate only after a few turns AND only
+    // before the first itinerary is created.
     const currentUserMessages = userMessageCountRef.current;
-    if (currentUserMessages >= 1 && !user && !isFromPending) {
+    const ANON_MESSAGES_BEFORE_GATE = 3;
+    if (currentUserMessages >= ANON_MESSAGES_BEFORE_GATE && !user && !itineraryData && !isFromPending) {
       setPendingMessage(messageText);
       setInputValue("");
       setShowRegisterBanner(true);
@@ -863,7 +866,9 @@ const ChatPage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // Supabase Edge Functions expect both Authorization + apikey when called via fetch
           "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
           messages: messageHistory,
