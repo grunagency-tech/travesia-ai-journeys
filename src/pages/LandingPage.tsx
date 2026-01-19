@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2, MessageCircle, Music2 } from 'lucide-react';
+import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2, MessageCircle, Music2, History, PlusCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import heroBackground from '@/assets/hero-background.jpg';
 import logoFull from '@/assets/logo-full.svg';
 import bookingLogo from '@/assets/partners/booking.svg';
@@ -34,6 +43,9 @@ import jorgeImage from '@/assets/testimonials/jorge.png';
 const LandingPage = () => {
   const [tripDescription, setTripDescription] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [showChatChoiceDialog, setShowChatChoiceDialog] = useState(false);
+  const [hasConversations, setHasConversations] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -44,6 +56,25 @@ const LandingPage = () => {
     }
   });
 
+  // Check if user has existing conversations
+  useEffect(() => {
+    const checkConversations = async () => {
+      if (!user) {
+        setHasConversations(false);
+        return;
+      }
+      
+      const { count } = await supabase
+        .from('conversations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      
+      setHasConversations((count || 0) > 0);
+    };
+    
+    checkConversations();
+  }, [user]);
+
   // Preload hero image
   useState(() => {
     const img = new Image();
@@ -52,9 +83,29 @@ const LandingPage = () => {
   });
 
   const handleGenerate = () => {
-    if (tripDescription.trim()) {
+    if (!tripDescription.trim()) return;
+    
+    // If user is logged in and has conversations, show choice dialog
+    if (user && hasConversations) {
+      setPendingMessage(tripDescription);
+      setShowChatChoiceDialog(true);
+    } else {
+      // No user or no conversations - go directly to new chat
       navigate('/chat', { state: { initialMessage: tripDescription } });
     }
+  };
+
+  const handleNewChat = () => {
+    setShowChatChoiceDialog(false);
+    // Clear last conversation so it starts fresh
+    localStorage.removeItem('travesia:last-conv:v1');
+    navigate('/chat', { state: { initialMessage: pendingMessage, forceNew: true } });
+  };
+
+  const handleGoToHistory = () => {
+    setShowChatChoiceDialog(false);
+    // Navigate to chat with sidebar open and message ready
+    navigate('/chat', { state: { initialMessage: pendingMessage, openHistory: true } });
   };
 
   const scrollToTop = () => {
@@ -602,6 +653,50 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Chat Choice Dialog */}
+      <Dialog open={showChatChoiceDialog} onOpenChange={setShowChatChoiceDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              {language === 'ES' ? '¿Dónde quieres continuar?' : 'Where do you want to continue?'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'ES' 
+                ? 'Tienes conversaciones anteriores. Puedes iniciar un nuevo viaje o ver tu historial de chats.'
+                : 'You have previous conversations. You can start a new trip or view your chat history.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-4">
+            <Button 
+              onClick={handleNewChat}
+              className="w-full justify-start gap-3 h-14 text-left"
+              variant="outline"
+            >
+              <PlusCircle className="w-5 h-5 text-primary" />
+              <div className="flex flex-col items-start">
+                <span className="font-semibold">{language === 'ES' ? 'Nuevo viaje' : 'New trip'}</span>
+                <span className="text-xs text-muted-foreground">
+                  {language === 'ES' ? 'Empezar desde cero con tu mensaje' : 'Start fresh with your message'}
+                </span>
+              </div>
+            </Button>
+            <Button 
+              onClick={handleGoToHistory}
+              className="w-full justify-start gap-3 h-14 text-left"
+              variant="outline"
+            >
+              <History className="w-5 h-5 text-primary" />
+              <div className="flex flex-col items-start">
+                <span className="font-semibold">{language === 'ES' ? 'Ver historial' : 'View history'}</span>
+                <span className="text-xs text-muted-foreground">
+                  {language === 'ES' ? 'Continuar una conversación anterior' : 'Continue a previous conversation'}
+                </span>
+              </div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

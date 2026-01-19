@@ -229,6 +229,8 @@ const ChatPage = () => {
   const t = (key: string) => getTranslation(`chat.${key}`, language);
   const initialMessage = location.state?.initialMessage || "";
   const conversationIdFromState = location.state?.conversationId || null;
+  const forceNewChat = location.state?.forceNew || false;
+  const openHistorySidebar = location.state?.openHistory || false;
   
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesRef = useRef<Message[]>([]);
@@ -594,8 +596,20 @@ const ChatPage = () => {
     }
   }, [location.search]);
 
+  // Handle opening history sidebar from landing page
+  useEffect(() => {
+    if (openHistorySidebar && user) {
+      setShowDesktopSidebar(true);
+      setShowSidebar(true); // For mobile
+    }
+  }, [openHistorySidebar, user]);
+
   useEffect(() => {
     if (initialMessage && messages.length === 0 && !conversationIdFromState) {
+      // If forceNew, clear any saved conversation first
+      if (forceNewChat) {
+        localStorage.removeItem('travesia:last-conv:v1');
+      }
       sendMessage(initialMessage);
     }
   }, []);
