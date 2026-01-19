@@ -923,29 +923,36 @@ const ChatPage = () => {
           const tripData = typeof textToParse === "string" ? JSON.parse(textToParse) : textToParse;
           console.log("Trip data complete:", tripData);
 
-          // Set trip metadata
-          if (tripData.destino) {
-            setTripDestination(tripData.destino);
-            setConversationTitle(`Viaje a ${tripData.destino}`);
+          // In modification mode the assistant may return only partial trip data.
+          // Merge with current trip context so regeneration always has required fields.
+          const mergedTripData: any = {
+            ...(existingTripData ?? {}),
+            ...(tripData ?? {}),
+          };
+
+          // Set trip metadata (prefer latest values)
+          if (mergedTripData.destino) {
+            setTripDestination(mergedTripData.destino);
+            setConversationTitle(`Viaje a ${mergedTripData.destino}`);
           }
-          if (tripData.origen) {
-            setTripOrigin(tripData.origen);
+          if (mergedTripData.origen) {
+            setTripOrigin(mergedTripData.origen);
           }
-          if (tripData.fechaSalida) {
-            setTripDate(tripData.fechaSalida);
+          if (mergedTripData.fechaSalida) {
+            setTripDate(mergedTripData.fechaSalida);
           }
-          if (tripData.fechaRegreso) {
-            setTripEndDate(tripData.fechaRegreso);
+          if (mergedTripData.fechaRegreso) {
+            setTripEndDate(mergedTripData.fechaRegreso);
           }
-          if (tripData.pasajeros) {
-            setTripTravelers(tripData.pasajeros);
+          if (mergedTripData.pasajeros != null) {
+            setTripTravelers(mergedTripData.pasajeros);
           }
-          if (tripData.presupuesto) {
-            setTripBudget(tripData.presupuesto);
+          if (mergedTripData.presupuesto != null) {
+            setTripBudget(mergedTripData.presupuesto);
           }
 
           // Show generating message based on detected language - mention it may take a few minutes
-          const detectedLanguage = tripData.language || "es";
+          const detectedLanguage = mergedTripData.language || "es";
           const generatingMessages: Record<string, string> = {
             es: "¡Perfecto! Tengo toda la información. Estoy preparando tu itinerario personalizado. Esto puede tomar 1-2 minutos, pero valdrá la pena... ✨",
             en: "Perfect! I have all the information. I'm preparing your personalized itinerary. This may take 1-2 minutes, but it will be worth it... ✨",
@@ -987,14 +994,14 @@ const ChatPage = () => {
               const response = await supabase.functions.invoke("generate-itinerary", {
                 body: {
                   description: hasExistingItinerary
-                    ? `${tripData.estiloViaje || "viaje"} | Cambios solicitados: ${messageText}`
-                    : (tripData.estiloViaje || "viaje cultural"),
-                  origin: tripData.origen,
-                  destination: tripData.destino,
-                  startDate: tripData.fechaSalida,
-                  endDate: tripData.fechaRegreso,
-                  travelers: tripData.pasajeros || 1,
-                  budget: tripData.presupuesto || null,
+                    ? `${mergedTripData.estiloViaje || "viaje"} | Cambios solicitados: ${messageText}`
+                    : (mergedTripData.estiloViaje || "viaje cultural"),
+                  origin: mergedTripData.origen || tripOrigin,
+                  destination: mergedTripData.destino || tripDestination,
+                  startDate: mergedTripData.fechaSalida || tripDate,
+                  endDate: mergedTripData.fechaRegreso || tripEndDate,
+                  travelers: mergedTripData.pasajeros || tripTravelers || 1,
+                  budget: mergedTripData.presupuesto ?? tripBudget ?? null,
                   language: detectedLanguage,
                 },
               });
