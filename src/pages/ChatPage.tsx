@@ -16,7 +16,7 @@ import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { ConversationList } from "@/components/ConversationList";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { stripGeneratedItineraryHeader } from "@/lib/itineraryHtml";
-import { loadConversationItineraryCache, saveConversationItineraryCache } from "@/lib/conversationItineraryCache";
+import { loadConversationItineraryCache, saveConversationItineraryCache, clearConversationItineraryCache } from "@/lib/conversationItineraryCache";
 import logoFull from "@/assets/logo-full.svg";
 import logoIcon from "@/assets/logo-icon.svg";
 import {
@@ -537,7 +537,7 @@ const ChatPage = () => {
   }, [pendingMessage, showRegisterBanner]);
 
   // Restore messages from sessionStorage on mount (for non-logged in users)
-  // NOTE: We ask the user whether to continue or start fresh to avoid accidental carry-over.
+  // Show a prompt asking whether to continue or start fresh to avoid accidental carry-over.
   useEffect(() => {
     if (user || currentConversationId) return; // Don't restore if logged in or loading a conversation
 
@@ -550,7 +550,7 @@ const ChatPage = () => {
         timestamp: new Date(m.timestamp)
       }));
 
-      // Only restore if there's a meaningful conversation (at least 2 messages)
+      // Only show dialog if there's a meaningful conversation (at least 2 messages)
       if (!parsed || parsed.length < 2) {
         sessionStorage.removeItem('chatMessages');
         sessionStorage.removeItem('chatPendingMessage');
@@ -559,21 +559,20 @@ const ChatPage = () => {
         return;
       }
 
-      // Auto-restore without asking for anonymous users
-      setMessages(parsed);
-      messagesRef.current = parsed;
-
       const savedPendingMessage = sessionStorage.getItem('chatPendingMessage');
       const savedBannerState = sessionStorage.getItem('chatShowRegisterBanner');
       const savedUserMessageCount = sessionStorage.getItem('chatUserMessageCount');
 
-      if (savedPendingMessage) {
-        setPendingMessage(savedPendingMessage);
-      }
-      if (savedBannerState === 'true') {
-        setShowRegisterBanner(true);
-      }
-      userMessageCountRef.current = savedUserMessageCount ? parseInt(savedUserMessageCount, 10) : 0;
+      // Prepare the draft to restore later if user clicks "Resume"
+      draftToRestoreRef.current = {
+        messages: parsed,
+        pendingMessage: savedPendingMessage || null,
+        showRegisterBanner: savedBannerState === 'true',
+        userMessageCount: savedUserMessageCount ? parseInt(savedUserMessageCount, 10) : 0,
+      };
+
+      // Show the resume-or-discard dialog
+      setResumeDraftDialogOpen(true);
 
     } catch (e) {
       sessionStorage.removeItem('chatMessages');
@@ -1201,6 +1200,11 @@ const ChatPage = () => {
     loadConversationSeqRef.current += 1;
     messagesRef.current = [];
 
+    // If we were viewing a cached conversation, clear that cache too
+    if (currentConversationId) {
+      clearConversationItineraryCache(currentConversationId);
+    }
+
     // Clear the "last conversation" marker so auto-restore doesn't bring us back
     localStorage.removeItem("travesia:last-conv:v1");
 
@@ -1230,6 +1234,7 @@ const ChatPage = () => {
     sessionStorage.removeItem('chatShowRegisterBanner');
     sessionStorage.removeItem('chatUserMessageCount');
     setShowSidebar(false);
+    draftToRestoreRef.current = null;
   };
 
   const handleSelectConversation = (convId: string) => {
