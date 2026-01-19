@@ -167,12 +167,12 @@ const LandingPage = () => {
                 </Button>
                 
                 <div className="flex items-center gap-2">
-                  {user && (
+                  {user && hasConversations && (
                     <Button 
                       variant="ghost" 
                       size="icon"
                       className="rounded-full text-gray-400 hover:text-primary hover:bg-primary/10"
-                      onClick={() => navigate('/chat')}
+                      onClick={() => navigate('/chat', { state: { openHistory: true } })}
                       title="Historial de chats"
                     >
                       <MessageCircle className="w-5 h-5" />
@@ -230,12 +230,12 @@ const LandingPage = () => {
                     <span className="text-sm">{getTranslation('hero.attachFiles', language)}</span>
                   </Button>
                   
-                  {user && (
+                  {user && hasConversations && (
                     <Button 
                       variant="ghost" 
                       size="icon"
                       className="rounded-full text-gray-400 hover:text-primary hover:bg-primary/10"
-                      onClick={() => navigate('/chat')}
+                      onClick={() => navigate('/chat', { state: { openHistory: true } })}
                       title="Historial de chats"
                     >
                       <MessageCircle className="w-5 h-5" />
