@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system based on travesIA Figma design. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Brand colors - Blue #0000FF */
+    --primary: 240 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 240 100% 65%;
+    
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222 47% 11%;
+    
+    --accent: 240 100% 97%;
+    --accent-foreground: 240 100% 35%;
+    
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 240 100% 50%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    --radius: 0.75rem;
+    
+    /* Gradients - Blue based */
+    --gradient-primary: linear-gradient(135deg, hsl(240 100% 50%), hsl(220 100% 65%));
+    --gradient-hero: linear-gradient(180deg, hsl(240 100% 98%), hsl(0 0% 100%));
+    
+    /* Shadows - Elegant and soft with blue tint */
+    --shadow-elegant: 0 20px 60px -15px hsl(240 100% 50% / 0.15);
+    --shadow-card: 0 4px 20px hsl(240 50% 30% / 0.06);
+    --shadow-hover: 0 8px 30px hsl(240 100% 50% / 0.12);
+    --shadow-premium: 0 25px 50px -12px hsl(240 100% 50% / 0.25);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5% 26%;
+    --sidebar-primary: 240 6% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 92% 60%;
+  }
+
+  .dark {
+    --primary: 240 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 240 100% 65%;
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: 240 100% 20%;
+    --accent-foreground: 0 0% 98%;
+    
+    --background: 222 47% 11%;
+    --foreground: 0 0% 98%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    
+    --card: 217 33% 17%;
+    --card-foreground: 0 0% 98%;
+    
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 240 100% 50%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 98%;
+    
+    --sidebar-background: 240 6% 10%;
+    --sidebar-foreground: 240 5% 65%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 6% 10%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 240 5% 65%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 217 92% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .shadow-hover {
+    box-shadow: var(--shadow-hover);
+  }
+  
+  .shadow-premium {
+    box-shadow: var(--shadow-premium);
+  }
+  
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+  
+  .hover-scale {
+    transition: transform 0.3s ease;
+  }
+  
+  .hover-scale:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Cookie banner animation */
+  @keyframes slideUpFade {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Leaflet map fixes for mobile */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 200px;
+  z-index: 1;
+  background: hsl(var(--muted));
+}
+
+.leaflet-tile-pane {
+  z-index: 1;
+}
+
+.leaflet-marker-pane {
+  z-index: 2;
+}
+
+.leaflet-overlay-pane {
+  z-index: 3;
+}
+
+/* Custom marker styles */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ensure Leaflet tiles load properly */
+.leaflet-tile {
+  visibility: visible !important;
+}
+
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

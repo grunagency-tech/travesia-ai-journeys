@@ -1,0 +1,25 @@
+project_id = "oikkkghvxvfzivdhpovl"
+
+[functions.voice-to-text]
+verify_jwt = false
+
+[functions.generate-itinerary]
+verify_jwt = false
+
+[functions.search-flights]
+verify_jwt = false
+
+[functions.search-hotels]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.verify-reset-token]
+verify_jwt = false
+
+[functions.travesia-chat]
+verify_jwt = false
