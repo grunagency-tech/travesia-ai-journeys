@@ -1,86 +1,54 @@
-import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function validateInput(body: Record<string, unknown>): { valid: true; data: { description: string; origin: string; destination: string; startDate: string; endDate: string; travelers: number; budget: number | null; flightData: unknown; language: string } } | { valid: false; errors: string[] } {
-  const errors: string[] = [];
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+const generateItinerarySchema = z.object({
+  description: z.string().trim().min(1, "Description is required").max(1000, "Description must be less than 1000 characters"),
+  origin: z.string().trim().min(2, "Origin must be at least 2 characters").max(100, "Origin must be less than 100 characters"),
+  destination: z.string().trim().min(2, "Destination must be at least 2 characters").max(100, "Destination must be less than 100 characters"),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be in YYYY-MM-DD format"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format"),
+  travelers: z.number().int().min(1, "At least 1 traveler required").max(20, "Maximum 20 travelers allowed"),
+  budget: z.number().positive("Budget must be positive").max(10000000, "Budget exceeds maximum allowed").optional().nullable(),
+  flightData: z.any().optional(),
+  language: z.string().min(2).max(5).optional().default("es")
+}).refine(
+  (data) => new Date(data.startDate) <= new Date(data.endDate),
+  { message: "End date must be after or equal to start date", path: ["endDate"] }
+);
 
-  const description = typeof body.description === 'string' ? body.description.trim() : '';
-  if (!description || description.length > 1000) errors.push('description: must be 1-1000 chars');
-
-  const origin = typeof body.origin === 'string' && body.origin.trim().length > 0 ? body.origin.trim() : 'No especificado';
-  if (origin.length > 100) errors.push('origin: must be <= 100 chars');
-
-  const destination = typeof body.destination === 'string' ? body.destination.trim() : '';
-  if (destination.length < 2 || destination.length > 100) errors.push('destination: must be 2-100 chars');
-
-  const startDate = typeof body.startDate === 'string' ? body.startDate : '';
-  if (!dateRegex.test(startDate)) errors.push('startDate: must be YYYY-MM-DD');
-
-  const endDate = typeof body.endDate === 'string' ? body.endDate : '';
-  if (!dateRegex.test(endDate)) errors.push('endDate: must be YYYY-MM-DD');
-
-  if (startDate && endDate && new Date(startDate) > new Date(endDate)) errors.push('endDate: must be after or equal to start date');
-
-  const travelers = typeof body.travelers === 'number' ? body.travelers : 0;
-  if (!Number.isInteger(travelers) || travelers < 1 || travelers > 20) errors.push('travelers: must be 1-20');
-
-  const budget = body.budget != null ? (typeof body.budget === 'number' && body.budget > 0 && body.budget <= 10000000 ? body.budget : -1) : null;
-  if (budget === -1) errors.push('budget: must be positive and <= 10000000');
-
-  const language = typeof body.language === 'string' && body.language.length >= 2 && body.language.length <= 5 ? body.language : 'es';
-
-  if (errors.length > 0) return { valid: false, errors };
-  return { valid: true, data: { description, origin, destination, startDate, endDate, travelers, budget: budget as number | null, flightData: body.flightData, language } };
-}
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - missing auth header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('Authenticated user:', user.id);
+    // Auth temporarily disabled for testing
+    console.log('Processing itinerary request (auth disabled for testing)');
 
     const requestBody = await req.json();
     console.log('Received request body:', JSON.stringify(requestBody));
     
-    const validation = validateInput(requestBody);
-    if (!validation.valid) {
-      console.error('Validation failed:', validation.errors);
+    // Validate input
+    const validationResult = generateItinerarySchema.safeParse(requestBody);
+    if (!validationResult.success) {
+      console.error('Validation failed:', validationResult.error.issues);
       return new Response(
-        JSON.stringify({ error: 'Invalid input', details: validation.errors }),
+        JSON.stringify({ 
+          error: 'Invalid input',
+          details: validationResult.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`)
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { description, origin, destination, startDate, endDate, travelers, budget, flightData, language } = validation.data;
+    const { description, origin, destination, startDate, endDate, travelers, budget, flightData, language } = validationResult.data;
     
     const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
     if (!GOOGLE_AI_API_KEY) {
@@ -161,7 +129,7 @@ JSON structure (property names in Spanish, values in ${langConfig.name}):
 RULES:
 1. Exactly ${days} days. Day 1 fecha="${startDate}", each day +1.
 2. ${activitiesPerDay} activities per day (include 1 restaurant with tipo="Gastronomía").
-3. ${hotelOptions} hotel options. The "actividades" array MUST have AT LEAST ${activitySuggestions} unique activity suggestions (landmarks, tours, restaurants, experiences). NEVER leave it empty.
+3. ${hotelOptions} hotel options, ${activitySuggestions} activity suggestions.
 4. ALL strings MUST be SHORT. No long descriptions.
 5. Do NOT include "link" in itinerario.actividades or actividades array items.
 6. Use REAL place names. Prices in USD.
@@ -199,7 +167,7 @@ RULES:
         console.log(`AI call attempt ${attempt + 1}/${maxRetries + 1}`);
         
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -266,89 +234,7 @@ RULES:
       }
     }
 
-    // Ensure actividades array exists - extract from daily itinerary as fallback
-    if (!itinerary.actividades || !Array.isArray(itinerary.actividades) || itinerary.actividades.length === 0) {
-      console.warn('Missing actividades section, extracting from daily itinerary...');
-      const extractedActivities: Record<string, any> = {};
-      if (itinerary.itinerario && Array.isArray(itinerary.itinerario)) {
-        for (const day of itinerary.itinerario) {
-          if (day.actividades && Array.isArray(day.actividades)) {
-            for (const act of day.actividades) {
-              const name = act.titulo || act.nombre || '';
-              if (name && !extractedActivities[name.toLowerCase()]) {
-                extractedActivities[name.toLowerCase()] = {
-                  nombre: name,
-                  descripcion: act.descripcion || '',
-                  duracion: act.duracion || '2h',
-                  precio: act.costoAprox || act.precio || 0,
-                  tipo: act.tipo || 'Cultural',
-                  ubicacion: act.ubicacion || destination,
-                  horarios: act.hora || '',
-                };
-              }
-            }
-          }
-        }
-      }
-      itinerary.actividades = Object.values(extractedActivities);
-      console.log(`Extracted ${itinerary.actividades.length} activities from daily itinerary`);
-    }
-
-    // ===== POST-PROCESSING: Validate and regenerate all booking links =====
-    console.log('Validating and regenerating booking links...');
-
-    const enc = (s: string) => encodeURIComponent(s.trim());
-
-    // Fix flight links → Google Flights search (most reliable across all routes)
-    if (itinerary.transporte?.vuelos && Array.isArray(itinerary.transporte.vuelos)) {
-      for (const vuelo of itinerary.transporte.vuelos) {
-        const orig = vuelo.origen || '';
-        const dest = vuelo.destino || '';
-        // Google Flights text search works for both IATA codes and city names
-        vuelo.link = `https://www.google.com/travel/flights?q=flights+from+${enc(orig)}+to+${enc(dest)}+on+${startDate}${endDate ? '+return+' + endDate : ''}&curr=USD&hl=es`;
-      }
-    }
-
-    // Fix car rental links → Kayak with proper city format
-    if (itinerary.transporte?.opcionesCoche && Array.isArray(itinerary.transporte.opcionesCoche)) {
-      const destParts = destination.split(',').map((p: string) => p.trim().replace(/\s+/g, '-'));
-      const kayakLocation = destParts.join(',');
-      for (const coche of itinerary.transporte.opcionesCoche) {
-        coche.link = `https://www.kayak.com/cars/${enc(kayakLocation)}/${startDate}/${endDate};map?ucs=10f8kfk`;
-      }
-    }
-
-    // Fix hotel links → Google Maps search (precise location matching, avoids wrong city)
-    if (itinerary.alojamiento?.opciones && Array.isArray(itinerary.alojamiento.opciones)) {
-      for (const hotel of itinerary.alojamiento.opciones) {
-        if (typeof hotel === 'object' && hotel.nombre) {
-          hotel.link = `https://www.google.com/maps/search/${enc((hotel.nombre as string) + ' ' + destination)}`;
-        }
-      }
-    }
-
-    // Remove any links from itinerario.actividades (should not have links per rules)
-    if (itinerary.itinerario && Array.isArray(itinerary.itinerario)) {
-      for (const day of itinerary.itinerario) {
-        if (day.actividades && Array.isArray(day.actividades)) {
-          for (const act of day.actividades) {
-            delete act.link;
-          }
-        }
-      }
-    }
-
-    // Fix activity suggestion links → Google Maps search (always shows the place)
-    if (itinerary.actividades && Array.isArray(itinerary.actividades)) {
-      for (const act of itinerary.actividades) {
-        if (act.nombre) {
-          // Google Maps search guarantees showing the actual place on a map
-          act.link = `https://www.google.com/maps/search/${enc(act.nombre + ', ' + destination)}`;
-        }
-      }
-    }
-
-    console.log('Links validated and regenerated. Returning itinerary with sections:', Object.keys(itinerary));
+    console.log('Returning itinerary with sections:', Object.keys(itinerary));
 
     return new Response(
       JSON.stringify({ itinerary }),
