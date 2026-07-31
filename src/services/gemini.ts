@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getSmartImage } from "@/data/destinationImages";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDpBp5nWSUmliKIogfj870fpjU_nw9b3N4";
 
 // Initialize the Gemini API client
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
