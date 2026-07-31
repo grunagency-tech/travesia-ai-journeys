@@ -100,16 +100,11 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user } } = await supabase.auth.getUser(token);
 
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log("Authenticated user:", user.id);
+    // Anonymous visitors send the public key instead of a user JWT.
+    // They are allowed to chat (message limit is enforced in the app).
+    console.log(user ? `Authenticated user: ${user.id}` : "Anonymous visitor");
 
     const { messages, userLocation, existingTripData, hasItinerary, uiLanguage } = await req.json();
 
@@ -120,7 +115,7 @@ Deno.serve(async (req) => {
       );
     }
     
-    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
       throw new Error("GOOGLE_AI_API_KEY is not configured");
     }

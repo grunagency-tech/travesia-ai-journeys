@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
-  const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
+  const apiKey = Deno.env.get("GOOGLE_AI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
   if (!apiKey) {
     return json({ ok: false, provider: "Gemini", model: MODEL, error: "missing_api_key" });
   }
