@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,7 +64,6 @@ serve(async (req) => {
   }
 
   try {
- lovable-sync-1785520388
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -91,9 +91,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const { messages, userLocation, existingTripData, hasItinerary } = await req.json();
-main
     
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
@@ -146,11 +143,7 @@ If the user asks to modify preferences (style, luxury level, type of activities,
       for (let attempt = 0; attempt <= retries; attempt++) {
         try {
           const response = await fetch(
- lovable-sync-1785520388
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GOOGLE_AI_API_KEY}`,
-
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
- main
             {
               method: "POST",
               headers: {
