@@ -1,4 +1,4 @@
-project_id = "oikkkghvxvfzivdhpovl"
+project_id = "ecgyhfdzpuypjqirtsmi"
 
 [functions.voice-to-text]
 verify_jwt = false
