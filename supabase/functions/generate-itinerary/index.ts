@@ -199,7 +199,7 @@ RULES:
         console.log(`AI call attempt ${attempt + 1}/${maxRetries + 1}`);
         
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GOOGLE_AI_API_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
