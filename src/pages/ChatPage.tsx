@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import AIStatusBadge from "@/components/AIStatusBadge";
 import ReactMarkdown from "react-markdown";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Send, ArrowLeft, X, Save, Lock, CreditCard, Mic, Paperclip, Loader2, Sparkles, Menu, MessageCircle, PanelLeftClose, PanelLeft, Plus } from "lucide-react";
@@ -1374,6 +1375,8 @@ const ChatPage = () => {
           </Link>
           
           
+          <AIStatusBadge />
+
           <div className="flex-1" />
 
           <Button
