@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     
     const { description, origin, destination, startDate, endDate, travelers, budget, flightData, language } = validation.data;
     
-    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY') || Deno.env.get('GOOGLE_API_KEY');
     if (!GOOGLE_AI_API_KEY) {
       console.error('GOOGLE_AI_API_KEY not configured');
       throw new Error('GOOGLE_AI_API_KEY not configured');
