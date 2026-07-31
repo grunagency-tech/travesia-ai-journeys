@@ -10,12 +10,20 @@ Travesia es una plataforma web que utiliza IA conversacional para crear itinerar
 
 - 🤖 **Chat con IA** - Conversación natural para planificar tu viaje
 - 📅 **Itinerarios Detallados** - Día a día con actividades, horarios y costos
-- ✈️ **Búsqueda de Vuelos** - Google flights
+- ✈️ **Búsqueda de Vuelos** - Integración con TravelPayouts API para precios reales
 - 🏨 **Recomendaciones de Alojamiento** - Opciones adaptadas a tu presupuesto
 - 🗺️ **Mapa Interactivo** - Visualiza tus actividades en un mapa
 - 🍽️ **Guía Gastronómica** - Restaurantes y platos típicos recomendados
 - 💾 **Guarda tus Viajes** - Accede a todos tus itinerarios cuando quieras
 - 👨‍💼 **Panel de Administración** - Estadísticas y gestión de usuarios (solo admins)
+
+---
+
+## 🚀 Demo
+
+> 🔗 **[Ver Demo en Vivo](https://tu-dominio-aqui.vercel.app)** *(reemplaza con tu URL real)*
+
+![Screenshot](./docs/screenshot.png)
 
 ---
 
@@ -278,7 +286,7 @@ Las contribuciones son bienvenidas!
 
 ## 📄 Licencia
 
-Este proyecto es privado y propiedad de [Grun Agency](https://github.com/grunagency-tech).
+Este proyecto es privado y propiedad de [Grun Agency Tech](https://github.com/grunagency-tech).
 
 Todos los derechos reservados.
 
@@ -295,14 +303,15 @@ Desarrollado por **Grun Agency Tech**
 - [OpenAI](https://openai.com) - GPT-4o-mini API
 - [Supabase](https://supabase.com) - Backend as a Service
 - [Shadcn/ui](https://ui.shadcn.com) - Componentes UI
+- [TravelPayouts](https://www.travelpayouts.com) - API de vuelos
 - [Google](https://ai.google.dev) - Gemini AI
-
+- [Unsplash](https://unsplash.com) - Imágenes de destinos
 
 ---
 
 ## 📞 Contacto
 
-- **Website**: [tu-website.com](https://www.grunagency.com)
+- **Website**: [tu-website.com](https://tu-website.com)
 - **Email**: contacto@grunagency.com
 - **GitHub**: [@grunagency-tech](https://github.com/grunagency-tech)
 

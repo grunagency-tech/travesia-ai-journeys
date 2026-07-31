@@ -61,30 +61,17 @@ const getCarRentalLogo = (empresa: string): string => {
 
 const formatDateForKayak = (dateStr?: string): string => {
   if (!dateStr) return '';
-  // Kayak expects YYYY-MM-DD format
-  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return `${match[1]}-${match[2]}-${match[3]}`;
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '';
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-const generateKayakCarLink = (destination?: string, startDate?: string, endDate?: string): string => {
-  const dest = destination || '';
-  // Build Kayak-friendly location: "City,State,Country" with dashes for spaces
-  const parts = dest.split(',').map(p => p.trim().replace(/\s+/g, '-'));
-  const kayakLocation = encodeURIComponent(parts.join(','));
+const generateDefaultCarOptions = (destination?: string, startDate?: string, endDate?: string): CarRentalOption[] => {
+  const destEncoded = encodeURIComponent(destination || 'aeropuerto');
   const fStart = formatDateForKayak(startDate);
   const fEnd = formatDateForKayak(endDate);
-  
-  if (fStart && fEnd) {
-    return `https://www.kayak.com/cars/${kayakLocation}/${fStart}/${fEnd};map?ucs=10f8kfk`;
-  }
-  return `https://www.kayak.com/cars/${kayakLocation}`;
-};
-
-const generateDefaultCarOptions = (destination?: string, startDate?: string, endDate?: string): CarRentalOption[] => {
-  const kayakLink = generateKayakCarLink(destination, startDate, endDate);
+  const datePart = fStart && fEnd ? `/${fStart}/${fEnd}` : '';
+  const kayakLink = `https://www.kayak.com/cars/${destEncoded}${datePart}`;
   return [
     { id: 'default-economy', empresa: 'Hertz', tipoVehiculo: 'Económico (Ej: Toyota Yaris)', precio: 25, puntoRecogida: 'Aeropuerto principal', link: kayakLink },
     { id: 'default-compact', empresa: 'Enterprise', tipoVehiculo: 'Compacto (Ej: VW Golf)', precio: 35, puntoRecogida: 'Aeropuerto principal', link: kayakLink },
@@ -301,7 +288,11 @@ const TabTransporte = ({
                         <div className="flex flex-col gap-1.5 mt-2">
                           <Button size="sm" variant="default" className="bg-green-600 hover:bg-green-700"
                             onClick={() => {
-                              const fallbackUrl = generateKayakCarLink(destination, startDate, endDate);
+                              const dest = encodeURIComponent(destination || '');
+                              const fStart = formatDateForKayak(startDate);
+                              const fEnd = formatDateForKayak(endDate);
+                              const datePart = fStart && fEnd ? `/${fStart}/${fEnd}` : '';
+                              const fallbackUrl = `https://www.kayak.com/cars/${dest}${datePart}`;
                               window.open(car.link || fallbackUrl, '_blank');
                             }}
                           >

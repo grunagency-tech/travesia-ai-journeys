@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { sendMessageToOpenAI } from "@/services/openai";
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { X, Send, Loader2 } from 'lucide-react';
@@ -15,7 +16,7 @@ interface ChatBubbleProps {
   onClose: () => void;
 }
 
-const WEBHOOK_URL = 'https://gcp.grunagency.com/webhook/edc6fe1e-5d9a-44d8-9739-a5be993d853a';
+
 
 export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,26 +39,11 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: messageText,
-          timestamp: new Date().toISOString()
-        })
-      });
+      const data = await sendMessageToOpenAI(messageText);
 
-      if (!response.ok) {
-        throw new Error(`Webhook respondió con status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.response || data.message || data.text || 'Lo siento, no pude procesar tu mensaje.',
+        content: data.message || data.text || (data.resumen ? "¡He creado un itinerario! Visita el chat principal para más detalles." : "Respuesta recibida."),
         timestamp: new Date()
       };
 
@@ -68,7 +54,7 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
       }
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Error de conexión: Por favor verifica que el webhook esté activo y acepte peticiones desde tu dominio actual.',
+        content: 'Error de conexión: El webhook necesita configurar CORS para permitir peticiones desde este dominio. Verifica que el webhook esté activo y acepte peticiones desde https://525d781a-5aef-4bd2-b1c2-ee7df80e9b2f.lovableproject.com',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -128,19 +114,17 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                  message.role === 'user'
+                className={`max-w-[80%] rounded-2xl px-4 py-2 ${message.role === 'user'
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-900'
-                }`}
+                  }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                <p className={`text-xs mt-1 ${
-                  message.role === 'user' ? 'text-white/70' : 'text-gray-500'
-                }`}>
-                  {message.timestamp.toLocaleTimeString('es-ES', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                <p className={`text-xs mt-1 ${message.role === 'user' ? 'text-white/70' : 'text-gray-500'
+                  }`}>
+                  {message.timestamp.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </p>
               </div>
@@ -160,11 +144,11 @@ export const ChatBubble = ({ initialMessage, onClose }: ChatBubbleProps) => {
       <form onSubmit={handleSubmit} className="p-4 border-t">
         <div className="flex gap-2">
           <Textarea
-             value={input}
-             onChange={(e) => setInput(e.target.value)}
-             placeholder="Escribe tu mensaje..."
-             className="min-h-[60px] resize-none text-base md:text-sm"
-             onKeyDown={(e) => {
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Escribe tu mensaje..."
+            className="min-h-[60px] resize-none text-base md:text-sm"
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSubmit(e);

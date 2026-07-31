@@ -1,32 +1,20 @@
-import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-function validateInput(body: any): { valid: true; data: { destination: string; iataCode?: string; checkIn: string; checkOut: string; adults: number; currency: string; limit: number } } | { valid: false; errors: string[] } {
-  const errors: string[] = [];
-  if (!body.destination || typeof body.destination !== 'string' || body.destination.trim().length < 2) errors.push("Destination is required");
-  if (body.iataCode !== undefined && (typeof body.iataCode !== 'string' || body.iataCode.trim().length !== 3)) errors.push("IATA code must be 3 characters");
-  if (!body.checkIn || !dateRegex.test(body.checkIn)) errors.push("Check-in date must be YYYY-MM-DD");
-  if (!body.checkOut || !dateRegex.test(body.checkOut)) errors.push("Check-out date must be YYYY-MM-DD");
-  if (errors.length > 0) return { valid: false, errors };
-  return {
-    valid: true,
-    data: {
-      destination: body.destination.trim(),
-      iataCode: body.iataCode?.trim(),
-      checkIn: body.checkIn,
-      checkOut: body.checkOut,
-      adults: Math.min(10, Math.max(1, parseInt(body.adults) || 2)),
-      currency: body.currency || 'USD',
-      limit: Math.min(20, Math.max(1, parseInt(body.limit) || 10)),
-    }
-  };
-}
+const searchHotelsSchema = z.object({
+  destination: z.string().trim().min(2, "Destination is required"),
+  iataCode: z.string().trim().length(3, "IATA code must be 3 characters").optional(),
+  checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Check-in date must be in YYYY-MM-DD format"),
+  checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Check-out date must be in YYYY-MM-DD format"),
+  adults: z.number().int().min(1).max(10).default(2),
+  currency: z.string().default('USD'),
+  limit: z.number().int().min(1).max(20).default(10),
+});
 
 // Hotellook API helper to get city ID
 async function getCityId(destination: string, iataCode?: string): Promise<string | null> {
@@ -43,54 +31,15 @@ async function getCityId(destination: string, iataCode?: string): Promise<string
       }
     }
 
-    // Try full destination first
-    const fullResult = await lookupCity(destination);
-    if (fullResult) return fullResult;
-
-    // If destination contains comma or slash (region), try parts individually
-    const separators = /[,\/]/;
-    if (separators.test(destination)) {
-      const parts = destination.split(separators).map(p => p.trim()).filter(Boolean);
-      for (const part of parts) {
-        const result = await lookupCity(part);
-        if (result) {
-          console.log(`Found city ID using part: "${part}" from "${destination}"`);
-          return result;
-        }
+    // Fallback to destination name search
+    const url = `https://engine.hotellook.com/api/v2/lookup.json?query=${encodeURIComponent(destination)}&lang=es&lookFor=city&limit=1`;
+    const response = await fetch(url);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.results?.locations?.[0]?.id) {
+        return data.results.locations[0].id;
       }
     }
-
-    // Try first word only (e.g., "Patagonia" from "Patagonia, Argentina/Chile")
-    const firstWord = destination.split(/[\s,\/]/)[0]?.trim();
-    if (firstWord && firstWord !== destination) {
-      const result = await lookupCity(firstWord);
-      if (result) {
-        console.log(`Found city ID using first word: "${firstWord}"`);
-        return result;
-      }
-    }
-
-    // Try known city mappings for popular regions
-    const regionToCities: Record<string, string[]> = {
-      'patagonia': ['El Calafate', 'Bariloche', 'Ushuaia', 'Puerto Natales'],
-      'riviera maya': ['Cancún', 'Playa del Carmen', 'Tulum'],
-      'costa azul': ['Niza', 'Cannes', 'Mónaco'],
-      'toscana': ['Florencia', 'Siena', 'Pisa'],
-      'algarve': ['Faro', 'Lagos', 'Albufeira'],
-    };
-    const destLower = destination.toLowerCase();
-    for (const [region, cities] of Object.entries(regionToCities)) {
-      if (destLower.includes(region)) {
-        for (const city of cities) {
-          const result = await lookupCity(city);
-          if (result) {
-            console.log(`Found city ID using region mapping: "${city}" for "${destination}"`);
-            return result;
-          }
-        }
-      }
-    }
-
     return null;
   } catch (error) {
     console.error('Error getting city ID:', error);
@@ -98,29 +47,7 @@ async function getCityId(destination: string, iataCode?: string): Promise<string
   }
 }
 
-async function lookupCity(query: string): Promise<string | null> {
-  // Try both English and Spanish lookups via Hotellook
-  for (const lang of ['en', 'es']) {
-    try {
-      const url = `https://engine.hotellook.com/api/v2/lookup.json?query=${encodeURIComponent(query)}&lang=${lang}&lookFor=city&limit=1`;
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        const locationId = data.results?.locations?.[0]?.id;
-        if (locationId) {
-          console.log(`lookupCity found "${query}" (${lang}) → ID: ${locationId}`);
-          return locationId;
-        }
-      } else {
-        console.log(`lookupCity "${query}" (${lang}) → HTTP ${response.status}`);
-        await response.text(); // consume body
-      }
-    } catch (e) {
-      console.log(`lookupCity "${query}" (${lang}) → error: ${e}`);
-    }
-  }
-  return null;
-}
+// Get hotel details with pricing from Hotellook
 async function searchHotels(
   cityId: string,
   checkIn: string,
@@ -145,9 +72,7 @@ async function searchHotels(
     token: TRAVELPAYOUTS_API_TOKEN || '',
   });
 
-  const logParams = new URLSearchParams(params);
-  logParams.set('token', '[REDACTED]');
-  console.log('Searching hotels with URL:', `${url}?${logParams}`);
+  console.log('Searching hotels with URL:', `${url}?${params}`);
 
   const response = await fetch(`${url}?${params}`);
   
@@ -163,9 +88,8 @@ async function searchHotels(
   const hotels = (Array.isArray(data) ? data : data.hotels || []).slice(0, limit).map((hotel: any) => {
     const hotelId = hotel.id || hotel.hotelId;
     
-    // Generate Google Travel search link
-    const hotelName = (hotel.name || hotel.hotelName || 'Hotel').replace(/\s+/g, '+');
-    const bookingLink = `https://www.google.com/travel/search?q=${hotelName}+${checkIn}+to+${checkOut}&qs=OAA&guests=${adults}&checkin=${checkIn}&checkout=${checkOut}`;
+    // Generate booking link
+    const bookingLink = `https://search.hotellook.com/hotels?destination=${cityId}&checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&currency=${currency}&hotelId=${hotelId}&marker=${TRAVELPAYOUTS_MARKER}`;
 
     return {
       id: hotelId?.toString(),
@@ -212,43 +136,24 @@ async function getPopularHotels(destination: string, currency: string, limit: nu
   return [];
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - missing auth header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('Authenticated user:', user.id);
     console.log('Processing hotel search request');
 
     const requestBody = await req.json();
     
-    const validationResult = validateInput(requestBody);
-    if (!validationResult.valid) {
+    // Validate input
+    const validationResult = searchHotelsSchema.safeParse(requestBody);
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid input', details: validationResult.errors }),
+        JSON.stringify({ 
+          error: 'Invalid input',
+          details: validationResult.error.issues.map(issue => issue.message)
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

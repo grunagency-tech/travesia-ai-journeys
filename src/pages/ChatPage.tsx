@@ -818,6 +818,8 @@ const ChatPage = () => {
     if (!messageText.trim() || isLoading) return;
 
     const hasExistingItinerary = !!itineraryData;
+    const isAckOnly = /^\s*(gracias|ok|vale|perfecto|listo|genial|bien|thanks|thx)\b/i.test(messageText.trim());
+    const shouldTryRegenerate = hasExistingItinerary && !isAckOnly;
 
     // Registration gate - for anonymous users, allow enough messages to reach a "complete" trip
     // (otherwise the itinerary never gets generated). Gate only after a few turns AND only
@@ -893,7 +895,6 @@ const ChatPage = () => {
           },
           existingTripData,
           hasItinerary: !!itineraryData,
-          uiLanguage: language || "es",
         }),
       });
 
@@ -935,31 +936,8 @@ const ChatPage = () => {
               textToParse = textToParse.slice(0, -3);
             }
             textToParse = textToParse.trim();
-            // Handle double-escaped JSON from AI (\\\" → \")
-            if (textToParse.includes('\\"')) {
-              textToParse = textToParse.replace(/\\"/g, '"');
-            }
           }
-          let tripData;
-          try {
-            tripData = typeof textToParse === "string" ? JSON.parse(textToParse) : textToParse;
-            // Handle double-stringified JSON (AI sometimes returns a JSON string inside a JSON string)
-            if (typeof tripData === "string") {
-              console.log("tripData is still a string after first parse, parsing again...");
-              tripData = JSON.parse(tripData);
-            }
-          } catch (parseErr) {
-            console.error("First parse failed, trying to clean:", parseErr, "text:", textToParse?.substring(0, 200));
-            // Try cleaning escaped characters
-            const cleaned = typeof textToParse === "string" 
-              ? textToParse.replace(/\\\\"/g, '"').replace(/\\"/g, '"')
-              : textToParse;
-            tripData = typeof cleaned === "string" ? JSON.parse(cleaned) : cleaned;
-            // Handle double-stringified after cleaning
-            if (typeof tripData === "string") {
-              tripData = JSON.parse(tripData);
-            }
-          }
+          const tripData = typeof textToParse === "string" ? JSON.parse(textToParse) : textToParse;
           console.log("Trip data complete:", tripData);
 
           // In modification mode the assistant may return only partial trip data.
@@ -1035,7 +1013,7 @@ const ChatPage = () => {
                   description: hasExistingItinerary
                     ? `${mergedTripData.estiloViaje || "viaje"} | Cambios solicitados: ${messageText}`
                     : (mergedTripData.estiloViaje || "viaje cultural"),
-                  origin: mergedTripData.origen || tripOrigin || "No especificado",
+                  origin: mergedTripData.origen || tripOrigin,
                   destination: mergedTripData.destino || tripDestination,
                   startDate: mergedTripData.fechaSalida || tripDate,
                   endDate: mergedTripData.fechaRegreso || tripEndDate,
@@ -1131,9 +1109,105 @@ const ChatPage = () => {
           setGenerationProgress(0);
         }
       } else {
-        // Status incomplete - just show the conversational text response
-        // The AI will only return "complete" when the user explicitly asks to modify/regenerate
+        // Status incomplete - show the text response
         responseText = data.text || "¿En qué puedo ayudarte?";
+
+        // If the user already has an itinerary and is requesting changes, regenerate using the current trip data
+        if (
+          shouldTryRegenerate &&
+          tripDestination &&
+          tripOrigin &&
+          tripDate &&
+          tripEndDate
+        ) {
+          try {
+            const updatingMessages: Record<string, string> = {
+              es: "Perfecto, voy a ajustar tu itinerario con ese cambio. Dame 1-2 minutos... ✨",
+              en: "Got it — I'll update your itinerary with that change. Give me 1-2 minutes... ✨",
+              fr: "Parfait — je mets à jour votre itinéraire avec ce changement. Donnez-moi 1-2 minutes... ✨",
+              de: "Alles klar — ich aktualisiere deine Reiseroute. Gib mir 1-2 Minuten... ✨",
+              pt: "Perfeito — vou atualizar seu itinerário com essa mudança. Me dá 1-2 minutos... ✨",
+              it: "Perfetto — aggiorno il tuo itinerario con questa modifica. Dammi 1-2 minuti... ✨",
+            };
+
+            const updatingMessage: Message = {
+              role: "assistant",
+              content: updatingMessages[language] || updatingMessages.es,
+              timestamp: new Date(),
+            };
+            setMessages((prev) => {
+              const next = [...prev, updatingMessage];
+              messagesRef.current = next;
+              return next;
+            });
+
+            // Start progress animation for regeneration
+            setIsGeneratingItinerary(true);
+            setGenerationProgress(0);
+            const regenProgressInterval = setInterval(() => {
+              setGenerationProgress((prev) => {
+                if (prev >= 90) return prev + (95 - prev) * 0.02;
+                if (prev >= 70) return prev + (90 - prev) * 0.03;
+                if (prev >= 40) return prev + (70 - prev) * 0.04;
+                return prev + (40 - prev) * 0.08;
+              });
+            }, 500);
+
+            const itineraryResponse = await supabase.functions.invoke("generate-itinerary", {
+              body: {
+                description: `Cambios solicitados: ${messageText}`,
+                origin: tripOrigin,
+                destination: tripDestination,
+                startDate: tripDate,
+                endDate: tripEndDate,
+                travelers: tripTravelers || 1,
+                budget: tripBudget || null,
+                language: language || "es",
+              },
+            });
+
+            // Complete progress
+            clearInterval(regenProgressInterval);
+            setGenerationProgress(100);
+            setTimeout(() => {
+              setIsGeneratingItinerary(false);
+              setGenerationProgress(0);
+            }, 500);
+
+            if (!itineraryResponse.error) {
+              const itinerary = itineraryResponse.data?.itinerary;
+              if (itinerary) {
+                // Enrich with real hotel data
+                try {
+                  if (tripDestination && tripDate && tripEndDate) {
+                    const hotelResult = await travelSearchApi.searchHotels({
+                      destination: tripDestination,
+                      checkIn: tripDate.slice(0, 10),
+                      checkOut: tripEndDate.slice(0, 10),
+                      adults: tripTravelers || 2,
+                      limit: 10,
+                    });
+                    if (hotelResult.hotels?.length > 0) {
+                      if (!itinerary.alojamiento) itinerary.alojamiento = {};
+                      itinerary.alojamiento.opciones = hotelResult.hotels;
+                    }
+                  }
+                } catch (hotelErr) {
+                  console.warn('Hotel enrichment failed:', hotelErr);
+                }
+                
+                const generatedHtml = generateItineraryHtml(itinerary);
+                setHtmlContent(generatedHtml);
+                setItineraryData(itinerary as ItineraryData);
+                receivedHtml = generatedHtml;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to regenerate itinerary from follow-up:", e);
+            setIsGeneratingItinerary(false);
+            setGenerationProgress(0);
+          }
+        }
       }
 
       const assistantMessage: Message = {
@@ -1451,13 +1525,7 @@ const ChatPage = () => {
                         : "bg-white shadow-sm border border-gray-100 text-gray-900 rounded-bl-md"
                     }`}
                   >
-                    {message.role === "assistant" ? (
-                      <div className="text-sm leading-relaxed prose prose-sm prose-slate max-w-none [&>p]:m-0 [&>p+p]:mt-2 [&>ul]:my-2 [&>ol]:my-2 [&>ul>li]:my-0.5 [&>ol>li]:my-0.5 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm [&>h1]:font-bold [&>h2]:font-semibold [&>h3]:font-semibold [&>h1]:mt-3 [&>h2]:mt-2 [&>h3]:mt-2 [&>h1]:mb-1 [&>h2]:mb-1 [&>h3]:mb-1 [&>blockquote]:border-l-primary [&>blockquote]:text-muted-foreground">
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                    )}
+                    <p className="text-sm leading-relaxed">{message.content}</p>
                     <p className="text-xs mt-1.5 opacity-60">
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>

@@ -1045,4 +1045,3 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cC...
 **¿Preguntas? Consulta el [Admin Playbook](./ADMIN_PLAYBOOK.md) o [Troubleshooting](./TROUBLESHOOTING.md)**
 
 *Documento actualizado - Febrero 2026*
-

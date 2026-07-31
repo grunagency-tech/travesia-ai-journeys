@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { 
   Calendar, ChevronDown, ChevronUp, Eye, Plus, Plane, Hotel, 
-  Car, MapPin, Clock, Sun, Cloud, CloudRain, DollarSign, Trash2
+  Car, MapPin, Clock, Sun, Cloud, CloudRain, DollarSign
 } from "lucide-react";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,7 +25,6 @@ interface TabItinerarioProps {
   onAddAccommodation?: () => void;
   onAddCar?: () => void;
   onAddActivity?: () => void;
-  onRemoveActivity?: (dayNumber: number, activityIndex: number) => void;
   addedItems?: AddedItem[];
   travelers?: number;
   startDate?: string;
@@ -75,7 +74,6 @@ const TabItinerario = ({
   onAddAccommodation,
   onAddCar,
   onAddActivity,
-  onRemoveActivity,
   addedItems = [],
   travelers = 1,
   startDate,
@@ -235,8 +233,8 @@ const TabItinerario = ({
                   
                   <CollapsibleContent>
                     <div className="px-3 pb-3 md:px-4 md:pb-4 space-y-2 md:space-y-3">
-                      {/* Flight cards - only on first and last day */}
-                      {(day.dia === 1 || day.dia === days.length) && day.vuelos?.map((vuelo, idx) => (
+                      {/* Flight cards if any */}
+                      {day.vuelos?.map((vuelo, idx) => (
                         <div key={`flight-${idx}`} className="flex gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
                             <Plane className="w-5 h-5 text-white" />
@@ -255,8 +253,8 @@ const TabItinerario = ({
                         </div>
                       ))}
 
-                      {/* Added flights - only on first and last day */}
-                      {(day.dia === 1 || day.dia === days.length) && addedFlights.map((added, idx) => {
+                      {/* Added flights */}
+                      {addedFlights.map((added, idx) => {
                         const flight = added.item as FlightOption;
                         return (
                           <div key={`added-flight-${idx}`} className="flex gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200 border-dashed">
@@ -276,31 +274,39 @@ const TabItinerario = ({
                         );
                       })}
 
-                      {/* Accommodation card - show on ALL days */}
-                      {(() => {
-                        const accom = day.alojamiento || days.find(d => d.alojamiento)?.alojamiento;
-                        const globalHotel = addedItems.find(i => i.type === 'hotel');
-                        const hotel = accom || (globalHotel ? globalHotel.item as AccommodationOption : null);
-                        if (!hotel) return null;
-                        const isAdded = !day.alojamiento && !days.find(d => d.alojamiento) && !!globalHotel;
+                      {/* Accommodation card if any */}
+                      {day.alojamiento && (
+                        <div className="flex gap-3 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                          <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
+                            <Hotel className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">{day.alojamiento.nombre}</p>
+                            <p className="text-sm text-muted-foreground">{day.alojamiento.ubicacion}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Added hotels */}
+                      {addedHotels.map((added, idx) => {
+                        const hotel = added.item as AccommodationOption;
                         return (
-                          <div className={`flex gap-3 p-3 bg-purple-50 rounded-lg border ${isAdded ? 'border-purple-200 border-dashed' : 'border-purple-100'}`}>
+                          <div key={`added-hotel-${idx}`} className="flex gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200 border-dashed">
                             <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
                               <Hotel className="w-5 h-5 text-white" />
                             </div>
                             <div className="flex-1">
                               <p className="font-medium text-foreground">{hotel.nombre}</p>
-                              {isAdded && <p className="text-xs text-purple-600">{t('agregadoPorTi', language)}</p>}
-                              {!isAdded && hotel.ubicacion && <p className="text-sm text-muted-foreground">{hotel.ubicacion}</p>}
+                              <p className="text-xs text-purple-600">{t('agregadoPorTi', language)}</p>
                             </div>
                             {hotel.precioPorNoche && (
                               <span className="text-sm font-semibold text-purple-600">
-                                ${hotel.precioPorNoche.toLocaleString()}/{t('noche', language) || 'noche'}
+                                ${hotel.precioPorNoche.toLocaleString()}/noche
                               </span>
                             )}
                           </div>
                         );
-                      })()}
+                      })}
 
                       {/* Car rental if any */}
                       {day.coche && (
@@ -348,15 +354,6 @@ const TabItinerario = ({
                                     <Clock className="w-3 h-3" />
                                     {getTimeLabel(activity.hora, language)}
                                   </span>
-                                )}
-                                {onRemoveActivity && (
-                                  <button 
-                                    onClick={() => onRemoveActivity(day.dia, idx)}
-                                    className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded"
-                                    title={t('eliminar', language)}
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
                                 )}
                               </div>
                             </div>
@@ -540,67 +537,36 @@ const TabItinerario = ({
                   </tr>
                 </thead>
                 <tbody>
-              {categories.map(cat => {
-                    // Pre-compute global items (apply to whole trip)
-                    const globalHotel = addedItems.find(i => i.type === 'hotel');
-                    const globalCar = addedItems.find(i => i.type === 'car');
-                    const anyDayAccommodation = days.find(d => d.alojamiento)?.alojamiento;
-                    const anyDayCar = days.find(d => d.coche)?.coche;
-                    const isVuelos = cat === t('vuelos', language);
-                    const isAlojamiento = cat === t('alojamiento', language);
-                    const isActividades = cat === t('actividades', language);
-                    const isCoche = cat === t('coche', language);
-
-                    return (
+                  {categories.map(cat => (
                     <tr key={cat}>
                       <td className="border p-2 text-sm font-medium bg-muted/50">{cat}</td>
                       {days.map(day => {
                         const addedForDay = addedItems.filter(i => i.day === day.dia);
-
-                        let cellContent: React.ReactNode = <span className="text-muted-foreground">—</span>;
-
-                        if (isVuelos) {
-                          const isFirstDay = day.dia === 1;
-                          const isLastDay = day.dia === days.length;
-                          if (day.vuelos?.length) {
-                            cellContent = <span className="text-blue-600">✈️ {day.vuelos[0].aerolinea}</span>;
-                          } else if ((isFirstDay || isLastDay) && addedItems.some(i => i.type === 'flight')) {
-                            cellContent = <span className="text-blue-600">✈️ {isFirstDay ? '→' : '←'}</span>;
-                          }
-                        } else if (isAlojamiento) {
-                          if (day.alojamiento) {
-                            cellContent = <span className="text-purple-600">🏨 {day.alojamiento.nombre}</span>;
-                          } else if (globalHotel) {
-                            cellContent = <span className="text-purple-600">🏨 {(globalHotel.item as AccommodationOption).nombre}</span>;
-                          } else if (anyDayAccommodation) {
-                            cellContent = <span className="text-purple-400">🏨 {anyDayAccommodation.nombre}</span>;
-                          }
-                        } else if (isActividades) {
-                          const dayActs = day.actividades?.length || 0;
-                          const addedActs = addedForDay.filter(i => i.type === 'activity').length;
-                          const total = dayActs + addedActs;
-                          if (total > 0) {
-                            cellContent = <span className="text-orange-600">{total} act.</span>;
-                          }
-                        } else if (isCoche) {
-                          if (day.coche) {
-                            cellContent = <span className="text-green-600">🚗 {day.coche.tipoVehiculo}</span>;
-                          } else if (globalCar) {
-                            cellContent = <span className="text-green-600">🚗 {(globalCar.item as CarRentalOption).tipoVehiculo}</span>;
-                          } else if (anyDayCar) {
-                            cellContent = <span className="text-green-400">🚗 {anyDayCar.tipoVehiculo}</span>;
-                          }
-                        }
-
+                        const hasAdded = cat === t('vuelos', language) ? addedForDay.some(i => i.type === 'flight') :
+                                        cat === t('alojamiento', language) ? addedForDay.some(i => i.type === 'hotel') :
+                                        cat === t('actividades', language) ? addedForDay.some(i => i.type === 'activity') :
+                                        addedForDay.some(i => i.type === 'car');
+                        
                         return (
                           <td key={day.dia} className="border p-2 text-xs text-center">
-                            {cellContent}
+                            {cat === t('vuelos', language) && day.vuelos?.length ? (
+                              <span className="text-blue-600">✈️ {day.vuelos[0].aerolinea}</span>
+                            ) : cat === t('alojamiento', language) && day.alojamiento ? (
+                              <span className="text-purple-600">🏨 {day.alojamiento.nombre}</span>
+                            ) : cat === t('actividades', language) && day.actividades?.length ? (
+                              <span className="text-orange-600">{day.actividades.length + (hasAdded ? addedForDay.filter(i => i.type === 'activity').length : 0)} act.</span>
+                            ) : cat === t('coche', language) && day.coche ? (
+                              <span className="text-green-600">🚗 {day.coche.tipoVehiculo}</span>
+                            ) : hasAdded ? (
+                              <span className="text-primary font-medium">{t('agregado', language)}</span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
                           </td>
                         );
                       })}
                     </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>

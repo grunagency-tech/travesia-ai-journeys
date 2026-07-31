@@ -147,8 +147,6 @@ export const itineraryT: Record<string, TranslationMap> = {
   autoAgregado: { ES: 'Auto agregado', EN: 'Car added', DE: 'Auto hinzugefügt', PT: 'Carro adicionado', IT: 'Auto aggiunto' },
   seAgregoAlDia: { ES: 'se agregó al Día', EN: 'was added to Day', DE: 'wurde zu Tag hinzugefügt', PT: 'foi adicionado ao Dia', IT: 'è stato aggiunto al Giorno' },
   agregadoATuPlan: { ES: 'agregado a tu plan', EN: 'added to your plan', DE: 'zu deinem Plan hinzugefügt', PT: 'adicionado ao seu plano', IT: 'aggiunto al tuo piano' },
-  actividadEliminada: { ES: 'Actividad eliminada', EN: 'Activity removed', DE: 'Aktivität entfernt', PT: 'Atividade removida', IT: 'Attività rimossa' },
-  eliminar: { ES: 'Eliminar', EN: 'Remove', DE: 'Entfernen', PT: 'Remover', IT: 'Rimuovere' },
 };
 
 export const t = (key: string, lang: Language): string => {

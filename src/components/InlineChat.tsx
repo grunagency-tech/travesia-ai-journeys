@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { sendMessageToOpenAI } from "@/services/openai";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,7 +22,7 @@ export const InlineChat: React.FC<InlineChatProps> = ({ initialMessage, onClose 
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const WEBHOOK_URL = 'https://gcp.grunagency.com/webhook/edc6fe1e-5d9a-44d8-9739-a5be993d853a';
+
 
   const sendMessage = async (messageText: string) => {
     const userMessage: Message = {
@@ -34,26 +35,17 @@ export const InlineChat: React.FC<InlineChatProps> = ({ initialMessage, onClose 
     setIsLoading(true);
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: messageText,
-          timestamp: new Date().toISOString()
-        })
-      });
+      // Build history for context
+      const history = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
-      if (!response.ok) {
-        throw new Error(`Webhook respondió con status: ${response.status}`);
-      }
+      const data = await sendMessageToOpenAI(messageText, history);
 
-      const data = await response.json();
-      
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.response || data.message || data.text || 'Lo siento, no pude procesar tu mensaje.',
+        content: data.message || data.text || (data.resumen ? "¡He creado un itinerario para ti! Revisa el chat principal para verlo completo." : "Respuesta recibida."),
         timestamp: new Date()
       };
 
@@ -64,7 +56,7 @@ export const InlineChat: React.FC<InlineChatProps> = ({ initialMessage, onClose 
       }
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Error de conexión: Por favor verifica que el webhook esté activo y acepte peticiones desde tu dominio actual.',
+        content: 'Error de conexión: El webhook necesita configurar CORS para permitir peticiones desde este dominio. Verifica que el webhook esté activo y acepte peticiones desde https://525d781a-5aef-4bd2-b1c2-ee7df80e9b2f.lovableproject.com',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -116,11 +108,10 @@ export const InlineChat: React.FC<InlineChatProps> = ({ initialMessage, onClose 
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}
+                className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-100 text-gray-900'
+                  }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 <p className="text-xs mt-1 opacity-70">
@@ -149,13 +140,13 @@ export const InlineChat: React.FC<InlineChatProps> = ({ initialMessage, onClose 
 
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex gap-2">
-         <Input
-           value={inputValue}
-           onChange={(e) => setInputValue(e.target.value)}
-           placeholder="Escribe tu mensaje..."
-           disabled={isLoading}
-           className="flex-1 text-base md:text-sm"
-         />
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Escribe tu mensaje..."
+          disabled={isLoading}
+          className="flex-1 text-base md:text-sm"
+        />
         <Button
           type="submit"
           disabled={!inputValue.trim() || isLoading}

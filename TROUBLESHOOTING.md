@@ -1,460 +1,571 @@
-# 🔧 Guía de Troubleshooting — Travesia AI Journeys
+# 🚨 Troubleshooting - Travesia AI Journeys
 
-> **Última actualización**: Febrero 2026
-
----
-
-## 📑 Tabla de Contenidos
-
-1. [Errores de Configuración Inicial](#errores-de-configuración-inicial)
-2. [Autenticación y Sesión](#autenticación-y-sesión)
-3. [Chat y Generación de Itinerarios](#chat-y-generación-de-itinerarios)
-4. [Búsqueda de Vuelos](#búsqueda-de-vuelos)
-5. [Búsqueda de Hoteles](#búsqueda-de-hoteles)
-6. [Voz a Texto](#voz-a-texto)
-7. [Panel de Administración](#panel-de-administración)
-8. [Errores de UI / Frontend](#errores-de-ui--frontend)
-9. [Errores de Base de Datos](#errores-de-base-de-datos)
-10. [Errores de Edge Functions](#errores-de-edge-functions)
-11. [Rendimiento](#rendimiento)
-12. [Despliegue y Build](#despliegue-y-build)
+Guía de solución de problemas comunes para desarrolladores, administradores y usuarios.
 
 ---
 
-## Errores de Configuración Inicial
+## 📋 Índice
 
-### ❌ `VITE_SUPABASE_URL is not defined`
-
-**Causa**: El archivo `.env` no existe o le faltan variables.
-
-**Solución**:
-1. Verifica que el archivo `.env` existe en la raíz del proyecto
-2. Debe contener al menos:
-   ```env
-   VITE_SUPABASE_PROJECT_ID="tu-project-id"
-   VITE_SUPABASE_PUBLISHABLE_KEY="tu-anon-key"
-   VITE_SUPABASE_URL="https://tu-project-id.supabase.co"
-   ```
-3. Reinicia el servidor de desarrollo (`npm run dev`)
-
-### ❌ `Failed to construct 'URL': Invalid URL`
-
-**Causa**: Las variables de entorno de Supabase tienen formato incorrecto.
-
-**Solución**:
-- Verifica que `VITE_SUPABASE_URL` comienza con `https://`
-- Verifica que no hay espacios o comillas incorrectas en el valor
-
-### ❌ La app muestra pantalla en blanco
-
-**Causas posibles**:
-1. Error de JavaScript en la consola (F12 → Console)
-2. Variables de entorno no configuradas
-3. Dependencias no instaladas
-
-**Solución**:
-1. Abre DevTools (F12) y revisa la pestaña Console
-2. Ejecuta `npm install` para asegurar que las dependencias están instaladas
-3. Verifica el archivo `.env`
-4. Limpia caché: `rm -rf node_modules/.vite && npm run dev`
+1. [Problemas de Instalación](#problemas-de-instalación)
+2. [Problemas de Autenticación](#problemas-de-autenticación)
+3. [Problemas con la IA](#problemas-con-la-ia)
+4. [Problemas con APIs Externas](#problemas-con-apis-externas)
+5. [Problemas de Base de Datos](#problemas-de-base-de-datos)
+6. [Problemas de Performance](#problemas-de-performance)
+7. [Problemas de Deployment](#problemas-de-deployment)
 
 ---
 
-## Autenticación y Sesión
+## 🔧 Problemas de Instalación
 
-### ❌ No puedo registrarme / crear cuenta
+### Error: "Cannot find module" o "Module not found"
 
-**Causas posibles**:
-1. Las migraciones de la tabla `profiles` no se ejecutaron
-2. RLS policies no configuradas
-3. El trigger de creación de perfil no existe
-
-**Solución**:
-1. Verifica que la tabla `profiles` existe en la base de datos
-2. Revisa que el trigger `on_auth_user_created` está activo
-3. Revisa los logs de auth en la consola del navegador
-
-### ❌ Sesión se pierde al recargar la página
-
-**Causa**: Problema con el almacenamiento de sesión.
+**Síntoma**:
+```
+Error: Cannot find module '@/components/...'
+```
 
 **Solución**:
-1. Verifica que `localStorage` no está bloqueado por el navegador
-2. El cliente Supabase está configurado con `persistSession: true` (predeterminado)
-3. Revisa que no hay errores de CORS en la consola
+```bash
+# Limpiar node_modules y reinstalar
+rm -rf node_modules package-lock.json
+npm install
 
-### ❌ "Invalid login credentials"
-
-**Causas**:
-1. Email o contraseña incorrectos
-2. El usuario no ha verificado su email (si auto-confirm está deshabilitado)
-
-**Solución**:
-1. Usa la función de "Olvidé mi contraseña" para resetear
-2. Verifica en la base de datos que el usuario existe en `auth.users`
-
-### ❌ No puedo acceder como administrador
-
-**Causa**: El rol de admin no está asignado.
-
-**Solución**:
-```sql
--- Ejecuta en el SQL Editor con el UUID de tu usuario
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('TU-USER-UUID', 'admin');
+# O con bun
+rm -rf node_modules bun.lockb
+bun install
 ```
 
 ---
 
-## Chat y Generación de Itinerarios
+### Error: "VITE_SUPABASE_URL is not defined"
 
-### ❌ El chat no responde / timeout
-
-**Causas posibles**:
-1. API key de Google AI (`GOOGLE_AI_API_KEY`) no configurada en Edge Function secrets
-2. Rate limit de la API de Google
-3. Timeout de la Edge Function (límite de 60s)
+**Síntoma**:
+- La app no carga
+- Errores en consola sobre variables de entorno
 
 **Solución**:
-1. Verifica que el secret `GOOGLE_AI_API_KEY` está configurado
-2. Revisa los logs de la Edge Function `travesia-chat`
-3. Si es rate limit (429), espera unos minutos y reintenta
+1. Verifica que existe el archivo `.env` en la raíz del proyecto
+2. Verifica que todas las variables empiecen con `VITE_`
+3. Reinicia el servidor de desarrollo:
+```bash
+# Detén el servidor (Ctrl+C)
+npm run dev
+```
 
-### ❌ "Failed to generate itinerary after multiple attempts"
-
-**Causa**: La API de Google AI no pudo generar un JSON válido después de 3 intentos.
-
-**Solución**:
-1. Revisa los logs de `generate-itinerary` para ver el error específico
-2. Intenta con una descripción de viaje más sencilla
-3. Verifica que `GOOGLE_AI_API_KEY` tiene créditos/cuota disponible
-4. Si el error persiste, puede ser un problema temporal de la API — reintenta en unos minutos
-
-### ❌ El itinerario se genera pero no se muestra
-
-**Causas posibles**:
-1. Error al parsear el JSON generado por la IA
-2. Secciones faltantes en la respuesta (e.g., `resumen`, `itinerario`)
-3. Error en el componente de renderizado
-
-**Solución**:
-1. Abre DevTools (F12) → Console y busca errores de parsing
-2. Revisa los logs de la Edge Function — el JSON devuelto debería tener estas secciones:
-   - `resumen`, `transporte`, `alojamiento`, `itinerario`, `comentarios`, `infoLocal`
-3. Si falta una sección, la función agrega placeholders vacíos automáticamente
-
-### ❌ Las fechas del itinerario son incorrectas
-
-**Causa**: Desfase de zona horaria al procesar fechas ISO.
-
-**Solución**:
-- Las fechas se procesan con `.slice(0, 10)` para extraer solo `YYYY-MM-DD`
-- Si el día 1 aparece con fecha incorrecta, verifica que `startDate` se envía en formato `YYYY-MM-DD` sin hora
-
-### ❌ El itinerario tarda mucho (>2 minutos)
-
-**Causa**: Viajes largos (>7 días) generan más contenido.
-
-**Solución**:
-- Es normal que viajes largos tarden 1-2 minutos
-- La app muestra un mensaje de "esperando" al usuario
-- Para viajes >7 días, se reducen automáticamente las actividades por día (de 3 a 2)
+**Checklist de variables**:
+```env
+VITE_SUPABASE_PROJECT_ID="..."
+VITE_SUPABASE_PUBLISHABLE_KEY="..."
+VITE_SUPABASE_URL="https://...supabase.co"
+VITE_OPENAI_API_KEY="sk-proj-..."
+VITE_GEMINI_API_KEY="AIzaSy..."
+VITE_TRAVELPAYOUTS_TOKEN="..."
+```
 
 ---
 
-## Búsqueda de Vuelos
+### Puerto 5173 ya está en uso
 
-### ❌ No se encuentran vuelos / "Flight search error"
+**Síntoma**:
+```
+Port 5173 is in use, trying another one...
+```
 
-**Causas posibles**:
-1. Token de TravelPayouts no configurado (`TRAVELPAYOUTS_TOKEN`)
-2. Códigos IATA de origen/destino incorrectos
-3. Fechas inválidas
-4. La API de TravelPayouts no tiene datos para esa ruta
+**Solución A**: Mata el proceso en ese puerto
+```bash
+# Windows
+netstat -ano | findstr :5173
+taskkill /PID <PID> /F
 
-**Solución**:
-1. Verifica el secret `TRAVELPAYOUTS_TOKEN` en Edge Function secrets
-2. La función usa la API de Aviasales — no todas las rutas están disponibles
-3. Si no hay datos reales, la función devuelve `isEstimated: true` y puede generar datos estimados desde la IA
-4. Revisa los logs de `search-flights`
+# Mac/Linux
+lsof -ti:5173 | xargs kill -9
+```
 
-### ❌ Los precios de vuelos parecen incorrectos
-
-**Causa**: Los precios de TravelPayouts son referenciales y pueden variar.
-
-**Nota**: Los precios son orientativos. Al hacer clic en "Ver vuelo", el usuario es redirigido a Google Flights con los parámetros de búsqueda correctos donde verá precios actualizados.
-
----
-
-## Búsqueda de Hoteles
-
-### ❌ No se encuentran hoteles
-
-**Causas posibles**:
-1. Token de TravelPayouts / Hotellook no configurado
-2. El destino no tiene cobertura en la API
-3. Error de red
-
-**Solución**:
-1. Verifica el secret `TRAVELPAYOUTS_TOKEN`
-2. Revisa los logs de `search-hotels`
-3. Si la API no encuentra hoteles, se muestran los generados por la IA como fallback
-
-### ❌ El link de "Reservar" no muestra el hotel correcto
-
-**Solución**:
-- Los links redirigen a Google Hotels con el nombre del hotel como búsqueda
-- Si el hotel tiene nombre genérico, Google puede mostrar resultados diferentes
-- Los links NO incluyen fechas específicas para evitar discrepancias
+**Solución B**: Usa otro puerto
+```bash
+npm run dev -- --port 3000
+```
 
 ---
 
-## Voz a Texto
+## 🔐 Problemas de Autenticación
 
-### ❌ La grabación de voz no funciona
+### No puedo registrarme / "Email already registered"
 
-**Causas posibles**:
-1. El navegador no soporta `MediaRecorder` API
-2. El usuario no otorgó permisos de micrófono
-3. La API key de transcripción no está configurada
-
-**Solución**:
-1. Usa Chrome, Firefox o Edge (Safari tiene soporte limitado)
-2. Verifica permisos del micrófono en la barra de dirección del navegador
-3. Revisa que el secret para voice-to-text está configurado
-4. Revisa los logs de `voice-to-text`
-
-### ❌ La transcripción es incorrecta
-
-**Causa**: Calidad de audio baja o idioma no detectado correctamente.
+**Síntoma**:
+- Error al intentar crear cuenta
+- Mensaje: "User already registered"
 
 **Solución**:
-- Habla claro y cerca del micrófono
-- Reduce el ruido de fondo
-- La función soporta múltiples idiomas automáticamente
+1. ¿Ya tienes cuenta? Intenta iniciar sesión
+2. ¿Olvidaste tu contraseña? Usa "Recuperar contraseña"
+3. Si es un error, verifica en Supabase Dashboard → Authentication → Users
 
 ---
 
-## Panel de Administración
+### No recibo el email de confirmación
 
-### ❌ No puedo acceder al panel de admin (`/admin`)
-
-**Causas**:
-1. Tu usuario no tiene el rol `admin` en la tabla `user_roles`
-2. No has iniciado sesión
+**Síntoma**:
+- Registro exitoso pero sin email
 
 **Solución**:
-1. Inicia sesión primero
-2. Verifica tu rol con:
-   ```sql
-   SELECT * FROM public.user_roles WHERE user_id = 'TU-UUID';
-   ```
-3. Si no tienes rol, insértalo (ver sección de Autenticación)
-
-### ❌ Las estadísticas del admin no cargan
-
-**Causa**: Las queries de agregación pueden tardar si hay muchos datos.
-
-**Solución**:
-1. Revisa la consola del navegador por errores
-2. Verifica que las tablas `trips`, `profiles`, `conversations` existen y tienen datos
-3. Revisa las RLS policies — el admin necesita permisos de lectura amplios
+1. Revisa la carpeta de spam
+2. En Supabase Dashboard → Authentication → Users, verifica el estado del usuario
+3. Si es necesario, confirma el email manualmente:
+```sql
+-- En Supabase SQL Editor
+UPDATE auth.users
+SET email_confirmed_at = NOW()
+WHERE email = 'usuario@example.com';
+```
 
 ---
 
-## Errores de UI / Frontend
+### Sesión expirada constantemente
 
-### ❌ Colores incorrectos (fondo amarillo en vez de blanco)
-
-**Causa**: Conflicto entre valores HSL en `index.css` y funciones `hsl()` de Tailwind.
-
-**Solución**:
-1. Abre `src/index.css` y verifica que todos los colores usan formato HSL puro (sin `hsl()` wrapper)
-2. Ejemplo correcto:
-   ```css
-   --background: 0 0% 100%;     /* ✅ Correcto */
-   --background: hsl(0, 0%, 100%); /* ❌ Incorrecto */
-   ```
-3. Revisa `tailwind.config.ts` para asegurar que los colores referencian `hsl(var(--token))`
-
-### ❌ La app no es responsive / se ve mal en móvil
+**Síntoma**:
+- Te saca de la sesión cada pocos minutos
 
 **Solución**:
-1. Usa DevTools (F12) → Toggle Device Toolbar para simular móvil
-2. Los componentes usan el hook `useIsMobile()` para adaptar el layout
-3. Breakpoints: `sm: 640px`, `md: 768px`, `lg: 1024px`
+1. Limpia cookies y localStorage:
+```javascript
+// En consola del navegador (F12)
+localStorage.clear();
+```
 
-### ❌ Las imágenes de destinos no cargan
-
-**Causas**:
-1. La imagen local no existe en `src/assets/destinations/`
-2. La URL de imagen de la base de datos (`destination_images`) es inválida
-3. Error de red
-
-**Solución**:
-1. Se usan imágenes locales como fallback (en `src/lib/destinationImages.ts`)
-2. Si la imagen del destino no está mapeada, se usa `default.jpg`
-3. Verifica la consola del navegador por errores 404
+2. Verifica en Supabase Dashboard → Settings → Auth que el JWT expiry esté configurado correctamente (default: 3600 segundos)
 
 ---
 
-## Errores de Base de Datos
+### Error: "Invalid JWT"
 
-### ❌ "new row violates row-level security policy"
-
-**Causa**: La operación INSERT/UPDATE no cumple las políticas RLS.
-
-**Solución**:
-1. Verifica que el usuario está autenticado antes de hacer la operación
-2. Asegúrate de que el `user_id` en la fila coincide con `auth.uid()`
-3. Revisa las políticas RLS de la tabla afectada:
-   ```sql
-   SELECT * FROM pg_policies WHERE tablename = 'nombre_tabla';
-   ```
-
-### ❌ "Could not find the public.X table"
-
-**Causa**: La migración que crea esa tabla no se ejecutó.
+**Síntoma**:
+```
+Error: Invalid JWT / JWT expired
+```
 
 **Solución**:
-1. Revisa la carpeta `supabase/migrations/` para la migración correspondiente
-2. Ejecuta las migraciones pendientes
-3. Verifica que la tabla existe en el schema `public`
+```javascript
+// Fuerza refresh del token
+import { supabase } from '@/integrations/supabase/client';
+await supabase.auth.refreshSession();
+```
 
-### ❌ Los datos no se guardan
-
-**Causas posibles**:
-1. Error de RLS (ver arriba)
-2. El usuario no está autenticado
-3. Error de validación en los datos
-
-**Solución**:
-1. Revisa la consola del navegador por errores de la API
-2. Verifica que el usuario tiene sesión activa
-3. Usa DevTools → Network para ver la respuesta exacta del servidor
+Si persiste, cierra sesión y vuelve a entrar.
 
 ---
 
-## Errores de Edge Functions
+## 🤖 Problemas con la IA
 
-### ❌ Error 500 en cualquier Edge Function
+### ChatGPT no responde / Error 429
 
-**Causas posibles**:
-1. Secret/API key no configurada
-2. Error de lógica en la función
-3. Timeout (límite ~60s)
+**Síntoma**:
+```
+OpenAI API Error: 429 - Rate limit exceeded
+```
 
-**Solución**:
-1. Revisa los logs de la función específica
-2. Verifica que todos los secrets necesarios están configurados:
-   - `GOOGLE_AI_API_KEY` → `travesia-chat`, `generate-itinerary`
-   - `TRAVELPAYOUTS_TOKEN` → `search-flights`, `search-hotels`
-3. Para errores intermitentes, la función tiene reintentos automáticos (hasta 3 intentos)
-
-### ❌ Error CORS ("blocked by CORS policy")
-
-**Causa**: Las cabeceras CORS de la Edge Function no incluyen los headers necesarios.
+**Causa**: Has excedido el límite de requests de OpenAI
 
 **Solución**:
-Verifica que la función incluya:
+1. Espera unos minutos
+2. Verifica tu plan en OpenAI Dashboard
+3. Considera upgrade a plan con mayor límite
+
+---
+
+### ChatGPT responde con JSON inválido
+
+**Síntoma**:
+- Error en consola: `Unexpected token`
+- La conversación se "atoró"
+
+**Solución Temporal**: 
+Refresca la página y empieza una nueva conversación
+
+**Solución Permanente**:
+Verifica el system prompt en `services/openai.ts`:
 ```typescript
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+response_format: { type: "json_object" }
+```
 
-// Y el handler OPTIONS:
-if (req.method === 'OPTIONS') {
-  return new Response(null, { headers: corsHeaders });
+---
+
+### La IA no genera el itinerario completo
+
+**Síntoma**:
+- Solo recibe preguntas pero nunca genera itinerario
+- Status siempre "collecting"
+
+**Diagnóstico**:
+```javascript
+// En ChatPage, añade console.log
+console.log('AI Response:', response);
+console.log('Status:', response.status);
+console.log('Missing info:', response.missing_info);
+```
+
+**Solución**:
+1. Verifica que respondiste TODAS las preguntas
+2. Incluye confirmación explícita: "Sí, todo correcto"
+3. Si el prompt es muy largo, puede truncarse. Verifica `max_tokens` en `openai.ts`
+
+---
+
+### Error: "OpenAI API key is invalid"
+
+**Síntoma**:
+```
+Error 401: Incorrect API key provided
+```
+
+**Solución**:
+1. Verifica que la API key en `.env` es correcta
+2. Genera una nueva key en https://platform.openai.com/api-keys
+3. Actualiza `.env` y reinicia el servidor
+
+---
+
+## 🌐 Problemas con APIs Externas
+
+### TravelPayouts no devuelve vuelos
+
+**Síntoma**:
+- Sección de vuelos vacía
+- Array vacío en consola
+
+**Soluciones**:
+
+**1. Verifica el token**:
+```javascript
+// En consola del navegador
+console.log(import.meta.env.VITE_TRAVELPAYOUTS_TOKEN);
+```
+
+**2. Verifica códigos IATA**:
+- Deben ser códigos de aeropuerto válidos
+- MEX ✅ | Ciudad de México ❌
+- CDG ✅ | París ❌
+
+**3. Verifica fechas**:
+- Formato: YYYY-MM-DD
+- No más de 365 días en el futuro
+
+**4. Revisa la respuesta de la API**:
+```javascript
+// En services/travelpayouts.ts, añade:
+console.log('API Response:', json);
+```
+
+---
+
+### Imágenes de destinos no cargan
+
+**Síntoma**:
+- Placeholders en lugar de imágenes
+- Errores 403/404 en Network tab
+
+**Solución A**: Verifica Gemini API key
+```bash
+# En .env
+VITE_GEMINI_API_KEY="AIzaSy..."
+```
+
+**Solución B**: Usa la base de datos estática
+Ya hay un fallback en `src/data/destinationImages.ts`
+
+**Añadir nuevo destino**:
+```typescript
+// En destinationImages.ts
+export const destinationImages = {
+  "Nueva Ciudad, País": "https://images.unsplash.com/photo-XXXXX",
+};
+```
+
+---
+
+### Error CORS con APIs
+
+**Síntoma**:
+```
+Access to fetch at '...' has been blocked by CORS policy
+```
+
+**Solución**:
+Las APIs deben soportar CORS. Si no:
+1. Contacta al proveedor de la API
+2. Usa un proxy (Cloudflare Workers, etc.)
+3. Llama desde backend (Supabase Edge Functions)
+
+---
+
+## 🗄️ Problemas de Base de Datos
+
+### Error: "relation does not exist"
+
+**Síntoma**:
+```
+relation "public.trips" does not exist
+```
+
+**Causa**: Las migraciones no se ejecutaron
+
+**Solución**:
+```bash
+# Con Supabase CLI
+supabase db push
+
+# O ejecuta manualmente las migraciones en SQL Editor
+```
+
+---
+
+### Error: "new row violates row-level security policy"
+
+**Síntoma**:
+- No puedes insertar/actualizar datos
+- Error RLS en consola
+
+**Solución**:
+Verifica las políticas RLS en Supabase Dashboard → Database → Policies
+
+**Políticas requeridas**:
+```sql
+-- Ejemplo: usuarios pueden insertar sus propios viajes
+CREATE POLICY "Users can insert own trips"
+ON trips FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+```
+
+---
+
+### Los datos no se actualizan en tiempo real
+
+**Síntoma**:
+- Cambios en DB no se reflejan en UI
+
+**Solución**:
+1. Verifica que estás usando TanStack Query
+2. Invalida el cache:
+```typescript
+import { useQueryClient } from '@tanstack/react-query';
+
+const queryClient = useQueryClient();
+queryClient.invalidateQueries({ queryKey: ['trips'] });
+```
+
+---
+
+### Backup corrupto / No puedo restaurar
+
+**Solución**:
+```bash
+# Verifica el archivo SQL
+head -20 backup.sql
+
+# Restaura en modo --clean
+psql -h db.xxx.supabase.co -U postgres -d postgres --clean < backup.sql
+```
+
+---
+
+## ⚡ Problemas de Performance
+
+### La app carga muy lento
+
+**Diagnóstico**:
+1. Abre DevTools (F12) → Network tab
+2. Identifica recursos lentos
+
+**Soluciones**:
+
+**1. Optimiza imágenes**:
+```bash
+# Usa formatos modernos como WebP
+# Comprime imágenes: https://tinypng.com
+```
+
+**2. Code splitting**:
+```typescript
+// Usa lazy loading
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+```
+
+**3. Reduce bundle size**:
+```bash
+npm run build
+npx vite-bundle-visualizer
+```
+
+---
+
+### TanStack Query hace demasiadas requests
+
+**Síntoma**:
+- Network tab lleno de requests duplicadas
+
+**Solución**:
+```typescript
+// Ajusta staleTime y cacheTime
+const { data } = useQuery({
+  queryKey: ['trips'],
+  queryFn: fetchTrips,
+  staleTime: 5 * 60 * 1000, // 5 minutos
+  cacheTime: 10 * 60 * 1000, // 10 minutos
+});
+```
+
+---
+
+### OpenAI responde muy lento
+
+**Síntoma**:
+- Tarda >30 segundos en generar itinerario
+
+**Solución**:
+1. Reduce `max_tokens` en `services/openai.ts`
+2. Usa modelo más rápido: `gpt-3.5-turbo` en lugar de `gpt-4o-mini`
+3. Optimiza el system prompt (menos instrucciones)
+
+---
+
+## 🚀 Problemas de Deployment
+
+### Build falla con "out of memory"
+
+**Síntoma**:
+```
+FATAL ERROR: Reached heap limit Allocation failed
+```
+
+**Solución**:
+```bash
+# Aumenta memoria de Node
+NODE_OPTIONS="--max-old-space-size=4096" npm run build
+```
+
+---
+
+### Variables de entorno no funcionan en producción
+
+**Síntoma**:
+- La app funciona local pero no en producción
+
+**Causa**: Las variables de entorno no están configuradas
+
+**Solución**:
+
+**Vercel**:
+1. Dashboard → Settings → Environment Variables
+2. Añade todas las `VITE_*` variables
+3. Redeploy
+
+**Netlify**:
+1. Site settings → Environment variables
+2. Añade las variables
+3. Trigger redeploy
+
+---
+
+### "404 Not Found" en rutas de la app
+
+**Síntoma**:
+- `/viaje/123` da 404 al recargar página
+
+**Causa**: SPA routing no configurado
+
+**Solución**:
+
+**Vercel**: Crea `vercel.json`
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
 ```
 
-### ❌ Error 429 (Rate Limit)
-
-**Causa**: Demasiadas solicitudes a la API externa.
-
-**Solución**:
-1. Espera 1-2 minutos antes de reintentar
-2. Para Google AI: verifica tu cuota en [Google AI Studio](https://ai.google.dev)
-3. Para TravelPayouts: verifica límites en tu dashboard
+**Netlify**: Crea `public/_redirects`
+```
+/*    /index.html   200
+```
 
 ---
 
-## Rendimiento
+### Supabase timeout en producción
 
-### ⚠️ La app tarda mucho en cargar
-
-**Optimizaciones implementadas**:
-1. Lazy loading de imágenes con `loading="lazy"`
-2. Code splitting por rutas con React lazy/Suspense
-3. Caché de itinerarios en `conversationItineraryCache.ts`
-4. TanStack Query con `staleTime` configurado
-
-**Si aún es lento**:
-1. Revisa DevTools → Network para assets grandes
-2. Verifica que el build de producción está optimizado: `npm run build`
-3. Revisa DevTools → Performance para identificar cuellos de botella
-
-### ⚠️ Demasiados re-renders
+**Síntoma**:
+```
+Error: connect ETIMEDOUT
+```
 
 **Solución**:
-1. Usa React DevTools Profiler para identificar componentes problemáticos
-2. Verifica que los contextos (`CurrencyContext`, `LanguageContext`, `LocationContext`) no causan re-renders innecesarios
-3. Usa `React.memo` para componentes que reciben props estables
+1. Verifica que la URL de Supabase sea correcta
+2. Revisa que el proyecto de Supabase esté activo
+3. Verifica que no estés en plan pausado (Free tier duerme después de 1 semana inactivo)
 
 ---
 
-## Despliegue y Build
+## 🆘 Comandos de Diagnóstico
 
-### ❌ `npm run build` falla
+### Verificar configuración
 
-**Causas comunes**:
-1. Errores de TypeScript
-2. Imports faltantes
-3. Variables de entorno no disponibles en build time
+```bash
+# Ver variables de entorno (sin valores sensibles)
+npm run dev 2>&1 | grep VITE
 
-**Solución**:
-1. Ejecuta `npx tsc --noEmit` para ver errores de TypeScript
-2. Verifica todos los imports con `npm run lint`
-3. Las variables `VITE_*` deben estar disponibles durante el build
+# Verificar versión de Node
+node --version  # Debe ser >=18
 
-### ❌ El build es muy grande
+# Verificar versión de npm
+npm --version
 
-**Solución**:
-1. Revisa el output de `npm run build` para ver tamaños de chunks
-2. Usa `npx vite-bundle-visualizer` para analizar el bundle
-3. Verifica que no se están importando librerías completas (tree-shaking)
+# Limpiar cache
+npm cache clean --force
+```
 
-### ❌ La app desplegada no carga
+### Logs útiles
 
-**Solución**:
-1. Verifica que las variables de entorno están configuradas en el hosting
-2. Para SPAs, configura el servidor para redirigir todas las rutas a `index.html`
-3. Verifica la consola del navegador por errores
-
----
-
-## 🆘 Contacto y Soporte
-
-Si el problema persiste después de seguir esta guía:
-
-1. **Revisa los logs** del navegador (F12 → Console) y del servidor
-2. **Captura screenshots** del error y los logs
-3. **Documenta los pasos** para reproducir el problema
-4. **Revisa** la [Documentación de Arquitectura](./ARCHITECTURE.md) para entender el flujo afectado
-5. **Consulta** la [Guía de Instalación](./INSTALLATION.md) si es un problema de setup
+```javascript
+// En ChatPage.tsx o donde sea necesario
+console.log('Environment:', import.meta.env);
+console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+console.log('User:', user);
+console.log('Auth state:', await supabase.auth.getSession());
+```
 
 ---
 
-## 📋 Checklist Rápido de Diagnóstico
+## 📞 Cuando Todo Falla
 
-| Síntoma | Primer paso |
-|---------|-------------|
-| Pantalla en blanco | F12 → Console → buscar errores |
-| No puedo iniciar sesión | Verificar tabla `profiles` y `auth.users` |
-| Chat no responde | Verificar `GOOGLE_AI_API_KEY` secret |
-| No hay vuelos | Verificar `TRAVELPAYOUTS_TOKEN` secret |
-| Error 500 | Revisar logs de Edge Function |
-| Error CORS | Verificar headers en Edge Function |
-| Datos no se guardan | Verificar RLS policies y auth |
-| Colores rotos | Revisar HSL en `index.css` |
+### Checklist Final
+
+- [ ] Reinicia el servidor de desarrollo
+- [ ] Limpia cache del navegador (Ctrl+Shift+R)
+- [ ] Borra `node_modules` y reinstala
+- [ ] Verifica que `.env` existe y está completo
+- [ ] Revisa consola del navegador (F12)
+- [ ] Revisa consola del servidor
+- [ ] Verifica que Supabase esté online
+- [ ] Verifica que OpenAI tenga créditos
+- [ ] Lee los logs de Supabase Dashboard → Logs
+
+### Obtener Ayuda
+
+1. **Busca el error en internet**:
+   ```
+   site:github.com "tu error exacto"
+   ```
+
+2. **Revisa documentación oficial**:
+   - [Supabase Docs](https://supabase.com/docs)
+   - [React Query](https://tanstack.com/query)
+   - [Vite](https://vitejs.dev)
+
+3. **Contacta soporte** (si aplicable)
+
+---
+
+**Este documento se actualizará con nuevos problemas comunes.**
+
+**Última actualización**: Febrero 2026

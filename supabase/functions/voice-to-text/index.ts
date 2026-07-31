@@ -1,10 +1,13 @@
-import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Process base64 in chunks to prevent memory issues
 function processBase64Chunks(base64String: string, chunkSize = 32768) {
   const chunks: Uint8Array[] = [];
   let position = 0;
@@ -13,9 +16,11 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
     const chunk = base64String.slice(position, position + chunkSize);
     const binaryChunk = atob(chunk);
     const bytes = new Uint8Array(binaryChunk.length);
+    
     for (let i = 0; i < binaryChunk.length; i++) {
       bytes[i] = binaryChunk.charCodeAt(i);
     }
+    
     chunks.push(bytes);
     position += chunkSize;
   }
@@ -23,21 +28,26 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
   const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
+
   for (const chunk of chunks) {
     result.set(chunk, offset);
     offset += chunk.length;
   }
+
   return result;
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Unauthorized - missing auth header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -52,6 +62,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
+      console.error('Authentication failed:', authError?.message);
       return new Response(
         JSON.stringify({ error: 'Unauthorized - invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -61,34 +72,38 @@ Deno.serve(async (req) => {
     console.log('Authenticated user:', user.id);
 
     const { audio } = await req.json();
-    if (!audio) throw new Error('No audio data provided');
-
-    // Limit audio payload size to prevent memory exhaustion (DoS)
-    const MAX_BASE64_LENGTH = 15 * 1024 * 1024; // ~11.2 MB binary
-    if (audio.length > MAX_BASE64_LENGTH) {
-      return new Response(
-        JSON.stringify({ error: 'Audio payload size exceeds the limit of ~10MB' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    
+    if (!audio) {
+      console.error('No audio data provided');
+      throw new Error('No audio data provided');
     }
 
     console.log('Processing audio data...');
+    
+    // Process audio in chunks
     const binaryAudio = processBase64Chunks(audio);
     console.log('Audio processed, size:', binaryAudio.length);
     
+    // Prepare form data
     const formData = new FormData();
     const blob = new Blob([binaryAudio], { type: 'audio/webm' });
     formData.append('file', blob, 'audio.webm');
     formData.append('model', 'whisper-1');
 
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiKey) throw new Error('OPENAI_API_KEY not configured');
+    if (!openaiKey) {
+      console.error('OPENAI_API_KEY not configured');
+      throw new Error('OPENAI_API_KEY not configured');
+    }
 
     console.log('Sending to OpenAI Whisper...');
     
+    // Send to OpenAI
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${openaiKey}` },
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+      },
       body: formData,
     });
 
@@ -108,9 +123,13 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Voice-to-text error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: errorMessage }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });

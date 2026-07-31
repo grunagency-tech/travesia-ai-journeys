@@ -34,7 +34,7 @@ export const useAuth = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/`,
       },
     });
     return { error };
@@ -49,12 +49,11 @@ export const useAuth = () => {
   };
 
   const signUpWithEmail = async (email: string, password: string, firstName?: string, lastName?: string, country?: string) => {
-    const redirectTo = `${window.location.origin}/auth`;
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectTo,
+        emailRedirectTo: `${window.location.origin}/auth`,
         data: {
           first_name: firstName,
           last_name: lastName,
@@ -63,22 +62,6 @@ export const useAuth = () => {
         },
       },
     });
-
-    // Send branded confirmation email (best-effort, don't block signup)
-    if (!error && data?.user) {
-      try {
-        await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            email,
-            firstName,
-            confirmationUrl: redirectTo,
-          },
-        });
-      } catch (e) {
-        console.warn('Failed to send branded confirmation email:', e);
-      }
-    }
-
     return { error };
   };
 

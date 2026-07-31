@@ -16,14 +16,12 @@ interface TabActividadesProps {
   activities?: ActivityOption[];
   highlights?: string[];
   onAddActivity?: (activity: ActivityOption, day?: number, time?: string) => void;
-  itineraryActivityNames?: string[];
 }
 
 const TabActividades = ({
   activities = [],
   highlights = [],
-  onAddActivity,
-  itineraryActivityNames = []
+  onAddActivity
 }: TabActividadesProps) => {
   const { currencySymbol, currency } = useCurrency();
   const { language } = useLanguage();
@@ -50,14 +48,7 @@ const TabActividades = ({
   }, [activities]);
 
   const filteredActivities = useMemo(() => {
-    // Normalize itinerary activity names for comparison
-    const normalizedItineraryNames = new Set(
-      itineraryActivityNames.map(n => n.toLowerCase().trim())
-    );
-
     return activities.filter(activity => {
-      // Exclude activities already in the itinerary
-      if (normalizedItineraryNames.has(activity.nombre.toLowerCase().trim())) return false;
       if (searchTerm && !activity.nombre.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       if (typeFilter !== "all" && activity.tipo !== typeFilter) return false;
       if (priceFilter === "free" && activity.precio && activity.precio > 0) return false;
@@ -66,7 +57,7 @@ const TabActividades = ({
       if (priceFilter === "premium" && (activity.precio || 0) < 2000) return false;
       return true;
     });
-  }, [activities, searchTerm, typeFilter, priceFilter, durationFilter, itineraryActivityNames]);
+  }, [activities, searchTerm, typeFilter, priceFilter, durationFilter]);
 
   const handleAddClick = (activity: ActivityOption) => {
     setSelectedActivity(activity);

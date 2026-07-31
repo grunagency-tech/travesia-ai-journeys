@@ -9,12 +9,6 @@ import { getHotelImage } from "@/lib/getPlaceholderImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { t } from "@/lib/itineraryTranslations";
 
-// Generate a reliable hotel search URL - Google Maps for finding the hotel
-const generateHotelSearchUrl = (hotelName: string, destination?: string): string => {
-  const query = destination ? `${hotelName} ${destination}` : hotelName;
-  return `https://www.google.com/maps/search/${encodeURIComponent(query)}`;
-};
-
 interface TabAlojamientoProps {
   options?: AccommodationOption[] | string[];
   recommendation?: string;
@@ -23,6 +17,7 @@ interface TabAlojamientoProps {
   startDate?: string;
   endDate?: string;
   travelers?: number;
+  destination?: string;
   onAddAccommodation?: (accommodation: AccommodationOption) => void;
 }
 
@@ -50,15 +45,64 @@ const getCategoryInfo = (category?: HotelCategory, lang: string = 'ES'): { icon:
   }
 };
 
+// Generate hotel booking link with enhanced Google Hotels URL
+const getHotelLink = (
+  hotel: AccommodationOption,
+  destination?: string,
+  startDate?: string,
+  endDate?: string,
+  guests: number = 2
+): string => {
+  const hotelName = hotel.nombre || '';
+  const location = hotel.ubicacion || destination || '';
+
+  const params = new URLSearchParams();
+
+  // Set language, region, currency
+  params.set('hl', 'en');
+  params.set('gl', 'US');
+  params.set('curr', 'USD');
+
+  // Build comprehensive search query
+  let searchQuery = '';
+
+  // Add hotel name if available
+  if (hotelName) {
+    searchQuery = hotelName;
+  }
+
+  // Add location context
+  if (location) {
+    searchQuery = searchQuery
+      ? `${searchQuery} ${location}`
+      : location;
+  }
+
+  params.set('q', searchQuery);
+
+  // Add dates if available (these help narrow results significantly)
+  if (startDate) {
+    params.set('check_in_date', startDate);
+  }
+  if (endDate) {
+    params.set('check_out_date', endDate);
+  }
+
+  // Add number of guests/adults
+  params.set('adults', guests.toString());
+
+  return `https://www.google.com/travel/hotels?${params.toString()}`;
+};
+
 // Categorize hotels: cheapest, best-rated, best-location
 const categorizeHotels = (hotels: AccommodationOption[]): (AccommodationOption & { categoria?: HotelCategory })[] => {
   if (!hotels || hotels.length === 0) return [];
-  
+
   const categorized: (AccommodationOption & { categoria?: HotelCategory })[] = [];
   const usedIds = new Set<string>();
-  
+
   const getHotelId = (h: AccommodationOption) => h.id || `${h.nombre}-${h.precioPorNoche}`;
-  
+
   // 1. Find the cheapest hotel
   const sortedByPrice = [...hotels].sort((a, b) => (a.precioPorNoche || 999999) - (b.precioPorNoche || 999999));
   if (sortedByPrice.length > 0) {
@@ -66,7 +110,7 @@ const categorizeHotels = (hotels: AccommodationOption[]): (AccommodationOption &
     categorized.push(cheapest);
     usedIds.add(getHotelId(cheapest));
   }
-  
+
   // 2. Find the best-rated hotel
   const sortedByRating = [...hotels].sort((a, b) => (b.calificacion || 0) - (a.calificacion || 0));
   for (const hotel of sortedByRating) {
@@ -77,21 +121,21 @@ const categorizeHotels = (hotels: AccommodationOption[]): (AccommodationOption &
       break;
     }
   }
-  
+
   // 3. Find the best-located hotel (closest to center or first one with good location tags)
   const sortedByLocation = [...hotels].sort((a, b) => {
     // Prefer hotels with distanciaCentro
     const distA = a.distanciaCentro ?? 999;
     const distB = b.distanciaCentro ?? 999;
     if (distA !== distB) return distA - distB;
-    
+
     // Check for location-related tags
     const locationTags = ['centro', 'central', 'downtown', 'céntrico', 'ubicación'];
     const hasLocationTagA = a.etiquetas?.some(t => locationTags.some(lt => t.toLowerCase().includes(lt))) ? 1 : 0;
     const hasLocationTagB = b.etiquetas?.some(t => locationTags.some(lt => t.toLowerCase().includes(lt))) ? 1 : 0;
     return hasLocationTagB - hasLocationTagA;
   });
-  
+
   for (const hotel of sortedByLocation) {
     if (!usedIds.has(getHotelId(hotel))) {
       const bestLocation = { ...hotel, categoria: 'best-location' as HotelCategory };
@@ -100,29 +144,29 @@ const categorizeHotels = (hotels: AccommodationOption[]): (AccommodationOption &
       break;
     }
   }
-  
+
   // If we still need more hotels to have 3, add more by rating
   if (categorized.length < 3) {
     for (const hotel of sortedByRating) {
       if (!usedIds.has(getHotelId(hotel))) {
         const hasCategory = (cat: HotelCategory) => categorized.some(h => h.categoria === cat);
         let category: HotelCategory = 'cheapest';
-        
+
         if (!hasCategory('best-location')) category = 'best-location';
         else if (!hasCategory('best-rated')) category = 'best-rated';
-        
+
         const newHotel = { ...hotel, categoria: category };
         categorized.push(newHotel);
         usedIds.add(getHotelId(newHotel));
-        
+
         if (categorized.length >= 3) break;
       }
     }
   }
-  
+
   // Sort by category order: cheapest, best-rated, best-location
   const categoryOrder = { 'cheapest': 1, 'best-rated': 2, 'best-location': 3 };
-  return categorized.sort((a, b) => 
+  return categorized.sort((a, b) =>
     (categoryOrder[a.categoria || 'cheapest'] || 4) - (categoryOrder[b.categoria || 'cheapest'] || 4)
   );
 };
@@ -135,6 +179,7 @@ const TabAlojamiento = ({
   startDate,
   endDate,
   travelers,
+  destination,
   onAddAccommodation
 }: TabAlojamientoProps) => {
   const { language } = useLanguage();
@@ -174,7 +219,7 @@ const TabAlojamiento = ({
 
   // Categorize top 3 hotels
   const categorizedHotels = useMemo(() => categorizeHotels(normalizedOptions), [normalizedOptions]);
-  
+
   // Get remaining hotels
   const remainingOptions = useMemo(() => {
     const topIds = new Set(categorizedHotels.map(h => h.id || `${h.nombre}-${h.precioPorNoche}`));
@@ -205,7 +250,7 @@ const TabAlojamiento = ({
           {t('mejoresAlojamientos', language)}
         </h3>
         <p className="text-sm text-muted-foreground mb-4">{t('seleccionamosEstadia', language)}</p>
-        
+
         {/* Category Legend */}
         {categorizedHotels.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
@@ -228,23 +273,23 @@ const TabAlojamiento = ({
             const isExpanded = expandedCards.has(idx);
             const hotelWithCategory = hotel as AccommodationOption & { categoria?: HotelCategory };
             const categoryInfo = getCategoryInfo(hotelWithCategory.categoria, language);
-            
+
             return (
-              <Card 
-                key={idx} 
+              <Card
+                key={idx}
                 className="overflow-hidden hover:shadow-md transition-shadow border-l-4"
-                style={{ 
-                  borderLeftColor: hotelWithCategory.categoria === 'cheapest' ? '#22c55e' : 
-                                   hotelWithCategory.categoria === 'best-rated' ? '#eab308' : 
-                                   hotelWithCategory.categoria === 'best-location' ? '#3b82f6' : 'transparent' 
+                style={{
+                  borderLeftColor: hotelWithCategory.categoria === 'cheapest' ? '#22c55e' :
+                    hotelWithCategory.categoria === 'best-rated' ? '#eab308' :
+                      hotelWithCategory.categoria === 'best-location' ? '#3b82f6' : 'transparent'
                 }}
               >
                 <CardContent className="p-0">
                   <div className="flex flex-col md:flex-row">
                     {/* Image */}
                     <div className="w-full md:w-48 h-44 md:h-auto bg-muted relative overflow-hidden">
-                      <img 
-                        src={getImageForHotel(hotel)} 
+                      <img
+                        src={getImageForHotel(hotel)}
                         alt={hotel.nombre}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         onError={(e) => {
@@ -353,27 +398,27 @@ const TabAlojamiento = ({
                             </div>
                           )}
                           <div className="flex flex-row md:flex-col gap-1.5">
-                            <Button 
+                            <Button
                               size="sm"
                               variant="default"
                               className="flex-1 md:flex-none"
                               onClick={() => {
-                                const url = generateHotelSearchUrl(hotel.nombre || '', hotel.ubicacion);
-                                window.open(url, '_blank');
+                                const hotelLink = getHotelLink(hotel, destination, startDate, endDate, travelers || 2);
+                                window.open(hotelLink, '_blank');
                               }}
                             >
                               <ExternalLink className="w-4 h-4 mr-1" />
                               {t('reservar', language)}
                             </Button>
-                            <Button 
+                            <Button
                               size="sm"
                               variant="outline"
                               className="flex-1 md:flex-none"
                               onClick={() => {
                                 const hotelWithTotal = {
                                   ...hotel,
-                                  precioTotal: hotel.precioPorNoche && totalNights > 0 
-                                    ? hotel.precioPorNoche * totalNights 
+                                  precioTotal: hotel.precioPorNoche && totalNights > 0
+                                    ? hotel.precioPorNoche * totalNights
                                     : hotel.precioTotal,
                                   fechaCheckIn: startDate,
                                   fechaCheckOut: endDate,
@@ -417,9 +462,9 @@ const TabAlojamiento = ({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                        <img 
-                          src={getImageForHotel(hotel)} 
-                          alt={hotel.nombre} 
+                        <img
+                          src={getImageForHotel(hotel)}
+                          alt={hotel.nombre}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.currentTarget.src = '';
@@ -437,11 +482,13 @@ const TabAlojamiento = ({
                         <p className="font-semibold text-primary whitespace-nowrap">${hotel.precioPorNoche.toLocaleString()}/{t('porNoche', language)}</p>
                       )}
                       <Button size="sm" variant="default" onClick={() => {
-                        const url = generateHotelSearchUrl(hotel.nombre || '', hotel.ubicacion);
-                        window.open(url, '_blank');
+                        const hotelName = hotel.nombre || '';
+                        const guests = travelers || 2;
+                        const googleUrl = `https://www.google.com/travel/hotels?q=${encodeURIComponent(hotelName)}&guests=${guests}`;
+                        window.open(googleUrl, '_blank');
                       }}>
-                         <ExternalLink className="w-3 h-3 mr-1" />
-                         {t('reservar', language)}
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        {t('reservar', language)}
                       </Button>
                     </div>
                   </div>
