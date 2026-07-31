@@ -63,9 +63,39 @@ serve(async (req) => {
   }
 
   try {
+ lovable-sync-1785520388
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - missing auth header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user } } = await supabase.auth.getUser(token);
+
+    // Anonymous visitors send the public key instead of a user JWT.
+    // They are allowed to chat (message limit is enforced in the app).
+    console.log(user ? `Authenticated user: ${user.id}` : "Anonymous visitor");
+
+    const { messages, userLocation, existingTripData, hasItinerary, uiLanguage } = await req.json();
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0 || messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: "Invalid messages parameter (must be non-empty array with length <= 50)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { messages, userLocation, existingTripData, hasItinerary } = await req.json();
+main
     
-    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
       throw new Error("GOOGLE_AI_API_KEY is not configured");
     }
@@ -116,7 +146,11 @@ If the user asks to modify preferences (style, luxury level, type of activities,
       for (let attempt = 0; attempt <= retries; attempt++) {
         try {
           const response = await fetch(
+ lovable-sync-1785520388
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GOOGLE_AI_API_KEY}`,
+
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+ main
             {
               method: "POST",
               headers: {

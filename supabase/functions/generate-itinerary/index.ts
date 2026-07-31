@@ -50,7 +50,7 @@ serve(async (req) => {
     
     const { description, origin, destination, startDate, endDate, travelers, budget, flightData, language } = validationResult.data;
     
-    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY') || Deno.env.get('GOOGLE_API_KEY');
     if (!GOOGLE_AI_API_KEY) {
       console.error('GOOGLE_AI_API_KEY not configured');
       throw new Error('GOOGLE_AI_API_KEY not configured');
@@ -167,7 +167,7 @@ RULES:
         console.log(`AI call attempt ${attempt + 1}/${maxRetries + 1}`);
         
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GOOGLE_AI_API_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
