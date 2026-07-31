@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/Navbar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Paperclip, Send, Linkedin, Instagram, Facebook, Mic, ChevronDown, Loader2, MessageCircle, Music2, History, PlusCircle } from 'lucide-react';
+import { Paperclip, Send, Mic, ChevronDown, Loader2, MessageCircle, History, PlusCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
